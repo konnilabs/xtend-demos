@@ -17,5 +17,6 @@ try {
  execFileSync('npm',['ci','--ignore-scripts','--no-audit','--no-fund'],{cwd:source,stdio:'inherit'});
  execFileSync(process.execPath,['scripts/product-candidate-canary.cjs','--pack-only','--demo-sha',demoSha,'--out',output],{cwd:source,stdio:'inherit'});
  execFileSync(process.execPath,['scripts/install-candidates.cjs',output,pin.coreSha,demoSha],{cwd:root,stdio:'inherit'});
+ execFileSync(process.execPath,['scripts/verify-schema-ownership.cjs',source,output,pin.coreSha,demoSha],{cwd:root,stdio:'inherit'});
  if(process.env.GITHUB_ENV)fs.appendFileSync(process.env.GITHUB_ENV,`XTEND_CORE_SHA=${pin.coreSha}\nXTEND_DEMO_SHA=${demoSha}\n`);
 } finally {fs.rmSync(temporary,{recursive:true,force:true});}
