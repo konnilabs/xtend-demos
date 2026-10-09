@@ -1,6 +1,16 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'../..');
+test('hosted product lanes provision packaged PHP/FPM and avoid affected Composer and premature npm caching',()=>{
+ for(const file of fs.readdirSync(path.join(root,'.github/workflows')).filter(file=>file.endsWith('.yml'))) {
+  const source=fs.readFileSync(path.join(root,'.github/workflows',file),'utf8');
+  for(const step of source.split(/\n      - /).filter(step=>step.includes('uses: actions/setup-node@')))assert.match(step,/package-manager-cache: false/);
+  for(const step of source.split(/\n      - /).filter(step=>step.includes('uses: shivammathur\/setup-php@'))) {
+   assert.match(step,/update: true/);assert.match(step,/use_package_cache: false/);assert.match(step,/composer:2\.10\.3/);
+  }
+  assert.match(source,/\/usr\/sbin\/php-fpm8\.[34] -v/);
+ }
+});
 test('all seven original Shop PHP/Laravel lanes and explicit required FPM host survive migration',()=>{
  const source=fs.readFileSync(path.join(root,'.github/workflows/xtend-shop-host-matrix.yml'),'utf8');
  const lanes=[...source.matchAll(/- \{laravel: '(12|13)', php: '(8\.[2-5])', host: (cli|fpm), browser: (true|false)\}/g)].map(match=>match.slice(1));

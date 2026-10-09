@@ -30,14 +30,18 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 24.18.0
+          package-manager-cache: false
       - name: Pin npm 11.17.0
         working-directory: ${{ runner.temp }}
         run: npm install --global npm@11.17.0 --no-audit --no-fund
       - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        env:
+          update: true
+          use_package_cache: false
         with:
           php-version: ${{ matrix.php }}
           extensions: mbstring, dom, xml, xmlwriter, pdo_sqlite, curl, zip
-          tools: composer:2.8.12
+          tools: composer:2.10.3
       - name: Provide the preserved PHP 8.3 FPM lane
         if: matrix.host == 'fpm'
         run: |
