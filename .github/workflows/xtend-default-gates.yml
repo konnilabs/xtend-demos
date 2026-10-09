@@ -37,9 +37,8 @@ jobs:
       - name: Install supported display tools
         run: |
           sudo apt-get update
-          sudo apt-get install --no-install-recommends -y xvfb xauth unzip php8.4-fpm
-          /usr/sbin/php-fpm8.4 -v
-          printf 'XTEND_SHOP_FPM_BINARY=/usr/sbin/php-fpm8.4\n' >> "$GITHUB_ENV"
+          sudo apt-get install --no-install-recommends -y xvfb xauth unzip
+          node scripts/provision-product-fpm.cjs 8.4
       - name: Install immutable Chromium and matching WebDriver
         run: node scripts/prepare-browser-toolchain.cjs "${{ runner.temp }}/xtend-browser"
       - name: Reproduce immutable Core candidate source and install verified tarballs

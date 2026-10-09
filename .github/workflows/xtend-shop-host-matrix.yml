@@ -44,11 +44,7 @@ jobs:
           tools: composer:2.10.3
       - name: Provide the preserved PHP 8.3 FPM lane
         if: matrix.host == 'fpm'
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y php8.3-fpm
-          /usr/sbin/php-fpm8.3 -v
-          printf 'XTEND_SHOP_FPM_BINARY=/usr/sbin/php-fpm8.3\n' >> "$GITHUB_ENV"
+        run: node scripts/provision-product-fpm.cjs 8.3
       - name: Install immutable Chromium and matching WebDriver
         if: matrix.browser
         run: node scripts/prepare-browser-toolchain.cjs "${{ runner.temp }}/xtend-browser"
