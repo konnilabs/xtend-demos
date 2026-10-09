@@ -1,8 +1,8 @@
 {
   "schema": "xtend.demo-candidate-source.v1",
   "repository": "https://github.com/konnilabs/xtend.git",
-  "coreSha": "8fa92f2d9c25cdfc53a043914c3b92d91051b6c5",
+  "coreSha": "2a896f4819161b7ed934552e1f5964b5ad0841ce",
   "requiredApi": "public-product-support-and-candidate-integrity-v1",
   "mergeBlockedUntil": "The pinned Core implementation commit is remotely retrievable after independent review and authorized push; version 0.9.0 is not published.",
-  "checkpoint": "C1 public APIs/pack workflow; schema governance remains unapproved and aggregate gates red"
+  "checkpoint": "Implementation successor to C2: exact-SHA archive packing, independent public scaffold versions, required Nightly/FPM contracts; schema governance remains paused and aggregate baseline gates red"
 }

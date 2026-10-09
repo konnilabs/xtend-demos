@@ -45,7 +45,11 @@ function installCandidates(directory,coreSha,demoSha,{lockOnly=false}={}) {
    api.verifyResolution(req,manifest,path.join(target,'node_modules'));
    // Reproduce installation against restored versioned manifests and the candidate lock.
    execFileSync('npm',['ci','--ignore-scripts','--no-audit','--no-fund'],{cwd:target,stdio:'pipe',timeout:600000,maxBuffer:32*1024*1024});
+   api.verifyInstalledClosure(JSON.parse(fs.readFileSync(path.join(target,'package-lock.json'))),manifest);
+   api.verifyResolution(req,manifest,path.join(target,'node_modules'));
    execFileSync('npm',['ci','--ignore-scripts','--no-audit','--no-fund','--offline'],{cwd:target,stdio:'pipe',timeout:600000,maxBuffer:32*1024*1024});
+   api.verifyInstalledClosure(JSON.parse(fs.readFileSync(path.join(target,'package-lock.json'))),manifest);
+   api.verifyResolution(req,manifest,path.join(target,'node_modules'));
   }
   const lockSha256=crypto.createHash('sha256').update(fs.readFileSync(path.join(target,'package-lock.json'))).digest('hex');
   results.push({product:relative,status:'passed',lockSha256});

@@ -94,7 +94,8 @@
           "xtend-material-catfooding",
           "xtend-shop-browser",
           "xtend-shop-contracts",
-          "xtend-shop-php"
+          "xtend-shop-php",
+          "shop-browser-fpm"
         ]
       },
       "fullReleaseGate": {
@@ -107,7 +108,8 @@
           "xtend-material-catfooding",
           "xtend-shop-browser",
           "xtend-shop-contracts",
-          "xtend-shop-php"
+          "xtend-shop-php",
+          "shop-browser-fpm"
         ]
       }
     }

@@ -6,14 +6,14 @@ const root=path.resolve(__dirname,'..');
 async function run() {
  const commands=[];
  function saveReport(record){const target=path.join(root,'.xtend-test-results/suites',record.id+'.json');fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,JSON.stringify({schema:'xtend.product-suite-result.v1',coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA,...record},null,2)+'\n');}
- function execute(id,args,cwd=root,reports=[]) {
+ function execute(id,args,cwd=root,reports=[],env=process.env) {
   const startedAt=Date.now();
-  const result=spawnSync(args[0],args.slice(1),{cwd,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000});
+  const result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000});
   const outcome=evaluateResult({...result,reports,startedAt}),status=outcome.status;
   const log=path.join(root,'.xtend-test-results',id+'.log');fs.mkdirSync(path.dirname(log),{recursive:true});fs.writeFileSync(log,`${args.join(' ')}\n${result.stdout||''}\n${result.stderr||''}\n${result.error?.message||''}`);
   const record={id,command:args,cwd:path.relative(root,cwd)||'.',exitCode:result.status,status,skips:outcome.skips,failures:outcome.failures,sourceReports:outcome.sources,log:path.relative(root,log)};commands.push(record);return status==='passed';
  }
- execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/migration/result-evidence.test.cjs']);
+ execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs']);
  execute('http-security',[process.execPath,'--test','--test-reporter=tap','tests/security/http.test.mjs']);
  const xss=await require('../tests/security/product_xss_suite.cjs').runProductXss({rootDir:root}).catch(error=>({ok:false,failures:[error.message]}));
  commands.push({id:'product-xss',command:['runProductXss'],exitCode:xss.ok?0:1,status:xss.ok?'passed':'failed',skips:xss.skips||[],failures:xss.failures||[]});
@@ -30,7 +30,8 @@ async function run() {
   const ok=result.ok===true&&!(result.skips?.length);all&&=ok;commands.push({id,command:[fn],exitCode:ok?0:1,status:ok?'passed':'failed',skips:result.skips||[],failures:result.failures||[]});
  }
  commands.push({id:'product-owned-suites',command:['all transferred suite IDs'],exitCode:all?0:1,status:all?'passed':'failed',skips:[]});
- for(const [id,group] of [['shop-php','php'],['shop-browser','browser'],['shop-contracts','contracts']]) {const ok=execute(id,['npm','run','test:'+group],path.join(root,'products/xtend-shop'),[path.join(root,'products/xtend-shop/storage/reports/xtend-store-'+group+'.json')]);const original=commands.at(-1);commands.push({...original,id:'xtend-shop-'+group,aliasOf:id});}
+ for(const [id,group] of [['shop-php','php'],['shop-browser','browser'],['shop-contracts','contracts']]) {const ok=execute(id,['npm','run','test:'+group],path.join(root,'products/xtend-shop'),[path.join(root,'products/xtend-shop/storage/reports/xtend-store-'+group+'.json')],{...process.env,XTEND_SHOP_FPM_BINARY:''});const original=commands.at(-1);commands.push({...original,id:'xtend-shop-'+group,aliasOf:id});}
+ execute('shop-browser-fpm',[process.execPath,'scripts/run-shop-host-gate.cjs','fpm'],root,[path.join(root,'products/xtend-shop/storage/reports/xtend-store-browser-fpm.json')]);
  execute('electron-shell-import-worker',['xvfb-run','-a',process.execPath,'scripts/run-electron.mjs','tests/llm-terminal-runner.mjs','--','--fake'],path.join(root,'products/xtend-llm'),[path.join(root,'products/xtend-llm/.xtend-llm-results/llm-terminal-fake.json')]);
  const lane=process.versions.node.startsWith('26.')?'node26':'node24';
  const llm=path.join(root,'products/xtend-llm'),laneName=lane==='node26'?'node-26-current':'node-24-lts';

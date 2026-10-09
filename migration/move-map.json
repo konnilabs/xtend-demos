@@ -6,8 +6,8 @@
     "targetRepository": "konnilabs/xtend-demos",
     "targetPath": "products/maraca-app-services-test-bench/.xtend-build/scaffold-ownership.json",
     "sourceSha256": "9f8aaf325229d0e014f4d9ef3e59f0bd769f97755d405bd4e1cfe79c35e5129a",
-    "targetSha256": "9f8aaf325229d0e014f4d9ef3e59f0bd769f97755d405bd4e1cfe79c35e5129a",
-    "classification": "unchanged",
+    "targetSha256": "570ec60934accf3559f5224c4ed3b4519a231f140261b7afd19aee3c67078d5b",
+    "classification": "transformed",
     "scope": "tracked complete product source; generated outputs may differ; no assertion acceptance inferred"
   },
   {
@@ -39,7 +39,7 @@
     "targetRepository": "konnilabs/xtend-demos",
     "targetPath": "products/maraca-app-services-test-bench/package.json",
     "sourceSha256": "a6d8058fd6a87be72353cf38e1fcdc1df6af34aa5bc656e482778f1fc86020dc",
-    "targetSha256": "0aa4d42946055de08ec173075b3cebef928e0fa1ad3fe1fefc0fda2e1a4a5585",
+    "targetSha256": "374eb2e4dd42d22cf9dc667aa5124cab2da131faab082de16fc4e9eef2e745af",
     "classification": "transformed",
     "scope": "tracked complete product source; generated outputs may differ; no assertion acceptance inferred"
   },
@@ -50,8 +50,8 @@
     "targetRepository": "konnilabs/xtend-demos",
     "targetPath": "products/maraca-app-services-test-bench/server/index.mjs",
     "sourceSha256": "51ad4ffe5ffc08794ebb768310439be5f140b07501ce576ed6a35e326aea076d",
-    "targetSha256": "27f3ac0b479717bf15fc2a7554d4e28564f0d44a262525d9de9cdbca9697c874",
-    "classification": "transformed",
+    "targetSha256": "51ad4ffe5ffc08794ebb768310439be5f140b07501ce576ed6a35e326aea076d",
+    "classification": "unchanged",
     "scope": "tracked complete product source; generated outputs may differ; no assertion acceptance inferred"
   },
   {
@@ -248,7 +248,7 @@
     "targetRepository": "konnilabs/xtend-demos",
     "targetPath": "products/resumability-maraca-erp-demo/package-lock.json",
     "sourceSha256": "de2719b9fc0baa2fc9ad20f797ee6c2d59c90539724ad9a5505758441380f3a0",
-    "targetSha256": "51d6b403da745e0f0a6a23f075ae9651941e0bc9477545012af333bbf502322a",
+    "targetSha256": "78239e2822b1563d557c46c31c474a2ee42fed3c26a3c67048a8c79ac4987adc",
     "classification": "transformed",
     "scope": "tracked complete product source; generated outputs may differ; no assertion acceptance inferred"
   },
@@ -1040,7 +1040,7 @@
     "targetRepository": "konnilabs/xtend-demos",
     "targetPath": "products/xtend-llm/package-lock.json",
     "sourceSha256": "c9e5ae7df24bc46f19876f41dcba30af7b5722c069510322c5f25f43964efae2",
-    "targetSha256": "13af4ca24444b169d5ad21024fc985e69bb3937f4c21ef91035f6c86b68eedc5",
+    "targetSha256": "838a6e4aa8f719abe4652a67738b74b4e6dd49981b3a3b5897074d4f3aa35c38",
     "classification": "transformed",
     "scope": "tracked complete product source; generated outputs may differ; no assertion acceptance inferred"
   },
@@ -1051,7 +1051,7 @@
     "targetRepository": "konnilabs/xtend-demos",
     "targetPath": "products/xtend-llm/package.json",
     "sourceSha256": "31f25091d019e4b29555da15bac26549747b4ea0a674563be2f534244836d867",
-    "targetSha256": "cbaabc511e04ba84277951676f886510cd9ed9ca9cb303d5bc2880b67ba1b6e4",
+    "targetSha256": "758db40accdce1d95f2c928074bded00d346ef69aa48992c923a45ba3974fa69",
     "classification": "transformed",
     "scope": "tracked complete product source; generated outputs may differ; no assertion acceptance inferred"
   },
@@ -2063,7 +2063,7 @@
     "targetRepository": "konnilabs/xtend-demos",
     "targetPath": "products/xtend-shop/package-lock.json",
     "sourceSha256": "ee2f3e9ae75adc4710e7182a163ac6452e995f77a1c88cd945eb6515272a28ba",
-    "targetSha256": "7d4743dc867eb2aaee0b24b4141744659de2198b6dc18a46e9cbe8666ab5cea9",
+    "targetSha256": "8ebdc6cce75834b694c1929aff0cfb38cd42342c18191686d4f0dd2c8dd5a332",
     "classification": "transformed",
     "scope": "tracked complete product source; generated outputs may differ; no assertion acceptance inferred"
   },
@@ -3031,7 +3031,7 @@
     "targetRepository": "konnilabs/xtend-demos",
     "targetPath": "products/xtend-shop/scripts/prepare-fixture.cjs",
     "sourceSha256": "4d092abe176f79cb5c5a08afb51f78b8dc939184178d56a146d54b58099d3df8",
-    "targetSha256": "16f88641b3631a9a7c40f64bc02c6e4ddd08f0b01d1768a59ccfcb43b1bbebf2",
+    "targetSha256": "9aae17c5b8e6619bbee8b48d5ff8100f5e702c9ae9ff2b56c8fb41442aa09da9",
     "classification": "transformed",
     "scope": "tracked complete product source; generated outputs may differ; no assertion acceptance inferred"
   },

@@ -145,6 +145,27 @@
         "browser"
       ],
       "timeoutMs": 300000
+    },
+    {
+      "id": "shop-browser-fpm",
+      "label": "Required Shop PHP-FPM host acceptance",
+      "defaultIncluded": true,
+      "handler": "shop-browser-fpm",
+      "implementations": [
+        {
+          "path": "scripts/run-shop-host-gate.cjs",
+          "function": "runShopHostGate",
+          "arguments": [
+            "{mode: \"fpm\"}"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser",
+        "php-fpm"
+      ],
+      "timeoutMs": 300000
     }
   ],
   "profiles": {
@@ -260,9 +281,34 @@
       "xtend-material-catfooding",
       "xtend-shop-browser",
       "xtend-shop-contracts",
-      "xtend-shop-php"
+      "xtend-shop-php",
+      "shop-browser-fpm"
     ],
     "installation": "candidate-packages",
-    "requireNoSkips": true
+    "requireNoSkips": true,
+    "shopHostMatrix": {
+      "workflow": ".github/workflows/xtend-shop-host-matrix.yml",
+      "laravel12Php": [
+        "8.2",
+        "8.3",
+        "8.4",
+        "8.5"
+      ],
+      "laravel13Php": [
+        "8.3",
+        "8.4",
+        "8.5"
+      ],
+      "fpm": {
+        "laravel": "12",
+        "php": "8.3",
+        "binary": "/usr/sbin/php-fpm8.3",
+        "required": true
+      },
+      "coreCandidateFpm": {
+        "php": "8.4",
+        "required": true
+      }
+    }
   }
 }

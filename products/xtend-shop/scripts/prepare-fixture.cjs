@@ -1,5 +1,7 @@
 'use strict';
 const fs = require('node:fs'), path = require('node:path');
+const {execFileSync}=require('node:child_process');
+const {createRequire}=require('node:module');
 function prepareFixture({output, version = '13', candidateDirectory = path.resolve(__dirname, '../.candidate'), expected = {coreSha: process.env.XTEND_CORE_SHA, demoSha: process.env.XTEND_DEMO_SHA}} = {}) {
   if (!output || fs.existsSync(output)) throw new Error('XTend.store requires a fresh fixture directory.');
   if (!['12', '13'].includes(String(version))) throw new Error('Unsupported Laravel major.');
@@ -15,6 +17,14 @@ function prepareFixture({output, version = '13', candidateDirectory = path.resol
       fs.copyFileSync(path.join(compatibility, file), path.join(output, file));
     }
   }
+  // Resolve only the fixture's verified tarball lock, never a sibling checkout.
+  execFileSync('npm',['ci','--ignore-scripts','--no-audit','--no-fund','--offline'],{cwd:output,stdio:'pipe',timeout:600000});
+  const request=createRequire(path.join(path.resolve(output),'package.json'));
+  const api=request('@ccslabs/xtend/candidate-integrity');
+  const manifest=JSON.parse(fs.readFileSync(path.join(candidateDirectory,'manifest.json')));
+  api.verifyCandidates(manifest,{...expected,directory:candidateDirectory});
+  api.verifyInstalledClosure(JSON.parse(fs.readFileSync(path.join(output,'package-lock.json'))),manifest);
+  api.verifyResolution(request,manifest,path.join(path.resolve(output),'node_modules'));
   const prepared = require(path.join(path.resolve(output), 'scripts/prepare-packages.cjs')).preparePackages(candidateDirectory, expected);
   return {output: path.resolve(output), version, ...prepared};
 }
