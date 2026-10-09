@@ -9,3 +9,5 @@ The source and third-party notices are preserved. Framework packages and XTend M
 PR/push and nightly workflows build exact pinned Core source, install verified tarballs and require product gates on Node 24.18.0 and 26.5.0. PHP/Laravel, Chromium/WebDriver, Electron and Xvfb are mandatory runtimes.
 
 See [ownership transfer](migration/owner-transfer.json), [shared assertion ownership](migration/shared-assertions.json), and the migration provenance/move map for source identities and transformations.
+
+Candidate inventory offers all ten packages; app installation validates only its exact declared and required transitive XTend closure. Required peers participate; optional peers do not add unrelated packages. Installed required packages must resolve locally to verified tarballs; unknown internal packages, ranges, links and Registry fallbacks fail closed. Material scaffolds require Root/Maraca/Material plus CLI/compiler/Tailwind build tooling; MCP/Fabric/Shard/standalone RMT are not Material defaults.

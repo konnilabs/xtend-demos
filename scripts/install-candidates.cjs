@@ -1,5 +1,5 @@
 'use strict';
-const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),os=require('node:os');
 const {execFileSync}=require('node:child_process');
 const {createRequire}=require('node:module');
 const root=path.resolve(__dirname,'..');
@@ -11,6 +11,16 @@ function installCandidates(directory,coreSha,demoSha,{lockOnly=false}={}) {
   if(path.basename(item.file)!==item.file||fs.lstatSync(path.join(directory,item.file)).isSymbolicLink())throw Error('Invalid candidate tarball');
   if(crypto.createHash('sha256').update(fs.readFileSync(path.join(directory,item.file))).digest('hex')!==item.sha256)throw Error(`Candidate digest mismatch: ${item.name}`);
  }
+ // Bootstrap the verified public API from the offered Root tarball, never a sibling checkout.
+ const bootstrap=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-candidate-api-'));
+ const bootstrapPackage=path.join(bootstrap,'node_modules/@ccslabs/xtend');fs.mkdirSync(bootstrapPackage,{recursive:true});
+ let api;
+ try {
+  const item=manifest.packages.find(item=>item.name==='@ccslabs/xtend');if(!item)throw Error('Missing Root candidate');
+  execFileSync('tar',['-xzf',path.join(directory,item.file),'--strip-components=1','-C',bootstrapPackage]);
+  const request=createRequire(path.join(bootstrap,'package.json'));api=request('@ccslabs/xtend/candidate-integrity');
+  api.verifyCandidates(manifest,{coreSha,demoSha,directory});
+ }finally{fs.rmSync(bootstrap,{recursive:true,force:true});}
  const products=fs.readdirSync(path.join(root,'products')).filter(name=>fs.existsSync(path.join(root,'products',name,'package.json')));
  const results=[];
  for(const relative of ['.',...products.map(name=>'products/'+name)]) {
@@ -20,9 +30,9 @@ function installCandidates(directory,coreSha,demoSha,{lockOnly=false}={}) {
   fs.writeFileSync(path.join(candidateDir,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
   const filename=path.join(target,'package.json'),original=JSON.parse(fs.readFileSync(filename));
   const temporary=structuredClone(original);temporary.dependencies||={};
-  for(const item of manifest.packages) {
+  for(const item of api.selectCandidateClosure(manifest,original)) {
    temporary.dependencies[item.name]='file:.candidate/'+item.file;
-   if(temporary.devDependencies)delete temporary.devDependencies[item.name];
+   for(const section of ['devDependencies','optionalDependencies','peerDependencies'])if(temporary[section])delete temporary[section][item.name];
   }
   fs.writeFileSync(filename,JSON.stringify(temporary,null,2)+'\n');
   // Previous monorepo locks cannot participate in candidate resolution.
@@ -35,7 +45,7 @@ function installCandidates(directory,coreSha,demoSha,{lockOnly=false}={}) {
   try {
    execFileSync('npm',['install','--ignore-scripts','--no-audit','--no-fund',...(lockOnly?['--package-lock-only']:[])],{cwd:target,stdio:'pipe',timeout:600000,maxBuffer:32*1024*1024});
    const lock=JSON.parse(fs.readFileSync(path.join(target,'package-lock.json')));
-   for(const section of ['dependencies','devDependencies'])lock.packages[''][section]=original[section]||{};
+   for(const section of ['dependencies','devDependencies','optionalDependencies','peerDependencies','peerDependenciesMeta']){if(original[section])lock.packages[''][section]=original[section];else delete lock.packages[''][section];}
    fs.writeFileSync(path.join(target,'package-lock.json'),JSON.stringify(lock,null,2)+'\n');
   }finally {fs.writeFileSync(filename,JSON.stringify(original,null,2)+'\n');}
   if(!lockOnly) {
