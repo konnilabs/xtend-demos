@@ -1,0 +1,35 @@
+{
+  "name": "@ccslabs/rmt-animation-testbench-product",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Interactive XTend RMT AnimationEngine product testbench.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node server/index.mjs",
+    "start": "node server/index.mjs",
+    "verify": "node scripts/verify.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/konnilabs/xtend-demos.git",
+    "directory": "products/rmt-animation-testbench"
+  },
+  "dependencies": {
+    "@ccslabs/xtend": "0.9.0",
+    "@ccslabs/xtend-compiler": "0.9.0",
+    "@ccslabs/xtend-maraca": "0.9.0",
+    "@ccslabs/xtend-rmt": "0.9.0",
+    "@ccslabs/xtend-cli": "0.9.0",
+    "@ccslabs/xtend-fabric": "0.9.0",
+    "@xtend-material/core": "0.1.0",
+    "@xtend-material/maraca-tailwind": "0.1.0",
+    "@ccslabs/xtend-mcp": "0.1.0",
+    "@ccslabs/xtend-xsurface-shard": "0.9.0"
+  }
+}

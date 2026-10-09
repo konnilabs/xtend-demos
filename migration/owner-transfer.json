@@ -1,0 +1,1367 @@
+{
+  "schema": "xtend.product-owner-transfer.v1",
+  "repository": "konnilabs/xtend-demos",
+  "suiteIds": [
+    "erp-resumability-catfood",
+    "maraca-app-services-test-bench",
+    "xtend-llm-app-services-catfood",
+    "xtend-material-catfooding",
+    "xtend-shop-browser",
+    "xtend-shop-contracts",
+    "xtend-shop-php"
+  ],
+  "suites": [
+    {
+      "id": "xtend-llm-app-services-catfood",
+      "label": "XTend LLM AppServices Catfood",
+      "description": "Builds the XTend LLM production product through Maraca and validates its AppServices source, service graph, bundle, types and budget evidence.",
+      "defaultIncluded": true,
+      "handler": "xtend-llm-app-services-catfood",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_llm_app_services_catfood_suite.js",
+          "function": "runXtendLlmAppServicesCatfoodSuite",
+          "arguments": [
+            "{ rootDir }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "maraca-app-services-test-bench",
+      "label": "Maraca App Services Test Bench",
+      "description": "Builds and exercises the strict CLI-generated Node/SQLite AppServices catfood product.",
+      "defaultIncluded": true,
+      "handler": "maraca-app-services-test-bench",
+      "implementations": [
+        {
+          "path": "tests/products/maraca_app_services_test_bench_suite.js",
+          "function": "runMaracaAppServicesTestBenchSuite",
+          "arguments": [
+            "{ rootDir }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "xtend-material-catfooding",
+      "label": "XTM-12 XTend Material Catfooding Workbench",
+      "description": "Builds and tunes the RMT-first Workbench, captures product browser evidence and gates lessons, Dev Surface, Trusted DOM and anti-monkeypatching ownership.",
+      "defaultIncluded": true,
+      "handler": "xtend-material-catfooding",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_material_catfooding_suite.js",
+          "function": "runXtendMaterialCatfoodingSuite",
+          "arguments": [
+            "{ rootDir }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "erp-resumability-catfood",
+      "label": "RMT ERP Resumability Catfooding",
+      "description": "Builds and tunes the tracked ERP product, then gates signed resume, exact node adoption, intent replay, fallback and the eight-XTension matrix in Chromium.",
+      "defaultIncluded": true,
+      "handler": "erp-resumability-catfood",
+      "implementations": [
+        {
+          "path": "tests/products/erp_resumability_catfooding_suite.js",
+          "function": "runErpResumabilityCatfoodingSuite",
+          "arguments": [
+            "{ rootDir }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "xtend-shop-contracts",
+      "label": "XTend.store compiler and browser contracts",
+      "description": "XTend.store compiler and browser contracts",
+      "defaultIncluded": false,
+      "handler": "xtend-shop-contracts",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_shop_suite.js",
+          "function": "runXtendShopSuite",
+          "arguments": [
+            "{ rootDir, group: \"contracts\" }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "xtend-shop-php",
+      "label": "XTend.store PHP parity and domain",
+      "description": "XTend.store PHP parity and domain",
+      "defaultIncluded": false,
+      "handler": "xtend-shop-php",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_shop_suite.js",
+          "function": "runXtendShopSuite",
+          "arguments": [
+            "{ rootDir, group: \"php\" }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "xtend-shop-browser",
+      "label": "XTend.store isolated guest checkout",
+      "description": "XTend.store isolated guest checkout",
+      "defaultIncluded": false,
+      "handler": "xtend-shop-browser",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_shop_suite.js",
+          "function": "runXtendShopSuite",
+          "arguments": [
+            "{ rootDir, group: \"browser\" }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    }
+  ],
+  "profiles": {
+    "xtend-material-catfooding": {
+      "suites": [
+        "xtend-material-catfooding"
+      ],
+      "reports": []
+    },
+    "erp-resumability-catfood": {
+      "suites": [
+        "erp-resumability-catfood"
+      ],
+      "reports": [
+        ".xtend-test-results/erp-resumability-catfood-report.json"
+      ]
+    },
+    "pr": {
+      "suites": [
+        "node-runtime-policy",
+        "core",
+        "architecture",
+        "components",
+        "component-contract-v2",
+        "component-shell-contract",
+        "component-styling-contract",
+        "builder-typescript-blueprint",
+        "typescript-components",
+        "component-ux-browser-smokes",
+        "component-shell-theme-matrix",
+        "browser",
+        "a11y-hydration",
+        "screenreader-signals",
+        "motion-contrast",
+        "runtime-a11y-contract",
+        "component-ux-performance",
+        "component-network-contract",
+        "rmt-shell-authoring-ux",
+        "form-controls-ux",
+        "feedback-status-ux",
+        "navigation-routing-ux",
+        "overlay-interaction-ux",
+        "layout-display-media-ux",
+        "regression-priority",
+        "fabric",
+        "fabric-lane-mapping",
+        "fabric-lifecycle-boundary",
+        "fabric-reporters",
+        "fabric-runtime-bridge",
+        "fabric-component-fibers",
+        "fabric-route-fibers",
+        "fabric-telemetry-snapshot",
+        "fabric-performance-measurements",
+        "rmt-retained-warm-reuse-performance",
+        "scaffold-kernel-lab",
+        "rmt-kernel-scheduler",
+        "rmt-vnext-scheduler",
+        "rmt-kernel-scheduler-failure",
+        "rmt-vnext-compatibility",
+        "type-exports-rmt",
+        "rmt-artifact-parity",
+        "hydration-policy",
+        "rmt-demo-inventory",
+        "rmt-lifecycle-demo",
+        "rmt-first-demo-app",
+        "surface-workbench-fixture",
+        "references",
+        "landing-page",
+        "xtend-classic-branding",
+        "scoped-package-readmes",
+        "docs-public-quality",
+        "docs-content-depth",
+        "docs-quality-gates",
+        "supply-chain",
+        "manifest-import-policy",
+        "xss-pentest",
+        "rmt-stack-docs",
+        "rmt-playground-docs",
+        "rmt-animation-engine-docs",
+        "docs-shell-catfooding",
+        "docs-framework-ownership",
+        "rmt-search-runtime",
+        "docs-related-recommendations",
+        "rmt-prewarm-worker-search",
+        "xtend-loader-skeleton-profiles",
+        "maraca-tune",
+        "rmt-reference-docs",
+        "rmt-playground-security",
+        "rmt-jit-hydrangea",
+        "rmt-node-ssr-adapter",
+        "rmt-php-ssr-adapter",
+        "rmt-php-app-service-adapter",
+        "rmt-app-runtime",
+        "rmt-surface-resource-graph-runtime",
+        "rmt-detached-runtime-harness",
+        "rmt-dom-compat-parity",
+        "rmt-component-fabric-ingestion",
+        "rmt-component-lifecycle-telemetry",
+        "surface-controller",
+        "surface-manager",
+        "surface-adapter-runtime",
+        "surface-native-materialization",
+        "surface-lazy-hydration",
+        "surface-route-lifecycle",
+        "surface-runtime-release-handoff",
+        "rmt-source-model",
+        "rmt-parser",
+        "rmt-semantic-graph",
+        "rmt-linter-rules",
+        "rmt-completions",
+        "rmt-code-actions",
+        "rmt-agent-report",
+        "rmt-ai-developer-kit",
+        "rmt-editor-packaging",
+        "docs-php-ssr-prehydration",
+        "docs-php-ssr-performance-budget",
+        "docs-php-ssr-cls-budget",
+        "xtend-layout-stability-contract",
+        "docs-rmt-pilot",
+        "xtend-rmt-app-scaffold",
+        "xtend-material-scaffold",
+        "maraca-plan",
+        "maraca-bundle",
+        "maraca-bundle-report",
+        "maraca-app-services-runtime",
+        "maraca-app-services-cross-runtime",
+        "maraca-node-app-host",
+        "xtend-llm-app-services-catfood",
+        "maraca-app-services-build",
+        "maraca-rmt-source-to-bundle",
+        "maraca-orchestration",
+        "maraca-kernel-orchestration",
+        "maraca-kernel-integrity",
+        "maraca-validation",
+        "maraca-transitions",
+        "maraca-package-exports",
+        "maraca-size-budget",
+        "maraca-web-app-manifest",
+        "maraca-pwa-service-worker",
+        "xscaler-protocol",
+        "xscaler-public-api",
+        "xscaler-php-preflight-parity",
+        "rmt-xscaler-ssr-hydration-parity",
+        "xscaler-source-to-sea",
+        "xsurface-shard",
+        "ui-coprocessor",
+        "super-prewarm-worker-experiment",
+        "epic14-rmt-tooling-release-gates",
+        "native-first-overlay-focus",
+        "native-first-form-navigation-media",
+        "native-first-framework-leverage",
+        "native-first-market-pattern-parity",
+        "contract-registry",
+        "schema-inventory",
+        "contract-runtime-parity",
+        "native-first-evidence-pack",
+        "rmt-ui-primitive-gap",
+        "rmt-syntax-growth",
+        "rmt-action-effect-data-resource-primitives",
+        "rmt-complete-ui-recipes",
+        "rmt-renderer-dom-descriptor-proofs",
+        "native-first-budget-gates",
+        "native-first-docs-authoring",
+        "native-first-migration-deprecation",
+        "native-first-mission-handoff",
+        "rmt-ui-maximality-owned-surface-baseline",
+        "rmt-ui-maximality-owned-surface-gate-hygiene",
+        "rmt-owned-data-display-primitives",
+        "rmt-owned-command-search-primitives",
+        "rmt-owned-recipe-extension",
+        "rmt-owned-surface-browser-lab",
+        "rmt-owned-contract-budget-runtime-parity",
+        "rmt-owned-migration-deprecation-docs-handoff",
+        "rmt-owned-release-handoff",
+        "rmt-language-server",
+        "rmt-vnext-imports",
+        "test-runner",
+        "browser-hypervisor",
+        "project-index",
+        "ssr-pages",
+        "ssr-pages-browser"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-pr-gate-report.json"
+      ]
+    },
+    "release:full": {
+      "suites": [
+        "node-runtime-policy",
+        "core",
+        "architecture",
+        "components",
+        "component-contract-v2",
+        "component-shell-contract",
+        "component-styling-contract",
+        "builder-typescript-blueprint",
+        "typescript-components",
+        "component-ux-browser-smokes",
+        "component-shell-theme-matrix",
+        "browser",
+        "a11y-hydration",
+        "screenreader-signals",
+        "motion-contrast",
+        "runtime-a11y-contract",
+        "component-ux-performance",
+        "component-network-contract",
+        "rmt-shell-authoring-ux",
+        "form-controls-ux",
+        "feedback-status-ux",
+        "navigation-routing-ux",
+        "overlay-interaction-ux",
+        "layout-display-media-ux",
+        "regression-priority",
+        "fabric",
+        "fabric-lane-mapping",
+        "fabric-lifecycle-boundary",
+        "fabric-reporters",
+        "fabric-runtime-bridge",
+        "fabric-component-fibers",
+        "fabric-route-fibers",
+        "fabric-telemetry-snapshot",
+        "fabric-performance-measurements",
+        "rmt-retained-warm-reuse-performance",
+        "scaffold-kernel-lab",
+        "rmt-kernel-scheduler",
+        "rmt-vnext-scheduler",
+        "rmt-kernel-scheduler-failure",
+        "rmt-vnext-compatibility",
+        "type-exports-rmt",
+        "rmt-artifact-parity",
+        "hydration-policy",
+        "rmt-demo-inventory",
+        "rmt-lifecycle-demo",
+        "rmt-first-demo-app",
+        "surface-workbench-fixture",
+        "references",
+        "landing-page",
+        "xtend-classic-branding",
+        "scoped-package-readmes",
+        "docs-public-quality",
+        "docs-content-depth",
+        "docs-quality-gates",
+        "supply-chain",
+        "manifest-import-policy",
+        "xss-pentest",
+        "rmt-stack-docs",
+        "rmt-playground-docs",
+        "rmt-animation-engine-docs",
+        "docs-shell-catfooding",
+        "docs-framework-ownership",
+        "rmt-search-runtime",
+        "docs-related-recommendations",
+        "rmt-prewarm-worker-search",
+        "xtend-loader-skeleton-profiles",
+        "maraca-tune",
+        "rmt-reference-docs",
+        "rmt-playground-security",
+        "rmt-jit-hydrangea",
+        "rmt-node-ssr-adapter",
+        "rmt-php-ssr-adapter",
+        "rmt-php-app-service-adapter",
+        "rmt-app-runtime",
+        "rmt-surface-resource-graph-runtime",
+        "rmt-detached-runtime-harness",
+        "rmt-dom-compat-parity",
+        "rmt-component-fabric-ingestion",
+        "rmt-component-lifecycle-telemetry",
+        "surface-controller",
+        "surface-manager",
+        "surface-adapter-runtime",
+        "surface-native-materialization",
+        "surface-lazy-hydration",
+        "surface-route-lifecycle",
+        "surface-runtime-release-handoff",
+        "rmt-source-model",
+        "rmt-parser",
+        "rmt-semantic-graph",
+        "rmt-linter-rules",
+        "rmt-completions",
+        "rmt-code-actions",
+        "rmt-agent-report",
+        "rmt-ai-developer-kit",
+        "rmt-editor-packaging",
+        "docs-php-ssr-prehydration",
+        "docs-php-ssr-performance-budget",
+        "docs-php-ssr-cls-budget",
+        "xtend-layout-stability-contract",
+        "docs-rmt-pilot",
+        "xtend-rmt-app-scaffold",
+        "xtend-material-scaffold",
+        "maraca-plan",
+        "maraca-bundle",
+        "maraca-bundle-report",
+        "maraca-app-services-runtime",
+        "maraca-app-services-cross-runtime",
+        "maraca-node-app-host",
+        "xtend-llm-app-services-catfood",
+        "maraca-app-services-build",
+        "maraca-rmt-source-to-bundle",
+        "maraca-orchestration",
+        "maraca-kernel-orchestration",
+        "maraca-kernel-integrity",
+        "maraca-validation",
+        "maraca-transitions",
+        "maraca-package-exports",
+        "maraca-size-budget",
+        "maraca-web-app-manifest",
+        "maraca-pwa-service-worker",
+        "xscaler-protocol",
+        "xscaler-public-api",
+        "xscaler-php-preflight-parity",
+        "rmt-xscaler-ssr-hydration-parity",
+        "xscaler-source-to-sea",
+        "xsurface-shard",
+        "ui-coprocessor",
+        "super-prewarm-worker-experiment",
+        "epic14-rmt-tooling-release-gates",
+        "native-first-overlay-focus",
+        "native-first-form-navigation-media",
+        "native-first-framework-leverage",
+        "native-first-market-pattern-parity",
+        "contract-registry",
+        "schema-inventory",
+        "contract-runtime-parity",
+        "native-first-evidence-pack",
+        "rmt-ui-primitive-gap",
+        "rmt-syntax-growth",
+        "rmt-action-effect-data-resource-primitives",
+        "rmt-complete-ui-recipes",
+        "rmt-renderer-dom-descriptor-proofs",
+        "native-first-budget-gates",
+        "native-first-docs-authoring",
+        "native-first-migration-deprecation",
+        "native-first-mission-handoff",
+        "rmt-ui-maximality-owned-surface-baseline",
+        "rmt-ui-maximality-owned-surface-gate-hygiene",
+        "rmt-owned-data-display-primitives",
+        "rmt-owned-command-search-primitives",
+        "rmt-owned-recipe-extension",
+        "rmt-owned-surface-browser-lab",
+        "rmt-owned-contract-budget-runtime-parity",
+        "rmt-owned-migration-deprecation-docs-handoff",
+        "rmt-owned-release-handoff",
+        "rmt-tooling-docs",
+        "rmt-language-server",
+        "rmt-vnext-imports",
+        "test-runner",
+        "browser-hypervisor",
+        "project-index",
+        "ssr-pages",
+        "ssr-pages-browser"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-release-gate-report.json"
+      ],
+      "includes": [
+        "epic13-package-export-lock",
+        "xtensions-runtime-acceptance"
+      ]
+    },
+    "release": {
+      "suites": [
+        "node-runtime-policy",
+        "core",
+        "architecture",
+        "components",
+        "component-contract-v2",
+        "component-shell-contract",
+        "component-styling-contract",
+        "builder-typescript-blueprint",
+        "typescript-components",
+        "component-ux-browser-smokes",
+        "component-shell-theme-matrix",
+        "browser",
+        "a11y-hydration",
+        "screenreader-signals",
+        "motion-contrast",
+        "runtime-a11y-contract",
+        "component-ux-performance",
+        "component-network-contract",
+        "rmt-shell-authoring-ux",
+        "form-controls-ux",
+        "feedback-status-ux",
+        "navigation-routing-ux",
+        "overlay-interaction-ux",
+        "layout-display-media-ux",
+        "regression-priority",
+        "fabric",
+        "fabric-lane-mapping",
+        "fabric-lifecycle-boundary",
+        "fabric-reporters",
+        "fabric-runtime-bridge",
+        "fabric-component-fibers",
+        "fabric-route-fibers",
+        "fabric-telemetry-snapshot",
+        "fabric-performance-measurements",
+        "rmt-retained-warm-reuse-performance",
+        "scaffold-kernel-lab",
+        "rmt-kernel-scheduler",
+        "rmt-vnext-scheduler",
+        "rmt-kernel-scheduler-failure",
+        "rmt-vnext-compatibility",
+        "type-exports-rmt",
+        "rmt-artifact-parity",
+        "hydration-policy",
+        "rmt-demo-inventory",
+        "rmt-lifecycle-demo",
+        "rmt-first-demo-app",
+        "surface-workbench-fixture",
+        "references",
+        "landing-page",
+        "xtend-classic-branding",
+        "scoped-package-readmes",
+        "docs-public-quality",
+        "docs-content-depth",
+        "docs-quality-gates",
+        "supply-chain",
+        "manifest-import-policy",
+        "xss-pentest",
+        "rmt-stack-docs",
+        "rmt-playground-docs",
+        "rmt-animation-engine-docs",
+        "docs-shell-catfooding",
+        "docs-framework-ownership",
+        "rmt-search-runtime",
+        "docs-related-recommendations",
+        "rmt-prewarm-worker-search",
+        "xtend-loader-skeleton-profiles",
+        "maraca-tune",
+        "rmt-reference-docs",
+        "rmt-playground-security",
+        "rmt-jit-hydrangea",
+        "rmt-node-ssr-adapter",
+        "rmt-php-ssr-adapter",
+        "rmt-php-app-service-adapter",
+        "rmt-app-runtime",
+        "rmt-surface-resource-graph-runtime",
+        "rmt-detached-runtime-harness",
+        "rmt-dom-compat-parity",
+        "rmt-component-fabric-ingestion",
+        "rmt-component-lifecycle-telemetry",
+        "surface-controller",
+        "surface-manager",
+        "surface-adapter-runtime",
+        "surface-native-materialization",
+        "surface-lazy-hydration",
+        "surface-route-lifecycle",
+        "surface-runtime-release-handoff",
+        "rmt-source-model",
+        "rmt-parser",
+        "rmt-semantic-graph",
+        "rmt-linter-rules",
+        "rmt-completions",
+        "rmt-code-actions",
+        "rmt-agent-report",
+        "rmt-ai-developer-kit",
+        "rmt-editor-packaging",
+        "docs-php-ssr-prehydration",
+        "docs-php-ssr-performance-budget",
+        "docs-php-ssr-cls-budget",
+        "xtend-layout-stability-contract",
+        "docs-rmt-pilot",
+        "xtend-rmt-app-scaffold",
+        "xtend-material-scaffold",
+        "maraca-plan",
+        "maraca-bundle",
+        "maraca-bundle-report",
+        "maraca-app-services-runtime",
+        "maraca-app-services-cross-runtime",
+        "maraca-node-app-host",
+        "xtend-llm-app-services-catfood",
+        "maraca-app-services-build",
+        "maraca-rmt-source-to-bundle",
+        "maraca-orchestration",
+        "maraca-kernel-orchestration",
+        "maraca-kernel-integrity",
+        "maraca-validation",
+        "maraca-transitions",
+        "maraca-package-exports",
+        "maraca-size-budget",
+        "maraca-web-app-manifest",
+        "maraca-pwa-service-worker",
+        "xscaler-protocol",
+        "xscaler-public-api",
+        "xscaler-php-preflight-parity",
+        "rmt-xscaler-ssr-hydration-parity",
+        "xscaler-source-to-sea",
+        "xsurface-shard",
+        "ui-coprocessor",
+        "super-prewarm-worker-experiment",
+        "epic14-rmt-tooling-release-gates",
+        "native-first-overlay-focus",
+        "native-first-form-navigation-media",
+        "native-first-framework-leverage",
+        "native-first-market-pattern-parity",
+        "contract-registry",
+        "schema-inventory",
+        "contract-runtime-parity",
+        "native-first-evidence-pack",
+        "rmt-ui-primitive-gap",
+        "rmt-syntax-growth",
+        "rmt-action-effect-data-resource-primitives",
+        "rmt-complete-ui-recipes",
+        "rmt-renderer-dom-descriptor-proofs",
+        "native-first-budget-gates",
+        "native-first-docs-authoring",
+        "native-first-migration-deprecation",
+        "native-first-mission-handoff",
+        "rmt-ui-maximality-owned-surface-baseline",
+        "rmt-ui-maximality-owned-surface-gate-hygiene",
+        "rmt-owned-data-display-primitives",
+        "rmt-owned-command-search-primitives",
+        "rmt-owned-recipe-extension",
+        "rmt-owned-surface-browser-lab",
+        "rmt-owned-contract-budget-runtime-parity",
+        "rmt-owned-migration-deprecation-docs-handoff",
+        "rmt-owned-release-handoff",
+        "rmt-tooling-docs",
+        "project-index",
+        "rmt-language-server",
+        "rmt-vnext-imports",
+        "test-runner",
+        "browser-hypervisor",
+        "ssr-pages",
+        "ssr-pages-browser"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-release-report.json"
+      ],
+      "includes": [
+        "epic13-package-export-lock",
+        "xtensions-runtime-acceptance"
+      ]
+    },
+    "xtend-llm-app-services-catfood": {
+      "suites": [
+        "xtend-llm-app-services-catfood"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-llm-app-services-catfood-report.json"
+      ]
+    },
+    "maraca-app-services-test-bench": {
+      "suites": [
+        "maraca-app-services-test-bench"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-maraca-app-services-test-bench-report.json"
+      ]
+    },
+    "maraca-app-services": {
+      "suites": [
+        "maraca-app-services-runtime",
+        "maraca-app-services-cross-runtime",
+        "maraca-node-app-host",
+        "xtend-llm-app-services-catfood",
+        "maraca-app-services-build",
+        "xtend-rmt-app-scaffold",
+        "xtend-material-scaffold"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-maraca-app-services-gate-report.json"
+      ]
+    },
+    "maraca": {
+      "suites": [
+        "maraca-plan",
+        "maraca-bundle",
+        "maraca-bundle-report",
+        "maraca-app-services-runtime",
+        "maraca-app-services-cross-runtime",
+        "maraca-node-app-host",
+        "xtend-llm-app-services-catfood",
+        "maraca-app-services-build",
+        "maraca-rmt-source-to-bundle",
+        "maraca-orchestration",
+        "maraca-kernel-orchestration",
+        "maraca-kernel-integrity",
+        "maraca-validation",
+        "maraca-transitions",
+        "maraca-package-exports",
+        "maraca-size-budget",
+        "maraca-web-app-manifest",
+        "maraca-pwa-service-worker"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-maraca-gate-report.json"
+      ]
+    },
+    "xtend-shop-contracts": {
+      "suites": [
+        "xtend-shop-contracts"
+      ],
+      "reports": [],
+      "requireNoSkips": true
+    },
+    "xtend-shop-php": {
+      "suites": [
+        "xtend-shop-php"
+      ],
+      "reports": [],
+      "requireNoSkips": true
+    },
+    "xtend-shop-browser": {
+      "suites": [
+        "xtend-shop-browser"
+      ],
+      "reports": [],
+      "requireNoSkips": true
+    }
+  },
+  "nightly": {
+    "additionalChecks": [
+      {
+        "script": "ci:dependency-locks:check",
+        "step": "Validate CI dependency lock alignment",
+        "condition": null,
+        "advisory": false
+      },
+      {
+        "script": "native-first:evidence:prepare",
+        "step": "Prepare Native-First release evidence artifacts",
+        "condition": null,
+        "advisory": false
+      },
+      {
+        "script": "test:xtend-mcp:report",
+        "step": "Run XTend MCP contract, security, parity, and evidence gates",
+        "condition": null,
+        "advisory": false
+      },
+      {
+        "script": "pack:dry-run",
+        "step": "Validate root package dry run",
+        "condition": null,
+        "advisory": false
+      },
+      {
+        "script": "nightly:manifest",
+        "step": "Create XTend nightly manifest",
+        "condition": "always()",
+        "advisory": false
+      },
+      {
+        "step": "Validate workspace package dry runs",
+        "command": "npm pack --workspace xtendrmt --dry-run --json --silent > .xtend-test-results/xtend-pack-dry-run-xtendrmt.json\nnpm pack --workspace fabric --dry-run --json --silent > .xtend-test-results/xtend-pack-dry-run-fabric.json\nnpm pack --workspace tools --dry-run --json --silent > .xtend-test-results/xtend-pack-dry-run-tools.json\nnpm pack --workspace xtend-builder --dry-run --json --silent > .xtend-test-results/xtend-pack-dry-run-xtend-builder.json\nnpm pack --workspace xtend-maraca --dry-run --json --silent > .xtend-test-results/xtend-pack-dry-run-xtend-maraca.json\nnpm pack --workspace @ccslabs/xtend-mcp --dry-run --json --silent > .xtend-test-results/xtend-pack-dry-run-xtend-mcp.json\nnpm pack --workspace xsurface-shard --dry-run --json --silent > .xtend-test-results/xtend-pack-dry-run-xsurface-shard.json\n",
+        "advisory": false
+      }
+    ],
+    "phases": {
+      "lock_guard": {
+        "commands": [
+          {
+            "command": "node",
+            "args": [
+              "scripts/verify_ci_dependency_locks.js",
+              "--json"
+            ],
+            "output": ".xtend-test-results/nightly/dependency-locks.json"
+          }
+        ],
+        "dependsOn": [],
+        "timeoutMs": 300000,
+        "blocking": true
+      },
+      "install_1": {
+        "commands": [
+          {
+            "command": "npm",
+            "args": [
+              "ci",
+              "--ignore-scripts",
+              "--no-audit",
+              "--fund=false"
+            ]
+          }
+        ],
+        "dependsOn": [
+          "lock_guard"
+        ],
+        "timeoutMs": 300000,
+        "blocking": true
+      },
+      "install_2": {
+        "commands": [
+          {
+            "command": "npm",
+            "args": [
+              "ci",
+              "--prefix",
+              "products/xtend-llm",
+              "--ignore-scripts",
+              "--no-audit",
+              "--fund=false"
+            ]
+          },
+          {
+            "command": "npm",
+            "args": [
+              "ci",
+              "--prefix",
+              "products/resumability-maraca-erp-demo",
+              "--ignore-scripts",
+              "--no-audit",
+              "--fund=false"
+            ]
+          }
+        ],
+        "dependsOn": [
+          "install_1"
+        ],
+        "timeoutMs": 300000,
+        "blocking": true
+      },
+      "capabilities": {
+        "commands": [
+          {
+            "command": "node",
+            "args": [
+              "scripts/test-runner/capabilities.js"
+            ],
+            "output": ".xtend-test-results/nightly/capabilities.json"
+          }
+        ],
+        "dependsOn": [
+          "install_2"
+        ],
+        "timeoutMs": 60000,
+        "blocking": true
+      },
+      "native_first_evidence_prepare": {
+        "commands": [
+          {
+            "command": "npm",
+            "args": [
+              "run",
+              "native-first:evidence:prepare"
+            ]
+          }
+        ],
+        "dependsOn": [
+          "capabilities"
+        ],
+        "timeoutMs": 300000,
+        "blocking": true
+      },
+      "full_release": {
+        "commands": [
+          {
+            "command": "npm",
+            "args": [
+              "run",
+              "test:ci-nightly"
+            ]
+          }
+        ],
+        "dependsOn": [
+          "native_first_evidence_prepare",
+          "laravel_fixture_prepare"
+        ],
+        "timeoutMs": 1500000,
+        "blocking": true
+      },
+      "xtend_mcp": {
+        "commands": [
+          {
+            "command": "npm",
+            "args": [
+              "run",
+              "test:xtend-mcp:report"
+            ]
+          }
+        ],
+        "dependsOn": [
+          "capabilities"
+        ],
+        "timeoutMs": 300000,
+        "blocking": true
+      },
+      "pack_root": {
+        "commands": [
+          {
+            "command": "npm",
+            "args": [
+              "run",
+              "pack:dry-run"
+            ]
+          }
+        ],
+        "dependsOn": [
+          "install_1"
+        ],
+        "timeoutMs": 120000,
+        "blocking": true
+      },
+      "pack_workspaces": {
+        "commands": [
+          {
+            "command": "npm",
+            "args": [
+              "pack",
+              "--workspace",
+              "xtendrmt",
+              "--dry-run",
+              "--json",
+              "--silent"
+            ],
+            "output": ".xtend-test-results/xtend-pack-dry-run-xtendrmt.json"
+          },
+          {
+            "command": "npm",
+            "args": [
+              "pack",
+              "--workspace",
+              "fabric",
+              "--dry-run",
+              "--json",
+              "--silent"
+            ],
+            "output": ".xtend-test-results/xtend-pack-dry-run-fabric.json"
+          },
+          {
+            "command": "npm",
+            "args": [
+              "pack",
+              "--workspace",
+              "tools",
+              "--dry-run",
+              "--json",
+              "--silent"
+            ],
+            "output": ".xtend-test-results/xtend-pack-dry-run-tools.json"
+          },
+          {
+            "command": "npm",
+            "args": [
+              "pack",
+              "--workspace",
+              "xtend-builder",
+              "--dry-run",
+              "--json",
+              "--silent"
+            ],
+            "output": ".xtend-test-results/xtend-pack-dry-run-xtend-builder.json"
+          },
+          {
+            "command": "npm",
+            "args": [
+              "pack",
+              "--workspace",
+              "xtend-maraca",
+              "--dry-run",
+              "--json",
+              "--silent"
+            ],
+            "output": ".xtend-test-results/xtend-pack-dry-run-xtend-maraca.json"
+          },
+          {
+            "command": "npm",
+            "args": [
+              "pack",
+              "--workspace",
+              "@ccslabs/xtend-mcp",
+              "--dry-run",
+              "--json",
+              "--silent"
+            ],
+            "output": ".xtend-test-results/xtend-pack-dry-run-xtend-mcp.json"
+          },
+          {
+            "command": "npm",
+            "args": [
+              "pack",
+              "--workspace",
+              "xsurface-shard",
+              "--dry-run",
+              "--json",
+              "--silent"
+            ],
+            "output": ".xtend-test-results/xtend-pack-dry-run-xsurface-shard.json"
+          }
+        ],
+        "dependsOn": [
+          "install_1"
+        ],
+        "timeoutMs": 300000,
+        "blocking": true
+      },
+      "laravel_fixture_prepare": {
+        "commands": [
+          {
+            "command": "node",
+            "args": [
+              "scripts/prepare_nightly_laravel.js"
+            ]
+          }
+        ],
+        "dependsOn": [
+          "capabilities"
+        ],
+        "timeoutMs": 600000,
+        "blocking": true
+      }
+    },
+    "manifestCommands": [
+      "npm run ci:dependency-locks:check",
+      "npm run native-first:evidence:prepare",
+      "npm run test:release:full:report",
+      "npm run test:xtend-mcp:report",
+      "npm run test:feature-adoption-observatory",
+      "npm run test:rmt-reference-docs:report",
+      "npm run test:rmt-demos:report",
+      "npm run test:rkfa-production-closure:report",
+      "npm run test:docs-stub-inventory:report",
+      "npm run test:rmt-vnext-primitives:report",
+      "npm run test:native-first-rmt-owned-release:report",
+      "npm run release:report",
+      "npm run pack:dry-run",
+      "npm pack --workspace xtendrmt --dry-run --json --silent",
+      "npm pack --workspace fabric --dry-run --json --silent",
+      "npm pack --workspace tools --dry-run --json --silent",
+      "npm pack --workspace xtend-builder --dry-run --json --silent",
+      "npm pack --workspace xtend-maraca --dry-run --json --silent",
+      "npm pack --workspace @ccslabs/xtend-mcp --dry-run --json --silent",
+      "npm pack --workspace xsurface-shard --dry-run --json --silent",
+      "npm run test:maraca:report",
+      "npm run test:maraca-app-services-cross-runtime:report",
+      "npm run test:xtend-llm-app-services-catfood:report",
+      "npm run test:maraca-app-services-test-bench:report",
+      "npm run test:xtensions-framework-adapters:report",
+      "npm run test:xtend-dev-surface:report",
+      "npm run test:docs-quality:report",
+      "npm run test:docs-shell-catfooding:report",
+      "npm run test:docs-framework-ownership:report",
+      "npm run test:xsurface-shard:report",
+      "npm run test:xscaler-protocol:report",
+      "npm run test:xscaler-public-api:report",
+      "npm run test:xscaler-php-preflight-parity:report",
+      "npm run test:rmt-xscaler-ssr-hydration-parity:report",
+      "npm run test:xscaler-source-to-sea:report"
+    ],
+    "artifacts": [
+      {
+        "path": ".xtend-test-results/xtend-release-gate-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "release:full"
+      },
+      {
+        "path": ".xtend-test-results/xtend-mcp-gate-report.json",
+        "kind": "outcome",
+        "producer": "xtend_mcp"
+      },
+      {
+        "path": ".xtend-test-results/xtend-rmt-reference-docs-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "rmt-reference-docs"
+      },
+      {
+        "path": ".xtend-test-results/xtend-rmt-demos-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "rmt-demos"
+      },
+      {
+        "path": ".xtend-test-results/xtend-rkfa-production-closure-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "rkfa-production-closure"
+      },
+      {
+        "path": ".xtend-test-results/xtend-docs-stub-inventory-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "docs-stub-inventory"
+      },
+      {
+        "path": ".xtend-test-results/xtend-rmt-vnext-primitives-gate-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "rmt-vnext-primitives"
+      },
+      {
+        "path": ".xtend-test-results/xtend-native-first-rmt-owned-release-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "native-first-rmt-owned-release"
+      },
+      {
+        "path": ".xtend-test-results/xtend-release-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "release"
+      },
+      {
+        "path": ".xtend-test-results/xtend-pack-dry-run.json",
+        "kind": "pack",
+        "producer": "pack_root"
+      },
+      {
+        "path": ".xtend-test-results/xtend-package-export-surface-lock.json",
+        "kind": "data",
+        "producer": "pack_root"
+      },
+      {
+        "path": ".xtend-test-results/xtend-package-export-lock-report.json",
+        "kind": "outcome",
+        "producer": "pack_root"
+      },
+      {
+        "path": ".xtend-test-results/xtend-pack-dry-run-xtendrmt.json",
+        "kind": "pack",
+        "producer": "pack_workspaces"
+      },
+      {
+        "path": ".xtend-test-results/xtend-pack-dry-run-fabric.json",
+        "kind": "pack",
+        "producer": "pack_workspaces"
+      },
+      {
+        "path": ".xtend-test-results/xtend-pack-dry-run-tools.json",
+        "kind": "pack",
+        "producer": "pack_workspaces"
+      },
+      {
+        "path": ".xtend-test-results/xtend-pack-dry-run-xtend-builder.json",
+        "kind": "pack",
+        "producer": "pack_workspaces"
+      },
+      {
+        "path": ".xtend-test-results/xtend-pack-dry-run-xtend-maraca.json",
+        "kind": "pack",
+        "producer": "pack_workspaces"
+      },
+      {
+        "path": ".xtend-test-results/xtend-pack-dry-run-xtend-mcp.json",
+        "kind": "pack",
+        "producer": "pack_workspaces"
+      },
+      {
+        "path": ".xtend-test-results/xtend-pack-dry-run-xsurface-shard.json",
+        "kind": "pack",
+        "producer": "pack_workspaces"
+      },
+      {
+        "path": ".xtend-test-results/xtend-maraca-gate-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "maraca"
+      },
+      {
+        "path": ".xtend-test-results/xtend-maraca-app-services-cross-runtime-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "maraca-app-services-cross-runtime"
+      },
+      {
+        "path": ".xtend-test-results/xtend-llm-app-services-catfood-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "xtend-llm-app-services-catfood"
+      },
+      {
+        "path": "products/xtend-llm/.xtend-llm-results/app-services-catfood.json",
+        "kind": "outcome",
+        "producer": "full_release"
+      },
+      {
+        "path": ".xtend-test-results/xtend-maraca-app-services-test-bench-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "maraca-app-services-test-bench"
+      },
+      {
+        "path": "products/maraca-app-services-test-bench/.xtend-test-results/maraca-app-services-test-bench-evidence.json",
+        "kind": "outcome",
+        "producer": "full_release"
+      },
+      {
+        "path": "products/maraca-app-services-test-bench/.xtend-test-results/maraca-app-services-test-bench.png",
+        "kind": "png",
+        "producer": "full_release"
+      },
+      {
+        "path": ".xtend-test-results/xtend-xtensions-framework-adapters-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "xtensions-framework-adapters"
+      },
+      {
+        "path": ".xtend-test-results/xtend-dev-surface-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "xtend-dev-surface"
+      },
+      {
+        "path": ".xtend-test-results/xtend-docs-quality-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "docs-quality"
+      },
+      {
+        "path": ".xtend-test-results/xtend-docs-shell-catfooding-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "docs-shell-catfooding"
+      },
+      {
+        "path": ".xtend-test-results/xtend-docs-framework-ownership-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "docs-framework-ownership"
+      },
+      {
+        "path": ".xtend-test-results/xtend-xsurface-shard-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "xsurface-shard"
+      },
+      {
+        "path": ".xtend-test-results/xtend-xscaler-protocol-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "xscaler-protocol"
+      },
+      {
+        "path": ".xtend-test-results/xtend-xscaler-public-api-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "xscaler-public-api"
+      },
+      {
+        "path": ".xtend-test-results/xtend-xscaler-php-preflight-parity-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "xscaler-php-preflight-parity"
+      },
+      {
+        "path": ".xtend-test-results/xtend-rmt-xscaler-ssr-hydration-parity-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "rmt-xscaler-ssr-hydration-parity"
+      },
+      {
+        "path": ".xtend-test-results/xtend-xscaler-source-to-sea-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "profile": "xscaler-source-to-sea"
+      },
+      {
+        "path": ".xtend-build/maraca/source-to-sea/xtend.maraca.report.json",
+        "kind": "outcome",
+        "producer": "full_release"
+      },
+      {
+        "path": ".xtend-build/maraca/source-to-sea/xtend.maraca.size.json",
+        "kind": "outcome",
+        "producer": "full_release"
+      },
+      {
+        "path": ".xtend-test-results/xtend-test-execution.json",
+        "kind": "execution",
+        "producer": "full_release"
+      },
+      {
+        "path": ".xtend-test-results/nightly/dependency-locks.json",
+        "kind": "outcome",
+        "producer": "lock_guard"
+      },
+      {
+        "path": ".xtend-test-results/nightly/capabilities.json",
+        "kind": "outcome",
+        "producer": "capabilities"
+      },
+      {
+        "path": ".xtend-test-results/nightly/laravel-fixtures.json",
+        "producer": "laravel_fixture_prepare",
+        "kind": "outcome",
+        "required": true
+      },
+      {
+        "path": ".xtend-test-results/xtend-xtensions-runtime-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "expectedSchema": "xtend.xtensions.runtime-acceptance-report.v1",
+        "expectedMode": "jsdom"
+      },
+      {
+        "path": ".xtend-test-results/xtend-xtensions-runtime-browser-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "expectedSchema": "xtend.xtensions.runtime-acceptance-report.v1",
+        "expectedMode": "chromium"
+      },
+      {
+        "path": ".xtend-test-results/xtend-xtensions-consumer-package-report.json",
+        "kind": "outcome",
+        "producer": "full_release",
+        "expectedSchema": "xtend.xtensions.consumer-package-report.v1"
+      },
+      {
+        "path": ".xtend-test-results/xtend-xtensions-runtime-gate-report.json",
+        "kind": "report",
+        "producer": "full_release",
+        "profile": "xtensions-runtime-acceptance"
+      }
+    ]
+  }
+}

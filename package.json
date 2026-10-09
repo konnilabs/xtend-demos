@@ -1,0 +1,115 @@
+{
+  "name": "@konnilabs/xtend-demos",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node scripts/run-product-gates.cjs",
+    "test:contracts": "node --test tests/security/http.test.mjs",
+    "test:pr": "node scripts/run-product-gates.cjs",
+    "test:release:full": "node scripts/run-product-gates.cjs",
+    "test:maraca-app-services": "node scripts/run-product-gates.cjs",
+    "test:xtend-llm-app-services-catfood": "node scripts/run-product-gates.cjs",
+    "test:maraca-app-services-test-bench:report": "node scripts/run-product-gates.cjs",
+    "test:xtend-material-catfooding": "node scripts/run-product-gates.cjs",
+    "test:erp-resumability-catfood": "node scripts/run-product-gates.cjs"
+  },
+  "dependencies": {
+    "@ccslabs/xtend": "0.9.0",
+    "@ccslabs/xtend-cli": "0.9.0",
+    "@ccslabs/xtend-compiler": "0.9.0",
+    "@ccslabs/xtend-maraca": "0.9.0",
+    "@ccslabs/xtend-rmt": "0.9.0",
+    "@xtend-material/core": "0.1.0",
+    "@ccslabs/xtend-fabric": "0.9.0",
+    "@xtend-material/maraca-tailwind": "0.1.0",
+    "@ccslabs/xtend-mcp": "0.1.0",
+    "@ccslabs/xtend-xsurface-shard": "0.9.0"
+  },
+  "devDependencies": {
+    "jsdom": "^28.0.0"
+  },
+  "xtend": {
+    "materialCatfooding": {
+      "schema": "xtend.material.catfooding-report.v1",
+      "productSchema": "xtend.material.catfooding-product.v1",
+      "status": "integrated-by-XTM-12",
+      "workpackage": "XTM-12",
+      "product": "products/xtend-material-workbench",
+      "contract": "development/XTend-Material-Catfooding-Report.md",
+      "lessons": "products/xtend-material-workbench/src/data/lessons.json",
+      "tuneConfig": "products/xtend-material-workbench/maraca.tuned.config.json",
+      "report": ".xtend-test-results/xtend-material-catfooding-report.json",
+      "browserRequired": "chromium",
+      "monkeypatchingAllowed": false,
+      "localGate": "node scripts/run-product-gates.cjs",
+      "packageScript": "npm run test:xtend-material-catfooding"
+    },
+    "erpResumabilityCatfooding": {
+      "schema": "xtend.rmt.erp-resumability-catfood-report.v1",
+      "productSchema": "xtend.rmt.erp-resumability-catfood.v1",
+      "status": "required",
+      "owner": "XTend RMT Runtime",
+      "product": "products/resumability-maraca-erp-demo",
+      "source": "products/resumability-maraca-erp-demo/src/rmt/erp-shell.rmt",
+      "tuneConfig": "products/resumability-maraca-erp-demo/maraca.tuned.config.json",
+      "lessons": "products/resumability-maraca-erp-demo/catfooding-lessons.json",
+      "evidence": "products/resumability-maraca-erp-demo/catfooding-evidence.json",
+      "report": ".xtend-test-results/erp-resumability-catfood-report.json",
+      "browserRequired": "chromium-or-chrome",
+      "localGate": "node scripts/run-product-gates.cjs",
+      "packageScript": "npm run test:erp-resumability-catfood"
+    },
+    "maracaAppServices": {
+      "catfoodSuite": "tests/products/xtend_llm_app_services_catfood_suite.js",
+      "catfoodSuiteId": "xtend-llm-app-services-catfood",
+      "catfoodProductCommand": "npm run test:catfood --prefix products/xtend-llm",
+      "catfoodPackageScript": "npm run test:xtend-llm-app-services-catfood",
+      "catfoodReportArtifact": "products/xtend-llm/.xtend-llm-results/app-services-catfood.json",
+      "suiteId": "xtend-llm-app-services-catfood",
+      "suite": "tests/products/xtend_llm_app_services_catfood_suite.js",
+      "localGate": "node scripts/run-product-gates.cjs",
+      "packageScript": "npm run test:xtend-llm-app-services-catfood"
+    },
+    "releaseGates": [
+      "npm test"
+    ],
+    "ciGateMatrix": {
+      "schema": "xtend.ci.gate-matrix.v1",
+      "workflow": ".github/workflows/xtend-default-gates.yml",
+      "nodeVersions": [
+        "24.18.0",
+        "26.5.0"
+      ],
+      "prFastGate": {
+        "command": "npm run test:pr",
+        "reportPath": ".xtend-test-results/products.json",
+        "suites": [
+          "erp-resumability-catfood",
+          "maraca-app-services-test-bench",
+          "xtend-llm-app-services-catfood",
+          "xtend-material-catfooding",
+          "xtend-shop-browser",
+          "xtend-shop-contracts",
+          "xtend-shop-php"
+        ]
+      },
+      "fullReleaseGate": {
+        "command": "npm run test:release:full",
+        "reportPath": ".xtend-test-results/products.json",
+        "suites": [
+          "erp-resumability-catfood",
+          "maraca-app-services-test-bench",
+          "xtend-llm-app-services-catfood",
+          "xtend-material-catfooding",
+          "xtend-shop-browser",
+          "xtend-shop-contracts",
+          "xtend-shop-php"
+        ]
+      }
+    }
+  }
+}
