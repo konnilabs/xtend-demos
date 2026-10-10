@@ -32160,7 +32160,7 @@
             }
           },
           "sourcePaths": [
-            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts"
+            "imports/core/{CORE_SHA}/xtendrmt/rmt-app-runtime.d.ts"
           ],
           "symbols": [
             "RmtCommandEnvelope"
@@ -32170,7 +32170,7 @@
               "type": "declared-type",
               "completeness": "partial",
               "authoritative": false,
-              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+              "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-app-runtime.d.ts",
               "symbol": "RmtCommandEnvelope"
             }
           ],
@@ -32203,23 +32203,23 @@
           "role": "definition",
           "visibility": "internal",
           "sourcePaths": [
-            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
-            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-event-routing-runtime.d.ts"
+            "imports/core/{CORE_SHA}/xtendrmt/rmt-app-runtime.d.ts",
+            "imports/core/{CORE_SHA}/xtendrmt/rmt-event-routing-runtime.d.ts"
           ],
           "interfaceReferences": [
             {
               "type": "symbol",
-              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+              "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-app-runtime.d.ts",
               "symbol": "RMT_COMMAND_SCHEMA"
             },
             {
               "type": "symbol",
-              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+              "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-app-runtime.d.ts",
               "symbol": "RmtCommandEnvelope"
             },
             {
               "type": "symbol",
-              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-event-routing-runtime.d.ts",
+              "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-event-routing-runtime.d.ts",
               "symbol": "RMT_COMMAND_SCHEMA"
             }
           ]
@@ -32229,13 +32229,13 @@
           "role": "reference",
           "visibility": "internal",
           "sourcePaths": [
-            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
-            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-event-routing-runtime.d.ts"
+            "imports/core/{CORE_SHA}/xtendrmt/rmt-app-runtime.d.ts",
+            "imports/core/{CORE_SHA}/xtendrmt/rmt-event-routing-runtime.d.ts"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+              "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-app-runtime.d.ts",
               "symbol": null
             }
           ]
