@@ -1,3 +1,4 @@
+import {assertSandboxExecution,assertRendererAttestation,isTrustedMainFrame,assertOfficialRuntimeIdentity,attestationPolicy} from '../../scripts/electron-sandbox-policy.mjs';
 import {configureAppServerSession} from './app-server-session.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
@@ -47,6 +48,7 @@ import { closeXtendMcpClient } from '@ccslabs/xtend-mcp/client';
 import { executeRmtKnowledge } from './tools/rmt-knowledge.mjs';
 
 const require = createRequire(import.meta.url);
+assertSandboxExecution();
 const { app, BrowserWindow, clipboard, ipcMain, shell, session } = require('electron');
 const productRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const dev = process.argv.includes('--dev') || process.argv.includes('--') && process.argv.includes('--dev');
@@ -57,7 +59,6 @@ if (layoutSmoke && process.platform === 'linux' && !process.env.DISPLAY && !proc
   app.commandLine.appendSwitch('ozone-platform', 'headless');
   app.commandLine.appendSwitch('disable-gpu');
   app.commandLine.appendSwitch('disable-dev-shm-usage');
-  if (typeof process.getuid === 'function' && process.getuid() === 0) app.commandLine.appendSwitch('no-sandbox');
 }
 
 configureElectronWebGpu(app);
@@ -432,6 +433,13 @@ async function createWindow() {
   const appSession = session.fromPartition(`xtend-llm-${crypto.randomUUID()}`);
   configureAppServerSession(appSession, serverUrl, appServer.capability);
   const preload = path.join(productRoot, 'src', 'main', 'preload.cjs');
+  const attestationChannel='xtend-llm:sandbox-attestation';
+  let disposeAttestation;
+  const preloadAttestation=new Promise((resolve,reject)=>{
+    const timeout=setTimeout(()=>{ipcMain.removeListener(attestationChannel,receive);reject(new Error('Missing actual application preload sandbox attestation'));},15000);
+    function receive(event,proof){if(!isTrustedMainFrame(event,mainWindow.webContents))return;clearTimeout(timeout);ipcMain.removeListener(attestationChannel,receive);resolve(proof);}
+    ipcMain.on(attestationChannel,receive);disposeAttestation=()=>{clearTimeout(timeout);ipcMain.removeListener(attestationChannel,receive);};
+  });
   mainWindow = new BrowserWindow({
     width: 1160,
     height: 860,
@@ -445,7 +453,7 @@ async function createWindow() {
       session: appSession,
       nodeIntegration: false,
       contextIsolation: true,
-      sandbox: false
+      sandbox: true
     }
   });
   configureExternalNavigation(mainWindow.webContents, {
@@ -466,7 +474,24 @@ async function createWindow() {
       console.error(`[renderer load failed] ${errorCode} ${errorDescription} ${validatedURL}`);
     });
   }
-  await mainWindow.loadURL(layoutSmoke ? `${serverUrl}?fakeModel=1&fakeModelLoadDelayMs=1200` : serverUrl);
+  try {
+    await mainWindow.loadURL(layoutSmoke ? `${serverUrl}?fakeModel=1&fakeModelLoadDelayMs=1200` : serverUrl);
+    const proof=await preloadAttestation,rendererPid=mainWindow.webContents.getOSProcessId();
+    const linuxStatus=process.platform==='linux'?fs.readFileSync('/proc/'+rendererPid+'/status','utf8'):null;
+    const preferences=mainWindow.webContents.getLastWebPreferences();
+    assertRendererAttestation({uid:process.getuid?.(),preferences,proof,linuxStatus,platform:process.platform});
+    const sha=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+    const identityPolicy=attestationPolicy(),executable=fs.realpathSync(process.execPath);
+    const runtimeIdentity={electronVersion:process.versions.electron,executable,executableSha256:sha(executable),attestationMode:identityPolicy.mode};
+    if(identityPolicy.requireOfficialHelper){
+      const helper=fs.realpathSync(path.join(path.dirname(executable),'chrome-sandbox')),helperStat=fs.statSync(helper);
+      Object.assign(runtimeIdentity,{helper,helperSha256:sha(helper),helperUid:helperStat.uid,helperGid:helperStat.gid,helperMode:helperStat.mode&0o7777});
+      assertOfficialRuntimeIdentity(runtimeIdentity);
+    }
+    if(path.resolve(preferences.preload)!==path.resolve(productRoot,'src/main/preload.cjs'))throw new Error('Actual application preload identity/path mismatch');
+    const attestation={format:1,proofKind:'actual-application-main-frame',runtimeIdentity,mainFrameAttestation:true,preloadPath:preferences.preload,generatedAt:new Date().toISOString(),applicationUid:process.getuid?.(),rendererPid,rendererSeccomp:linuxStatus?/^Seccomp:\s*(\d+)/m.exec(linuxStatus)?.[1]:null,sandboxed:proof.sandboxed,contextIsolated:proof.contextIsolated,nodeIntegration:preferences.nodeIntegration,sandboxPreference:preferences.sandbox,electronVersion:process.versions.electron,executable:fs.realpathSync(process.execPath),executableSha256:sha(process.execPath),coreSha:process.env.XTEND_CORE_SHA||null,demoSha:process.env.XTEND_DEMO_SHA||null,sources:Object.fromEntries(['src/main/electron-main.mjs','src/main/preload.cjs','src/renderer/app-controller.mjs','src/main/app-server.mjs','src/main/app-server-session.mjs','site/index.html','scripts/electron-sandbox-policy.mjs'].map(relative=>[relative,sha(path.join(productRoot,relative))]))};
+    const directory=path.resolve(productRoot,'../../.xtend-test-results');fs.mkdirSync(directory,{recursive:true});fs.writeFileSync(path.join(directory,'electron-sandbox-attestation.json'),JSON.stringify(attestation,null,2)+'\n');
+  } finally {disposeAttestation();}
   if (dev) mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
@@ -1444,7 +1469,7 @@ app.whenReady().then(async () => {
       app.exit(1);
     }
   }
-});
+}).catch(error=>{console.error(error&&error.stack?error.stack:error);app.exit(1);});
 
 app.on('activate', async () => {
   if (BrowserWindow.getAllWindows().length === 0 && serverUrl) await createWindow();

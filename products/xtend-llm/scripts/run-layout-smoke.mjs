@@ -1,8 +1,11 @@
+import {assertSandboxExecution} from './electron-sandbox-policy.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+
+assertSandboxExecution();
 
 const productRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const resultDir = path.join(productRoot, '.xtend-llm-results');
@@ -10,7 +13,8 @@ const require = createRequire(import.meta.url);
 let electronExecutable;
 
 fs.mkdirSync(resultDir, { recursive: true });
-for (const artifact of ['layout-smoke.json', 'layout-smoke.png', 'app-services-catfood.json']) {
+fs.rmSync(path.resolve(productRoot,'../../.xtend-test-results/electron-sandbox-attestation.json'),{force:true});
+for (const artifact of ['layout-smoke.json', 'layout-smoke.png', 'app-services-catfood.json', 'electron-sandbox-attestation.json']) {
   fs.rmSync(path.join(resultDir, artifact), { force: true });
 }
 
@@ -26,7 +30,6 @@ const headless = process.platform === 'linux' && !environment.DISPLAY && !enviro
 const electronArgs = [];
 if (headless) electronArgs.push('--headless=new', '--ozone-platform=headless');
 electronArgs.push('--disable-gpu', '--disable-dev-shm-usage');
-if (typeof process.getuid === 'function' && process.getuid() === 0) electronArgs.push('--no-sandbox');
 electronArgs.push('.', '--', '--layout-smoke');
 
 const xvfb = ['/usr/bin/xvfb-run', '/usr/local/bin/xvfb-run'].find((candidate) => fs.existsSync(candidate));

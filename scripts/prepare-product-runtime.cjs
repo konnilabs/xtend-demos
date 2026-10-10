@@ -17,20 +17,13 @@ function prepareRuntime() {
  probeRuntimeTools();
  const fpm=probeFpmRuntime();
  const electronRoot=path.dirname(require.resolve('../products/xtend-llm/node_modules/electron/package.json'));
- const version=JSON.parse(fs.readFileSync(path.join(electronRoot,'package.json'))).version;
- const artifact='electron-v'+version+'-linux-x64.zip',expected=require(path.join(electronRoot,'checksums.json'))[artifact];
- if(!expected)throw Error('Missing official checksum for locked Electron runtime');
- const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-electron-'));
- try {
-  const zip=path.join(temporary,artifact);run('curl',['--fail','--location','--silent','--show-error','https://github.com/electron/electron/releases/download/v'+version+'/'+artifact,'--output',zip]);
-  if(digest(fs.readFileSync(zip))!==expected)throw Error('Official Electron checksum mismatch');
-  run('unzip',['-q','-o',zip,'-d',path.join(electronRoot,'dist')]);fs.writeFileSync(path.join(electronRoot,'path.txt'),'electron');
- }finally{fs.rmSync(temporary,{recursive:true,force:true});}
+ const provisioning=require('./provision-electron-sandbox.cjs').provision(electronRoot);
+ const version=provisioning.version;
  const shop=path.join(root,'products/xtend-shop');
  run(process.execPath,['scripts/prepare-packages.cjs'],shop);
  for(const directory of [shop,path.join(shop,'payment-provider')])run('composer',['install','--no-interaction','--no-progress','--prefer-dist'],directory);
  run('php',['scripts/setup.php'],shop);
- return {ok:true,electron:version,php:execFileSync('php',['--version'],{encoding:'utf8'}).split('\n')[0],fpm};
+ return {ok:true,electron:version,electronSandbox:provisioning,php:execFileSync('php',['--version'],{encoding:'utf8'}).split('\n')[0],fpm};
 }
 if(require.main===module)try{console.log(JSON.stringify(prepareRuntime()));}catch(error){console.error(error.message);process.exitCode=1;}
 module.exports={prepareRuntime,probeRuntimeTools,probeFpmRuntime};

@@ -1,0 +1,9 @@
+'use strict';
+// Runs only as the unprivileged application, with Chromium sandbox explicitly on.
+const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),{app,BrowserWindow,ipcMain}=require('electron');
+if(process.getuid()===0||process.argv.some(a=>a==='--no-sandbox'||a==='--disable-setuid-sandbox'))throw Error('Unprivileged sandbox-enabled execution required');
+const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-electron-probe-')),preload=path.join(temporary,'preload.cjs');
+fs.writeFileSync(preload,"const {ipcRenderer}=require('electron');ipcRenderer.send('xtend-sandbox-proof',{sandboxed:process.sandboxed,contextIsolated:process.contextIsolated});\n");
+let finished=false;function finish(code){if(finished)return;finished=true;fs.rmSync(temporary,{recursive:true,force:true});app.exit(code);}
+setTimeout(()=>finish(1),15000);
+app.whenReady().then(()=>{const window=new BrowserWindow({show:false,webPreferences:{preload,sandbox:true,nodeIntegration:false,contextIsolation:true}});ipcMain.once('xtend-sandbox-proof',(event,proof)=>{try{if(event.sender!==window.webContents||proof.sandboxed!==true||proof.contextIsolated!==true)throw Error('Renderer sandbox proof missing');const pid=window.webContents.getOSProcessId(),status=fs.readFileSync('/proc/'+pid+'/status','utf8'),seccomp=/^Seccomp:\s*(\d+)/m.exec(status);if(!seccomp||seccomp[1]!=='2')throw Error('Renderer Seccomp filtering missing');console.log(JSON.stringify({sandboxed:true,contextIsolated:true,rendererSeccomp:2,rendererPid:pid,applicationUid:process.getuid(),electronVersion:process.versions.electron,executable:fs.realpathSync(process.execPath)}));finish(0);}catch(error){console.error(error.message);finish(1);}});window.loadURL('data:text/html,<html><body>Sandbox probe</body></html>');}).catch(error=>{console.error(error.message);finish(1);});

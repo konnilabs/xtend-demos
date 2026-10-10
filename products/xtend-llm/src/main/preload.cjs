@@ -144,3 +144,6 @@ contextBridge.exposeInMainWorld('xtendLlm', {
     return () => ipcRenderer.removeListener(eventName, wrapped);
   }
 });
+
+// Trusted actual preload; not exposed through the public renderer API.
+ipcRenderer.send('xtend-llm:sandbox-attestation',{sandboxed:process.sandboxed===true,contextIsolated:process.contextIsolated===true});

@@ -1,3 +1,4 @@
+import {assertSandboxExecution} from './electron-sandbox-policy.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -7,6 +8,8 @@ import {
   mirrorChildExit,
   spawnWithSignalForwarding
 } from './electron-launcher.mjs';
+
+assertSandboxExecution();
 
 const productRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
@@ -55,7 +58,6 @@ if (!executableOverride && inputArgs.length === 0) {
     const electronArgs = [...commandPrefix];
     if (headless) {
       electronArgs.push('--headless=new', '--ozone-platform=headless', '--disable-gpu', '--disable-dev-shm-usage');
-      if (typeof process.getuid === 'function' && process.getuid() === 0) electronArgs.push('--no-sandbox');
     }
     electronArgs.push(...inputArgs);
     const result = await spawnWithSignalForwarding({

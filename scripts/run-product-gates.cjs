@@ -5,15 +5,26 @@ const {evaluateResult}=require('./product-result-evidence.cjs');
 const root=path.resolve(__dirname,'..');
 async function run() {
  const commands=[];
+ if(process.env.GITHUB_ACTIONS==='true'&&process.env.REQUIRED_CI_ATTESTATION!=='1')throw Error('Hosted product gates require explicit REQUIRED_CI_ATTESTATION=1');
  function saveReport(record){const target=path.join(root,'.xtend-test-results/suites',record.id+'.json');fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,JSON.stringify({schema:'xtend.product-suite-result.v1',coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA,...record},null,2)+'\n');}
  function execute(id,args,cwd=root,reports=[],env=process.env) {
   const startedAt=Date.now();
   const result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000});
   const outcome=evaluateResult({...result,reports,startedAt}),status=outcome.status;
   const log=path.join(root,'.xtend-test-results',id+'.log');fs.mkdirSync(path.dirname(log),{recursive:true});fs.writeFileSync(log,`${args.join(' ')}\n${result.stdout||''}\n${result.stderr||''}\n${result.error?.message||''}`);
-  const record={id,command:args,cwd:path.relative(root,cwd)||'.',exitCode:result.status,status,skips:outcome.skips,failures:outcome.failures,sourceReports:outcome.sources,log:path.relative(root,log)};commands.push(record);return status==='passed';
+  const record={id,command:args,cwd:path.relative(root,cwd)||'.',exitCode:result.status,status,skips:outcome.skips,failures:outcome.failures,sourceReports:outcome.sources,log:path.relative(root,log)};if(id==='electron-actual-app-attestation'&&status==='passed') {
+   try {
+    const consumer=JSON.parse(result.stdout),appFile=path.join(root,'.xtend-test-results/electron-sandbox-attestation.json'),consumerFile=path.join(root,'.xtend-test-results/electron-app-attestation-consumer.json');
+    if(consumer.ok!==true||consumer.proofKind!=='consumed-actual-application-main-frame'||consumer.coreSha!==process.env.XTEND_CORE_SHA||consumer.demoSha!==process.env.XTEND_DEMO_SHA)throw Error('Actual application consumer identity mismatch');
+    const digest=b=>require('node:crypto').createHash('sha256').update(b).digest('hex'),appBytes=fs.readFileSync(appFile),consumerBytes=Buffer.from(JSON.stringify(consumer,null,2)+'\n');
+    if(digest(appBytes)!==consumer.reportSha256)throw Error('Actual application consumer/report digest mismatch');
+    fs.writeFileSync(consumerFile,consumerBytes);
+    record.attestation={coreSha:consumer.coreSha,demoSha:consumer.demoSha,sourceHashes:consumer.sourceHashes,provisioningReceiptSha256:consumer.provisioningReceiptSha256,app:{file:'electron-sandbox-attestation.json',sha256:digest(appBytes)},consumer:{file:'electron-app-attestation-consumer.json',sha256:digest(consumerBytes)}};
+   }catch(error){record.status='failed';record.failures.push(error.message);}
+  }
+  commands.push(record);return record.status==='passed';
  }
- execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/material-product-runtime.test.cjs']);
+ execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/material-product-runtime.test.cjs']);
  execute('http-security',[process.execPath,'--test','--test-reporter=tap','tests/security/http.test.mjs']);
  const xss=await require('../tests/security/product_xss_suite.cjs').runProductXss({rootDir:root}).catch(error=>({ok:false,failures:[error.message]}));
  commands.push({id:'product-xss',command:['runProductXss'],exitCode:xss.ok?0:1,status:xss.ok?'passed':'failed',skips:xss.skips||[],failures:xss.failures||[]});
@@ -35,7 +46,9 @@ async function run() {
  execute('electron-shell-import-worker',['xvfb-run','-a',process.execPath,'scripts/run-electron.mjs','tests/llm-terminal-runner.mjs','--','--fake'],path.join(root,'products/xtend-llm'),[path.join(root,'products/xtend-llm/.xtend-llm-results/llm-terminal-fake.json')]);
  const lane=process.versions.node.startsWith('26.')?'node26':'node24';
  const llm=path.join(root,'products/xtend-llm'),laneName=lane==='node26'?'node-26-current':'node-24-lts';
+ const attestationStartedAt=new Date().toISOString();
  execute('electron-runtime',['xvfb-run','-a','npm','run','test:electron:'+lane+':product'],llm,['app-services-catfood.json','layout-smoke.json','electron-runtime-'+laneName+'.json','native-runtime-'+laneName+'.json'].map(file=>path.join(llm,'.xtend-llm-results',file)));
+ if(process.env.REQUIRED_CI_ATTESTATION==='1')execute('electron-actual-app-attestation',[process.execPath,'scripts/verify-electron-app-attestation.cjs','--core-sha',process.env.XTEND_CORE_SHA||'','--demo-sha',process.env.XTEND_DEMO_SHA||'','--started-at',attestationStartedAt]);
  execute('llm-contracts',['npm','test'],path.join(root,'products/xtend-llm'));
  execute('workbench-contracts',['npm','test'],path.join(root,'products/xtend-material-workbench'));
  execute('testbench-contracts',['npm','test'],path.join(root,'products/maraca-app-services-test-bench'));
