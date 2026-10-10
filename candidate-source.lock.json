@@ -1,7 +1,7 @@
 {
   "schema": "xtend.demo-candidate-source.v1",
   "repository": "https://github.com/konnilabs/xtend.git",
-  "coreSha": "bd6385e4471b2d3b5d3c366d26b35d370fb22da1",
+  "coreSha": "79940004a95d985bf82cca25250621629ba752d5",
   "requiredApi": "public-product-support-and-candidate-integrity-v1",
   "mergeBlockedUntil": "The pinned Core implementation commit is remotely retrievable after independent review and authorized push; version 0.9.0 is not published.",
   "checkpoint": "Reviewed paired 103-ID enforcement: prior 101 conserved IDs plus two source-bound form-validation lexical variants; 21 residual IDs blocked; no product aggregate pass"
