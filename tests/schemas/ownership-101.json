@@ -54,6 +54,7 @@
     "xtend.rmt.app-hydration-plan.v1",
     "xtend.rmt.app-resumability-capability.v1",
     "xtend.rmt.app-runtime-graph.v1",
+    "xtend.rmt.command.v1",
     "xtend.rmt.component-contract.v1",
     "xtend.rmt.form-validation-apply-report.v1",
     "xtend.rmt.form-validation-boot.v1",
@@ -31722,6 +31723,608 @@
     {
       "aliasOf": null,
       "canonicalDefinition": {
+        "path": "products/maraca-app-services-test-bench/test/maraca-app-services-test-bench.catfood.test.cjs",
+        "symbol": null,
+        "definitionType": "object-shape",
+        "role": "producer",
+        "visibility": "internal"
+      },
+      "description": "Identifies the rmt command schema used by XTend Components.",
+      "descriptionStatus": "accepted-initial-audit",
+      "familyId": "xtend.rmt.command",
+      "kinds": [
+        "event-id",
+        "runtime-discriminator"
+      ],
+      "lifecycle": {
+        "rollout": "complete",
+        "status": "active"
+      },
+      "releasedFingerprintSetHash": null,
+      "replacedBy": null,
+      "schemaId": "xtend.rmt.command.v1",
+      "shapeFingerprints": [
+        {
+          "hash": "sha256:0f5bd9a5c6234ca5ead0fb9c2952a31e936be186557ae3c9a539753936e7a1ac",
+          "shape": {
+            "fieldCount": 2,
+            "fields": [
+              "command",
+              "metadata"
+            ],
+            "signature": "command:string|metadata:{operation:{\"unresolved\":\"asRecord(metadata).operation||\\\"maraca.render\\\"\"}}",
+            "normalized": {
+              "fields": {
+                "command": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "metadata": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "operation": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "asRecord(metadata).operation||\"maraca.render\""
+                        }
+                      }
+                    },
+                    "unresolvedSpreads": [
+                      "unknown"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs"
+          ],
+          "symbols": [
+            "render"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+              "symbol": "render"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:1b96c0a662c9d7699f28ee0623b1642a6170fe04611fe25ec7ecf0db58294361",
+          "shape": {
+            "fieldCount": 2,
+            "fields": [
+              "command",
+              "sourceEvent"
+            ],
+            "signature": "command:string|sourceEvent:string",
+            "normalized": {
+              "fields": {
+                "command": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "sourceEvent": {
+                  "optional": false,
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/maraca-app-services-test-bench/test/maraca-app-services-test-bench.catfood.test.cjs"
+          ],
+          "symbols": [
+            "submitCurrentTextarea"
+          ],
+          "evidence": [
+            {
+              "type": "runtime-observation",
+              "completeness": "complete",
+              "authoritative": false,
+              "path": "products/maraca-app-services-test-bench/test/maraca-app-services-test-bench.catfood.test.cjs",
+              "symbol": "submitCurrentTextarea"
+            }
+          ],
+          "evidenceTypes": [
+            "runtime-observation"
+          ],
+          "completeness": "complete",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:4d893229587f1cd1fc87f8f3812b1ab89bf5076a5da801eeec0ba6f624877726",
+          "shape": {
+            "fieldCount": 2,
+            "fields": [
+              "command",
+              "metadata"
+            ],
+            "signature": "command:string|metadata:{operation:{\"unresolved\":\"asRecord(metadata).operation||\\\"maraca.refresh\\\"\"}}",
+            "normalized": {
+              "fields": {
+                "command": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "metadata": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "operation": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "asRecord(metadata).operation||\"maraca.refresh\""
+                        }
+                      }
+                    },
+                    "unresolvedSpreads": [
+                      "unknown"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs"
+          ],
+          "symbols": [
+            "refresh"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+              "symbol": "refresh"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:643ffe5451cd812d23370c986e9512b3297d80fd814064f1f374faebfb70e8c4",
+          "shape": {
+            "fieldCount": 9,
+            "fields": [
+              "command",
+              "correlationId",
+              "id",
+              "lane",
+              "payload",
+              "runId",
+              "source",
+              "target",
+              "timestamp"
+            ],
+            "signature": "command:unknown|correlationId:{\"unresolved\":\"o.correlationId||`rmt.correlation:${i}:${a}`\"}|id:{\"unresolved\":\"o.id||`rmt.command:${i}:${t}:${a}`\"}|lane:{\"unresolved\":\"o.lane||o.defaultLane||\\\"user-blocking\\\"\"}|payload:unknown|runId:{\"unresolved\":\"o.runId||\\\"\\\"\"}|source:{event:unknown,id:unknown,kind:{\"unresolved\":\"o.sourceKind||\\\"component\\\"\"},surfaceId:{\"unresolved\":\"o.surfaceId||bn(e,\\\"surfaceId\\\")||mn(e,\\\"surface-id\\\")||\\\"\\\"\"}}|target:union<{\"unresolved\":\"o.target\"}|null>|timestamp:{\"unresolved\":\"o.timestamp||new Date(a).toISOString()\"}",
+            "normalized": {
+              "fields": {
+                "command": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "correlationId": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "o.correlationId||`rmt.correlation:${i}:${a}`"
+                  }
+                },
+                "id": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "o.id||`rmt.command:${i}:${t}:${a}`"
+                  }
+                },
+                "lane": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "o.lane||o.defaultLane||\"user-blocking\""
+                  }
+                },
+                "payload": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "runId": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "o.runId||\"\""
+                  }
+                },
+                "source": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "event": {
+                        "optional": false,
+                        "type": "unknown"
+                      },
+                      "id": {
+                        "optional": false,
+                        "type": "unknown"
+                      },
+                      "kind": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "o.sourceKind||\"component\""
+                        }
+                      },
+                      "surfaceId": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "o.surfaceId||bn(e,\"surfaceId\")||mn(e,\"surface-id\")||\"\""
+                        }
+                      }
+                    }
+                  }
+                },
+                "target": {
+                  "optional": false,
+                  "type": {
+                    "union": [
+                      {
+                        "unresolved": "o.target"
+                      },
+                      "null"
+                    ]
+                  }
+                },
+                "timestamp": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "o.timestamp||new Date(a).toISOString()"
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+          ],
+          "symbols": [
+            "gn"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "symbol": "gn"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:aac0d71f93f3828fe10fb7fb0c2c39898ec1582c7a18a44d2d289e767f6d177b",
+          "shape": {
+            "fieldCount": 2,
+            "fields": [
+              "command",
+              "payload"
+            ],
+            "signature": "command:{\"unresolvedReference\":\"command\"}|payload:{label:{\"unresolvedReference\":\"label\"},source:{\"unresolvedReference\":\"label\"}}",
+            "normalized": {
+              "fields": {
+                "command": {
+                  "optional": false,
+                  "type": {
+                    "unresolvedReference": "command"
+                  }
+                },
+                "payload": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "label": {
+                        "optional": false,
+                        "type": {
+                          "unresolvedReference": "label"
+                        }
+                      },
+                      "source": {
+                        "optional": false,
+                        "type": {
+                          "unresolvedReference": "label"
+                        }
+                      }
+                    },
+                    "unresolvedSpreads": [
+                      {
+                        "unresolvedReference": "extra"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/resumability-maraca-erp-demo/src/client/xtension-control-dialog.mjs"
+          ],
+          "symbols": [
+            "dispatchRmtCommand"
+          ],
+          "evidence": [
+            {
+              "type": "runtime-observation",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/resumability-maraca-erp-demo/src/client/xtension-control-dialog.mjs",
+              "symbol": "dispatchRmtCommand"
+            }
+          ],
+          "evidenceTypes": [
+            "runtime-observation"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:f4da7039cf545c5de21a0ff9916a861b122b70668c67421d6879dc472496742b",
+          "shape": {
+            "fieldCount": 9,
+            "fields": [
+              "command",
+              "correlationId",
+              "id",
+              "lane",
+              "payload",
+              "runId",
+              "source",
+              "target",
+              "timestamp"
+            ],
+            "signature": "command:string|correlationId:string|id:string|lane:string|payload:{\"arguments\":[],\"unresolvedReference\":\"TPayload\"}|runId?:string|source:{event:string,id:string,kind:string,surfaceId:string}|target?:unknown|timestamp:string",
+            "normalized": {
+              "fields": {
+                "command": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "correlationId": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "id": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "lane": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "payload": {
+                  "optional": false,
+                  "type": {
+                    "arguments": [],
+                    "unresolvedReference": "TPayload"
+                  }
+                },
+                "runId": {
+                  "optional": true,
+                  "type": "string"
+                },
+                "source": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "event": {
+                        "optional": false,
+                        "type": "string"
+                      },
+                      "id": {
+                        "optional": false,
+                        "type": "string"
+                      },
+                      "kind": {
+                        "optional": false,
+                        "type": "string"
+                      },
+                      "surfaceId": {
+                        "optional": false,
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "target": {
+                  "optional": true,
+                  "type": "unknown"
+                },
+                "timestamp": {
+                  "optional": false,
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts"
+          ],
+          "symbols": [
+            "RmtCommandEnvelope"
+          ],
+          "evidence": [
+            {
+              "type": "declared-type",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+              "symbol": "RmtCommandEnvelope"
+            }
+          ],
+          "evidenceTypes": [
+            "declared-type"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        }
+      ],
+      "shapePolicy": {
+        "acceptedFingerprints": [
+          "sha256:0f5bd9a5c6234ca5ead0fb9c2952a31e936be186557ae3c9a539753936e7a1ac",
+          "sha256:1b96c0a662c9d7699f28ee0623b1642a6170fe04611fe25ec7ecf0db58294361",
+          "sha256:4d893229587f1cd1fc87f8f3812b1ab89bf5076a5da801eeec0ba6f624877726",
+          "sha256:643ffe5451cd812d23370c986e9512b3297d80fd814064f1f374faebfb70e8c4",
+          "sha256:aac0d71f93f3828fe10fb7fb0c2c39898ec1582c7a18a44d2d289e767f6d177b",
+          "sha256:f4da7039cf545c5de21a0ff9916a861b122b70668c67421d6879dc472496742b"
+        ],
+        "authoritativeFingerprints": [],
+        "decision": "accepted-initial-audit",
+        "mode": "polymorphic",
+        "rationale": "All observed variants are fingerprint-bound after the XTend 0.7 State metadata migration; future fingerprint changes require a new review.",
+        "releasedFingerprintSetHash": null
+      },
+      "status": "active",
+      "usages": [
+        {
+          "application": "XTend Core",
+          "role": "definition",
+          "visibility": "internal",
+          "sourcePaths": [
+            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-event-routing-runtime.d.ts"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "symbol",
+              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+              "symbol": "RMT_COMMAND_SCHEMA"
+            },
+            {
+              "type": "symbol",
+              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+              "symbol": "RmtCommandEnvelope"
+            },
+            {
+              "type": "symbol",
+              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-event-routing-runtime.d.ts",
+              "symbol": "RMT_COMMAND_SCHEMA"
+            }
+          ]
+        },
+        {
+          "application": "XTend Core",
+          "role": "reference",
+          "visibility": "internal",
+          "sourcePaths": [
+            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+            "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-event-routing-runtime.d.ts"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "repo-symbol",
+              "path": "imports/core/0aa3f66816194f1854009136277dfb2877fcaab6/xtendrmt/rmt-app-runtime.d.ts",
+              "symbol": null
+            }
+          ]
+        },
+        {
+          "application": "XTend LLM",
+          "role": "producer",
+          "visibility": "internal",
+          "sourcePaths": [
+            "products/xtend-llm/src/main/electron-main.mjs"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "repo-symbol",
+              "path": "products/xtend-llm/src/main/electron-main.mjs",
+              "symbol": null
+            }
+          ]
+        },
+        {
+          "application": "XTend Products",
+          "role": "producer",
+          "visibility": "internal",
+          "sourcePaths": [
+            "products/maraca-app-services-test-bench/test/maraca-app-services-test-bench.catfood.test.cjs",
+            "products/resumability-maraca-erp-demo/src/client/xtension-control-dialog.mjs"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "symbol",
+              "path": "products/maraca-app-services-test-bench/test/maraca-app-services-test-bench.catfood.test.cjs",
+              "symbol": "submitCurrentTextarea"
+            },
+            {
+              "type": "symbol",
+              "path": "products/resumability-maraca-erp-demo/src/client/xtension-control-dialog.mjs",
+              "symbol": "dispatchRmtCommand"
+            }
+          ]
+        },
+        {
+          "application": "XTend Products",
+          "role": "generated-mirror",
+          "visibility": "generated",
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "repo-symbol",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "symbol": null
+            },
+            {
+              "type": "repo-symbol",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+              "symbol": null
+            },
+            {
+              "type": "repo-symbol",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs",
+              "symbol": null
+            }
+          ]
+        },
+        {
+          "application": "XTend Products",
+          "role": "reference",
+          "visibility": "internal",
+          "sourcePaths": [
+            "products/maraca-app-services-test-bench/test/maraca-app-services-test-bench.catfood.test.cjs",
+            "products/resumability-maraca-erp-demo/src/client/resume-bridge.mjs"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "repo-symbol",
+              "path": "products/maraca-app-services-test-bench/test/maraca-app-services-test-bench.catfood.test.cjs",
+              "symbol": null
+            }
+          ]
+        }
+      ],
+      "version": 1
+    },
+    {
+      "aliasOf": null,
+      "canonicalDefinition": {
         "path": "imports/core/{CORE_SHA}/src/components/x-textarea/x-textarea.ts",
         "symbol": null,
         "definitionType": "object-shape",
@@ -56222,6 +56825,24 @@
         "reviewId": "polymorphic-3b399d428e41",
         "schemaIds": [
           "xtend.rmt.component-contract.v1"
+        ],
+        "status": "accepted-polymorphic-for-inventory",
+        "type": "same-id-multiple-shapes"
+      },
+      {
+        "baseline": "inventory-v2",
+        "baselineAccepted": true,
+        "confidence": "medium",
+        "origin": "scanner",
+        "rationale": "Static analysis observes 6 normalized shapes for this identifier.",
+        "recommendation": "Confirm that the variants are intentional before adding another shape.",
+        "resolution": {
+          "kind": "accepted-polymorphic",
+          "rationale": "All observed fingerprints are bound to the entry shapePolicy and remain subject to drift checks."
+        },
+        "reviewId": "polymorphic-3bb2fb6e6772",
+        "schemaIds": [
+          "xtend.rmt.command.v1"
         ],
         "status": "accepted-polymorphic-for-inventory",
         "type": "same-id-multiple-shapes"
