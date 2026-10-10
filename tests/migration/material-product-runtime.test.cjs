@@ -8,3 +8,20 @@ test('missing product-local adapter rejects ancestor fallback before Maraca exec
 test('completely missing adapter fails rather than falling back',t=>{const {product,pkg}=setup(t);pkg(product,'@ccslabs/xtend-maraca','module.exports={}');assert.throws(()=>loadMaterialProductRuntime(product),/Cannot find module/);});
 test('undeclared adapter rejects even if installed locally',t=>{const {product,pkg}=setup(t);fs.writeFileSync(path.join(product,'package.json'),JSON.stringify({dependencies:{'@ccslabs/xtend-maraca':'0.9.0'}}));pkg(product,'@ccslabs/xtend-maraca','module.exports={}');pkg(product,'@xtend-material/maraca-tailwind','module.exports={}');assert.throws(()=>loadMaterialProductRuntime(product),/must directly declare/);});
 test('symlinked foreign adapter installation rejects',t=>{const {base,product,pkg}=setup(t);pkg(product,'@ccslabs/xtend-maraca','module.exports={}');const foreign=pkg(base,'@xtend-material/maraca-tailwind','module.exports={}');const dir=path.join(product,'node_modules/@xtend-material');fs.mkdirSync(dir,{recursive:true});fs.symlinkSync(foreign,path.join(dir,'maraca-tailwind'),'dir');assert.throws(()=>loadMaterialProductRuntime(product),/exact product-local installation/);});
+
+// Transferred unchanged assertions from Core browser_hypervisor_suite.js.
+test('product-owned Material consumer delegates browser execution to the shared Hypervisor',()=>{
+ const {createSuiteContext}=require('../utils/assertions');
+ const context=createSuiteContext({id:'material-hypervisor-source',label:'Material Hypervisor source ownership'});
+ const consumerPath='tests/products/xtend_material_catfooding_suite.js';
+ const source=fs.readFileSync(path.resolve(__dirname,'../..',consumerPath),'utf8');
+ context.assertIncludes(source,'browser-hypervisor',`${consumerPath} delegates browser execution to the shared Hypervisor`);
+ ['/usr/bin/chromium','/Applications/','--dump-dom','--headless','DevTools','WebSocket'].forEach(token=>{
+  context.assert(!source.includes(token),`${consumerPath} has no consumer-owned ${token} browser path`);
+ });
+ const result=context.result();assert.equal(result.ok,true,JSON.stringify(result.failures));
+});
+test('live LLM source retains the Observatory WASM backend symbol',()=>{
+ const source=fs.readFileSync(path.resolve(__dirname,'../../products/xtend-llm/src/llm/transformers-worker.mjs'),'utf8');
+ assert.ok(source.includes('env.backends.onnx.wasm'),'live LLM source contains the original Observatory repoSymbol');
+});
