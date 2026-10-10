@@ -6,7 +6,7 @@ const path = require('path');
 const zlib = require('zlib');
 const { performance } = require('perf_hooks');
 const { createMaterialAppScaffold } = require('@ccslabs/xtend-cli/generators/material-app');
-const { buildMaracaBundleAsync, tuneMaracaBuild } = require('@ccslabs/xtend-maraca');
+const { loadMaterialProductRuntime } = require('../../scripts/material-product-runtime.cjs');
 const { auditXtendMaterialMonkeypatching } = require('@xtend-material/core/performance-contract');
 const {resolveProductAsset}=require('@ccslabs/xtend/product-support');
 const { listenXtendDevServer } = require('@ccslabs/xtend/test-support/dev-server');
@@ -133,6 +133,7 @@ async function captureBrowserEvidence(rootDir) {
 async function runXtendMaterialCatfoodingSuite(options = {}) {
   const rootDir = options.rootDir || path.resolve(__dirname, '..', '..');
   const productRoot = path.resolve(rootDir, PRODUCT_PATH);
+  const { buildMaracaBundleAsync, tuneMaracaBuild } = loadMaterialProductRuntime(productRoot);
   const context = createSuiteContext({ id: 'xtend-material-catfooding', label: 'XTM-12 XTend Material Catfooding Workbench' });
   const manifest = readJson(rootDir, `${PRODUCT_PATH}/package.json`);
   const config = readJson(rootDir, `${PRODUCT_PATH}/maraca.config.json`);
