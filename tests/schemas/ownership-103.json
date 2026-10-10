@@ -56,6 +56,7 @@
     "xtend.rmt.app-runtime-graph.v1",
     "xtend.rmt.command.v1",
     "xtend.rmt.component-contract.v1",
+    "xtend.rmt.form-validation-action-gate.v1",
     "xtend.rmt.form-validation-apply-report.v1",
     "xtend.rmt.form-validation-boot.v1",
     "xtend.rmt.form-validation-diagnostic.v1",
@@ -72,6 +73,7 @@
     "xtend.rmt.form-validation-snapshot.v1",
     "xtend.rmt.form-validation-view-finalize-report.v1",
     "xtend.rmt.form-validation-view-project-report.v1",
+    "xtend.rmt.form-validation-view-projection-plan.v1",
     "xtend.rmt.form-validation-view-projection.v1",
     "xtend.rmt.form-validation-view-projector.v1",
     "xtend.rmt.form-validation.v1",
@@ -33208,6 +33210,332 @@
     },
     {
       "aliasOf": null,
+      "canonicalDefinition": null,
+      "description": "Identifies the rmt form validation action gate schema used by XTendRMT.",
+      "descriptionStatus": "accepted-initial-audit",
+      "familyId": "xtend.rmt.form-validation-action-gate",
+      "kinds": [
+        "event-id",
+        "runtime-discriminator"
+      ],
+      "lifecycle": {
+        "rollout": "complete",
+        "status": "active"
+      },
+      "releasedFingerprintSetHash": null,
+      "replacedBy": null,
+      "schemaId": "xtend.rmt.form-validation-action-gate.v1",
+      "shapeFingerprints": [
+        {
+          "hash": "sha256:1730f3081921be72464813162e447b9c4dc3b7978e3d69123d2e61837784e2ca",
+          "shape": {
+            "fieldCount": 5,
+            "fields": [
+              "action",
+              "gateCount",
+              "gated",
+              "results",
+              "valid"
+            ],
+            "signature": "action:union<union<unknown>|string>|gateCount:{\"unresolved\":\"selection.gates.length\"}|gated:{\"unresolved\":\"selection.gates.length>0\"}|results:unknown|valid:unknown",
+            "normalized": {
+              "fields": {
+                "action": {
+                  "optional": false,
+                  "type": {
+                    "union": [
+                      {
+                        "union": [
+                          "unknown"
+                        ]
+                      },
+                      "string"
+                    ]
+                  }
+                },
+                "gateCount": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "selection.gates.length"
+                  }
+                },
+                "gated": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "selection.gates.length>0"
+                  }
+                },
+                "results": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "valid": {
+                  "optional": false,
+                  "type": "unknown"
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs"
+          ],
+          "symbols": [
+            "validationStage"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+              "symbol": "validationStage"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:2dc9af639173d138e743a881131fee285a1f200ace02dc0d8cbe69fd794abfec",
+          "shape": {
+            "fieldCount": 5,
+            "fields": [
+              "action",
+              "gateCount",
+              "gated",
+              "results",
+              "valid"
+            ],
+            "signature": "action:unknown|gateCount:{\"unresolved\":\"a.gateCount\"}|gated:{\"unresolved\":\"!0\"}|results:{\"unresolved\":\"a.results\"}|valid:{\"unresolved\":\"a.valid\"}",
+            "normalized": {
+              "fields": {
+                "action": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "gateCount": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "a.gateCount"
+                  }
+                },
+                "gated": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "!0"
+                  }
+                },
+                "results": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "a.results"
+                  }
+                },
+                "valid": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "a.valid"
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs"
+          ],
+          "symbols": [
+            "o"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs",
+              "symbol": "o"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:48a4787c0add0521030aad48eafa6559a7b1f99c3c8a26ac398900cc538b994b",
+          "shape": {
+            "fieldCount": 5,
+            "fields": [
+              "action",
+              "evaluation",
+              "gated",
+              "results",
+              "valid"
+            ],
+            "signature": "action:unknown|evaluation:unknown|gated:{\"unresolved\":\"!1\"}|results:array<>|valid:{\"unresolved\":\"!0\"}",
+            "normalized": {
+              "fields": {
+                "action": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "evaluation": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "gated": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "!1"
+                  }
+                },
+                "results": {
+                  "optional": false,
+                  "type": {
+                    "array": []
+                  }
+                },
+                "valid": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "!0"
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs"
+          ],
+          "symbols": [
+            "Pe"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs",
+              "symbol": "Pe"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:da5a6bed1f876ae90792d661b29570c5b63f8580f146d935f119e4cd7bf20c5d",
+          "shape": {
+            "fieldCount": 6,
+            "fields": [
+              "action",
+              "evaluation",
+              "gateCount",
+              "gated",
+              "results",
+              "valid"
+            ],
+            "signature": "action:unknown|evaluation:unknown|gateCount:{\"unresolved\":\"a.length\"}|gated:{\"unresolved\":\"!0\"}|results:null|valid:unknown",
+            "normalized": {
+              "fields": {
+                "action": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "evaluation": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "gateCount": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "a.length"
+                  }
+                },
+                "gated": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "!0"
+                  }
+                },
+                "results": {
+                  "optional": false,
+                  "type": "null"
+                },
+                "valid": {
+                  "optional": false,
+                  "type": "unknown"
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs"
+          ],
+          "symbols": [
+            "Pe"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs",
+              "symbol": "Pe"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        }
+      ],
+      "shapePolicy": {
+        "acceptedFingerprints": [
+          "sha256:1730f3081921be72464813162e447b9c4dc3b7978e3d69123d2e61837784e2ca",
+          "sha256:2dc9af639173d138e743a881131fee285a1f200ace02dc0d8cbe69fd794abfec",
+          "sha256:48a4787c0add0521030aad48eafa6559a7b1f99c3c8a26ac398900cc538b994b",
+          "sha256:da5a6bed1f876ae90792d661b29570c5b63f8580f146d935f119e4cd7bf20c5d"
+        ],
+        "authoritativeFingerprints": [],
+        "decision": "accepted-initial-audit",
+        "mode": "polymorphic",
+        "rationale": "All observed variants are fingerprint-bound after the XTend 0.7 State metadata migration; future fingerprint changes require a new review.",
+        "releasedFingerprintSetHash": null
+      },
+      "status": "active",
+      "usages": [
+        {
+          "application": "XTend Products",
+          "role": "generated-mirror",
+          "visibility": "generated",
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "repo-symbol",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+              "symbol": null
+            },
+            {
+              "type": "repo-symbol",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs",
+              "symbol": null
+            }
+          ]
+        }
+      ],
+      "version": 1
+    },
+    {
+      "aliasOf": null,
       "canonicalDefinition": {
         "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-form-validation-runtime.d.ts",
         "symbol": null,
@@ -36134,6 +36462,369 @@
             "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs"
           ],
           "interfaceReferences": [
+            {
+              "type": "repo-symbol",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs",
+              "symbol": null
+            }
+          ]
+        }
+      ],
+      "version": 1
+    },
+    {
+      "aliasOf": null,
+      "canonicalDefinition": {
+        "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-form-validation-runtime.d.ts",
+        "symbol": "RmtFormValidationViewProjectionPlan",
+        "definitionType": "typescript-declaration",
+        "role": "definition",
+        "visibility": "internal"
+      },
+      "description": "Identifies the rmt form validation view projection plan event payload used by XTend Maraca.",
+      "descriptionStatus": "accepted-initial-audit",
+      "familyId": "xtend.rmt.form-validation-view-projection-plan",
+      "kinds": [
+        "event-id",
+        "runtime-discriminator"
+      ],
+      "lifecycle": {
+        "rollout": "complete",
+        "status": "active"
+      },
+      "releasedFingerprintSetHash": null,
+      "replacedBy": null,
+      "schemaId": "xtend.rmt.form-validation-view-projection-plan.v1",
+      "shapeFingerprints": [
+        {
+          "hash": "sha256:060446e006c4e047034a498042a11072c9d120aed3102a41bb8794313b01d342",
+          "shape": {
+            "fieldCount": 4,
+            "fields": [
+              "metadata",
+              "projectionCount",
+              "projections",
+              "valid"
+            ],
+            "signature": "metadata:{action:union<union<unknown>|string>,correlationId:{\"unresolved\":\"metadata.correlationId||\\\"\\\"\"},operation:string}|projectionCount:{\"unresolved\":\"asArray(evaluation&&evaluation.viewProjection).length\"}|projections:unknown|valid:{\"unresolved\":\"evaluation&&evaluation.valid!==false\"}",
+            "normalized": {
+              "fields": {
+                "metadata": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "action": {
+                        "optional": false,
+                        "type": {
+                          "union": [
+                            {
+                              "union": [
+                                "unknown"
+                              ]
+                            },
+                            "string"
+                          ]
+                        }
+                      },
+                      "correlationId": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "metadata.correlationId||\"\""
+                        }
+                      },
+                      "operation": {
+                        "optional": false,
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "projectionCount": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "asArray(evaluation&&evaluation.viewProjection).length"
+                  }
+                },
+                "projections": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "valid": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "evaluation&&evaluation.valid!==false"
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs"
+          ],
+          "symbols": [
+            "projectionPlan"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+              "symbol": "projectionPlan"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:2411d20af7f219cb77911f17061a9419edbc43f45d696da9ebb47d0028180cca",
+          "shape": {
+            "fieldCount": 4,
+            "fields": [
+              "metadata",
+              "projectionCount",
+              "projections",
+              "valid"
+            ],
+            "signature": "metadata:unknown|projectionCount:{\"unresolved\":\"r.length\"}|projections:unknown|valid:boolean",
+            "normalized": {
+              "fields": {
+                "metadata": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "projectionCount": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "r.length"
+                  }
+                },
+                "projections": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "valid": {
+                  "optional": false,
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs"
+          ],
+          "symbols": [
+            "m"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs",
+              "symbol": "m"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:31f53b57e0192aa309a05cfa9b9d541f8a8e9e2da0d6ff06a30746e5dfbc124e",
+          "shape": {
+            "fieldCount": 4,
+            "fields": [
+              "metadata",
+              "projectionCount",
+              "projections",
+              "valid"
+            ],
+            "signature": "metadata:{\"arguments\":[{\"record\":{\"key\":\"string\",\"value\":\"unknown\"}}],\"unresolvedReference\":\"Readonly\"}|projectionCount:number|projections:array<{group:string,invalid:boolean,message:string,report:boolean,revealed:boolean,target:{component:union<string|literal<null>>,field:union<string|literal<null>>,state:string,surface:union<string|literal<null>>}}>|valid:boolean",
+            "normalized": {
+              "fields": {
+                "metadata": {
+                  "optional": false,
+                  "type": {
+                    "arguments": [
+                      {
+                        "record": {
+                          "key": "string",
+                          "value": "unknown"
+                        }
+                      }
+                    ],
+                    "unresolvedReference": "Readonly"
+                  }
+                },
+                "projectionCount": {
+                  "optional": false,
+                  "type": "number"
+                },
+                "projections": {
+                  "optional": false,
+                  "type": {
+                    "elementType": {
+                      "fields": {
+                        "group": {
+                          "optional": false,
+                          "type": "string"
+                        },
+                        "invalid": {
+                          "optional": false,
+                          "type": "boolean"
+                        },
+                        "message": {
+                          "optional": false,
+                          "type": "string"
+                        },
+                        "report": {
+                          "optional": false,
+                          "type": "boolean"
+                        },
+                        "revealed": {
+                          "optional": false,
+                          "type": "boolean"
+                        },
+                        "target": {
+                          "optional": false,
+                          "type": {
+                            "fields": {
+                              "component": {
+                                "optional": false,
+                                "type": {
+                                  "union": [
+                                    "string",
+                                    {
+                                      "literal": null
+                                    }
+                                  ]
+                                }
+                              },
+                              "field": {
+                                "optional": false,
+                                "type": {
+                                  "union": [
+                                    "string",
+                                    {
+                                      "literal": null
+                                    }
+                                  ]
+                                }
+                              },
+                              "state": {
+                                "optional": false,
+                                "type": "string"
+                              },
+                              "surface": {
+                                "optional": false,
+                                "type": {
+                                  "union": [
+                                    "string",
+                                    {
+                                      "literal": null
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "valid": {
+                  "optional": false,
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "imports/core/{CORE_SHA}/xtendrmt/rmt-form-validation-runtime.d.ts"
+          ],
+          "symbols": [
+            "RmtFormValidationViewProjectionPlan"
+          ],
+          "evidence": [
+            {
+              "type": "declared-type",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-form-validation-runtime.d.ts",
+              "symbol": "RmtFormValidationViewProjectionPlan"
+            }
+          ],
+          "evidenceTypes": [
+            "declared-type"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        }
+      ],
+      "shapePolicy": {
+        "acceptedFingerprints": [
+          "sha256:060446e006c4e047034a498042a11072c9d120aed3102a41bb8794313b01d342",
+          "sha256:2411d20af7f219cb77911f17061a9419edbc43f45d696da9ebb47d0028180cca",
+          "sha256:31f53b57e0192aa309a05cfa9b9d541f8a8e9e2da0d6ff06a30746e5dfbc124e"
+        ],
+        "authoritativeFingerprints": [],
+        "decision": "accepted-initial-audit",
+        "mode": "polymorphic",
+        "rationale": "All observed variants are fingerprint-bound after the XTend 0.7 State metadata migration; future fingerprint changes require a new review.",
+        "releasedFingerprintSetHash": null
+      },
+      "status": "active",
+      "usages": [
+        {
+          "application": "XTend Core",
+          "role": "definition",
+          "visibility": "internal",
+          "sourcePaths": [
+            "imports/core/{CORE_SHA}/xtendrmt/rmt-form-validation-runtime.d.ts"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "symbol",
+              "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-form-validation-runtime.d.ts",
+              "symbol": "RmtFormValidationViewProjectionPlan"
+            }
+          ]
+        },
+        {
+          "application": "XTend Core",
+          "role": "producer",
+          "visibility": "internal",
+          "sourcePaths": [
+            "imports/core/{CORE_SHA}/xtendrmt/rmt-form-validation-runtime.d.ts"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "repo-symbol",
+              "path": "imports/core/{CORE_SHA}/xtendrmt/rmt-form-validation-runtime.d.ts",
+              "symbol": null
+            }
+          ]
+        },
+        {
+          "application": "XTend Products",
+          "role": "generated-mirror",
+          "visibility": "generated",
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs"
+          ],
+          "interfaceReferences": [
+            {
+              "type": "repo-symbol",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
+              "symbol": null
+            },
             {
               "type": "repo-symbol",
               "path": "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs",
@@ -57986,6 +58677,24 @@
         "baselineAccepted": true,
         "confidence": "medium",
         "origin": "scanner",
+        "rationale": "Static analysis observes 5 normalized shapes for this identifier.",
+        "recommendation": "Confirm that the variants are intentional before adding another shape.",
+        "resolution": {
+          "kind": "accepted-polymorphic",
+          "rationale": "All observed fingerprints are bound to the entry shapePolicy and remain subject to drift checks."
+        },
+        "reviewId": "polymorphic-dd748deb7379",
+        "schemaIds": [
+          "xtend.rmt.form-validation-view-projection-plan.v1"
+        ],
+        "status": "accepted-polymorphic-for-inventory",
+        "type": "same-id-multiple-shapes"
+      },
+      {
+        "baseline": "inventory-v2",
+        "baselineAccepted": true,
+        "confidence": "medium",
+        "origin": "scanner",
         "rationale": "Static analysis observes 6 normalized shapes for this identifier.",
         "recommendation": "Confirm that the variants are intentional before adding another shape.",
         "resolution": {
@@ -58067,6 +58776,24 @@
         "reviewId": "polymorphic-eb332065be05",
         "schemaIds": [
           "xtend.rmt-kernel-feature-adoption.v1"
+        ],
+        "status": "accepted-polymorphic-for-inventory",
+        "type": "same-id-multiple-shapes"
+      },
+      {
+        "baseline": "inventory-v2",
+        "baselineAccepted": true,
+        "confidence": "medium",
+        "origin": "scanner",
+        "rationale": "Static analysis observes 4 normalized shapes for this identifier.",
+        "recommendation": "Confirm that the variants are intentional before adding another shape.",
+        "resolution": {
+          "kind": "accepted-polymorphic",
+          "rationale": "All observed fingerprints are bound to the entry shapePolicy and remain subject to drift checks."
+        },
+        "reviewId": "polymorphic-ed2737fd868f",
+        "schemaIds": [
+          "xtend.rmt.form-validation-action-gate.v1"
         ],
         "status": "accepted-polymorphic-for-inventory",
         "type": "same-id-multiple-shapes"

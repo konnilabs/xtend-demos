@@ -38,7 +38,7 @@ jobs:
           node scripts/provision-product-fpm.cjs 8.4
       - name: Install immutable Chromium and matching WebDriver
         run: node scripts/prepare-browser-toolchain.cjs "${{ runner.temp }}/xtend-browser"
-      - name: Reproduce immutable Core candidates and enforce paired 101-ID ownership
+      - name: Reproduce immutable Core candidates and enforce paired 103-ID ownership
         run: node scripts/prepare-ci-candidates.cjs
       - name: Prepare required PHP and Electron runtimes
         run: node scripts/prepare-product-runtime.cjs
