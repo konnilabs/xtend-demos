@@ -76,7 +76,7 @@ test('captured actual child launch annotations pass only exact owned grammar and
  const source=fs.readFileSync(path.resolve(__dirname,'../scripts/run-product-gates.cjs'),'utf8');
  const save=source.slice(source.indexOf(' function saveReport'),source.indexOf(' function execute'));
  const execute=source.slice(source.indexOf(' function execute'),source.indexOf("\n execute('migration-runner-contracts'"));
- assert.match(execute,/if\(id==='electron-runtime'\)relayLaunchStages\(result.stderr\);/);
+ assert.ok(execute.includes("if(id==='electron-runtime')for(const captured of [result.stdout,result.stderr])relayLaunchStages(captured);"));
  const valid=stages.flatMap(stage=>[0,1].map(code=>`::${code?'error':'notice'}::electron-actual-launch stage=${stage} code=${code}`));
  const malicious=['PRIVATE-STDERR','::error::electron-actual-launch stage=launch-extra code=1','::error::electron-actual-launch stage=foreign code=1',
   '::error::electron-actual-launch stage=launch code=1 suffix=PRIVATE','prefix::error::electron-actual-launch stage=launch code=1',
@@ -97,8 +97,8 @@ test('captured actual child launch annotations pass only exact owned grammar and
    return {commands:JSON.parse(JSON.stringify(commands)),writes:[...writes]};
   }
   const lines=[],actual=flow(stderr=>relayLaunchStages(stderr,line=>lines.push(line)));
-  assert.deepEqual(lines,valid.map(line=>line+'\n'));
-  const before=flow(()=>{},execute.replace("  if(id==='electron-runtime')relayLaunchStages(result.stderr);\n",''));
+  assert.deepEqual(lines,['::error::electron-actual-launch stage=server code=1\n',...valid.map(line=>line+'\n')]);
+  const before=flow(()=>{},execute.replace("  if(id==='electron-runtime')for(const captured of [result.stdout,result.stderr])relayLaunchStages(captured);\n",''));
   assert.deepEqual(actual,before);
   assert.equal(actual.commands[0].exitCode,7);assert.equal(actual.commands[0].status,'failed');
   const retainedLog=actual.writes.find(([file])=>file.endsWith('/electron-runtime.log'))[1];
@@ -140,7 +140,7 @@ test('outer runtime command observations preserve real child exits, logs, report
  const source=fs.readFileSync(path.resolve(__dirname,'../scripts/run-product-gates.cjs'),'utf8');
  const save=source.slice(source.indexOf(' function saveReport'),source.indexOf(' function execute'));
  const body=source.slice(source.indexOf(' function execute'),source.indexOf("\n execute('migration-runner-contracts'"));
- const before=body.slice(0,body.indexOf('  function commandAnnotation'))+"  const result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000});\n"+body.slice(body.indexOf("  if(id==='electron-runtime')relayLaunchStages"));
+ const before=body.slice(0,body.indexOf('  function commandAnnotation'))+"  const result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000});\n"+body.slice(body.indexOf("  if(id==='electron-runtime')for(const captured"));
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-runtime-command-review-'));
  try {
   const child=[process.execPath,'-e',"process.stdout.write('PRIVATE-OUT');process.stderr.write('PRIVATE\\n::error::INJECTION\\n');process.exit(7);"];

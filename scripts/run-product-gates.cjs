@@ -16,11 +16,13 @@ async function run() {
    if(!result||result.status===0&&!result.error)return null;
    const matches=new Set();
    if(result.error?.code==='ENOENT'&&command==='xvfb-run'&&result.error.path===command)matches.add('display-command-missing');
-   const stderr=typeof result.stderr==='string'?result.stderr:'';
+   for(const captured of [result.stdout,result.stderr]) {
+   const stderr=typeof captured==='string'?captured:'';
    if(/^Error: Cannot find module [^\r\n]+$/m.test(stderr)&&/^\s*code: 'MODULE_NOT_FOUND',?$/m.test(stderr)||/^Error \[ERR_MODULE_NOT_FOUND\]: [^\r\n]+$/m.test(stderr)&&/^\s*code: 'ERR_MODULE_NOT_FOUND',?$/m.test(stderr))matches.add('module-resolution');
    for(const executable of ['npm','node'])if(new RegExp('^(?:/bin/sh|sh): [0-9]+: '+executable+': not found$','m').test(stderr))matches.add(executable+'-command-missing');
    const preflights=['XTend Electron requires unprivileged execution; root is rejected','Sandbox-disabling Electron arguments are rejected','Invalid REQUIRED_CI_ATTESTATION mode','Hosted app requires explicit REQUIRED_CI_ATTESTATION=1','Reviewed mandatory CI helper attestation supports Linux only'];
    if(stderr.split('\n').some(line=>preflights.some(message=>line==='Error: '+message)))matches.add('sandbox-preflight-rejected');
+   }
    return matches.size>1?'ambiguous':matches.size===1?[...matches][0]:'unclassified';
   }
   function emitStartupFailure(label,writer=line=>fs.writeSync(2,line)) {
@@ -39,7 +41,7 @@ async function run() {
   try { result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000}); }
   catch(error){commandAnnotation('exit',1,'spawn-throw');throw error;}
   commandAnnotation('exit',result.status===0&&!result.error?0:1,result.error?'spawn-error':result.status===0?'completed':'child-failed');
-  if(id==='electron-runtime')relayLaunchStages(result.stderr);
+  if(id==='electron-runtime')for(const captured of [result.stdout,result.stderr])relayLaunchStages(captured);
   if(id==='electron-runtime') { const label=classifyStartup(result,args[0]);if(label&&label!=='unclassified')emitStartupFailure(label); }
   const outcome=evaluateResult({...result,reports,startedAt}),status=outcome.status;
   const log=path.join(root,'.xtend-test-results',id+'.log');fs.mkdirSync(path.dirname(log),{recursive:true});fs.writeFileSync(log,`${args.join(' ')}\n${result.stdout||''}\n${result.stderr||''}\n${result.error?.message||''}`);
