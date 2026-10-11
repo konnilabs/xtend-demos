@@ -1,5 +1,19 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// Passive fixed-topic observation; payloads and outcomes remain untouched.
+try {
+  const sendBootObservation = (id) => { try { ipcRenderer.send('xtend-llm:boot-observation', id); } catch {} };
+  sendBootObservation('B000');
+  try { window.addEventListener('xtend-maraca:hydration-start', () => sendBootObservation('B101')); sendBootObservation('B001'); } catch {}
+  try { window.addEventListener('xtend-maraca:hydration-complete', () => sendBootObservation('B102')); sendBootObservation('B002'); } catch {}
+  try { window.addEventListener('xtend-maraca:orchestration-boot', () => sendBootObservation('B103')); sendBootObservation('B003'); } catch {}
+  try { window.addEventListener('xtend-maraca:boot', () => sendBootObservation('B104')); sendBootObservation('B004'); } catch {}
+  try { window.addEventListener('xtend-maraca:boot-error', () => sendBootObservation('B105')); sendBootObservation('B005'); } catch {}
+  try { window.addEventListener('xtend-maraca:state-change', () => sendBootObservation('B106')); sendBootObservation('B006'); } catch {}
+  try { window.addEventListener('xtend-maraca:surface-change', () => sendBootObservation('B107')); sendBootObservation('B007'); } catch {}
+  try { window.addEventListener('xtend-maraca:orchestration-diagnostic', () => sendBootObservation('B108')); sendBootObservation('B008'); } catch {}
+} catch {}
+
 // Diagnostic-only observation of the one declared module entry; no public bridge API.
 try {
   const observeEntry = (event) => {

@@ -1,3 +1,4 @@
+import {installBootObserver} from '../../scripts/boot-observation.cjs';
 import {installEntryObserver} from '../../scripts/entry-load-diagnostics.cjs';
 import {observeR001} from '../../scripts/r001-diagnostics.cjs';
 import {emitSmokeFailure} from '../../scripts/smoke-failure-diagnostics.cjs';
@@ -470,6 +471,7 @@ async function createWindow() {
       sandbox: true
     }
   });
+  installBootObserver(ipcMain, mainWindow, event => isTrustedMainFrame(event, mainWindow.webContents));
   installEntryObserver(ipcMain, mainWindow, event => isTrustedMainFrame(event, mainWindow.webContents));
   configureExternalNavigation(mainWindow.webContents, {
     appOrigin: serverUrl,
