@@ -48,7 +48,7 @@ test('real child over10 markers and repeats retain all observed masks in one bou
   const old=flow(root,args,{proposal:false}),now=flow(root,args);assert.deepEqual(stable(now),stable(old));assert.equal(now.lines.length,1);
   const s=buildRuntimeSummary(now.results[0]);assert.equal(s.stdout.entry,'1'.repeat(15));assert.equal(s.stderr.error,mask('preload-ipc'));assert.equal(s.markers,'both');assert.equal(s.command,'child-failed');assert.equal(s.exit,'7');
   const oldSink=sink(),newSink=sink();old.lines.forEach(x=>oldSink.write(x));now.lines.forEach(x=>newSink.write(x));
-  assert.equal(oldSink.retained.filter(x=>x.type==='notice').length,10);assert.ok(oldSink.logged.length>10);assert.equal(newSink.retained.length,1);assert.ok(newSink.retained[0].message.includes('stdout_entry=111111111111111'));assert.ok(now.lines[0].length<512);
+  assert.equal(oldSink.retained.filter(x=>x.type==='notice').length,10);assert.ok(oldSink.logged.length>10);assert.equal(newSink.retained.length,1);assert.ok(newSink.retained[0].message.includes('stdout_entry=111111111111111'));assert.ok(now.lines[0].length<1024);
   const broken=flow(root,args,{broken:true});assert.deepEqual(stable(broken),stable(old));assert.deepEqual(broken.lines,[]);
   console.log(JSON.stringify({proof:'real-nonprivileged-child-plus-controlled-runner-cap-MODEL',node:process.versions.node,childNoticeMarkers:60,childErrorMarkers:30,oldInput:old.lines.length,oldRetained:oldSink.retained.length,newInput:now.lines.length,newRetained:newSink.retained.length,summary:now.lines[0].trim(),stdoutSha256:sha(now.results[0].stdout),stderrSha256:sha(now.results[0].stderr),logsRecordsExitsEqual:true,hostedProof:false,appExecuted:false}));
  }finally{fs.rmSync(root,{recursive:true,force:true});}

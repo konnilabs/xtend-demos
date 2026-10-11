@@ -1,3 +1,4 @@
+import {emitSmokeFailure} from './smoke-failure-diagnostics.cjs';
 import {emitLaunchStage} from './actual-launch-diagnostics.cjs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -65,8 +66,8 @@ try {
 result = await buildMaracaBundleAsync({
   ...createBuildInput()
 }, { rootDir: repoRoot });
-} catch (error) { emitLaunchStage('build', 1); throw error; }
-if (!result.ok) emitLaunchStage('build', 1);
+} catch (error) { emitSmokeFailure('C001'); emitLaunchStage('build', 1); throw error; }
+if (!result.ok) { emitSmokeFailure('C001'); emitLaunchStage('build', 1); }
 
 const output = process.argv.includes('--quiet')
   ? {

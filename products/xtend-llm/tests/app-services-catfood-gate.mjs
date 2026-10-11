@@ -1,3 +1,4 @@
+import {emitSmokeFailure} from '../scripts/smoke-failure-diagnostics.cjs';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -305,8 +306,9 @@ try {
     smoke
   });
   console.log(`${report.ok ? 'ok' : 'not ok'} - XTend LLM AppServices Catfood (${reportPath})`);
-  if (!report.ok) process.exitCode = 1;
+  if (!report.ok) { emitSmokeFailure('C002'); process.exitCode = 1; }
 } catch (error) {
+  emitSmokeFailure('C002');
   const report = writeReport({
     fatal: {
       name: error?.name || 'Error',

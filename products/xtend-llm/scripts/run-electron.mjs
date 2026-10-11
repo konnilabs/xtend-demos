@@ -1,3 +1,4 @@
+import {emitSmokeFailure} from './smoke-failure-diagnostics.cjs';
 import {assertSandboxExecution,bindPreloadLaunchEnvironment} from './electron-sandbox-policy.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -66,8 +67,14 @@ if (!executableOverride && inputArgs.length === 0) {
       cwd: productRoot,
       env: createElectronEnvironment(bindPreloadLaunchEnvironment({repoRoot:path.resolve(productRoot,'../..'),environment:process.env}))
     });
+    if (result.code !== 0) {
+      if (inputArgs[0] === 'tests/electron-runtime-evidence.mjs') emitSmokeFailure('C003');
+      if (inputArgs[0] === 'tests/native-runtime-evidence.mjs') emitSmokeFailure('C004');
+    }
     mirrorChildExit(result);
   } catch (error) {
+    if (inputArgs[0] === 'tests/electron-runtime-evidence.mjs') emitSmokeFailure('C003');
+    if (inputArgs[0] === 'tests/native-runtime-evidence.mjs') emitSmokeFailure('C004');
     console.error(error && error.stack ? error.stack : String(error));
     process.exitCode = 1;
   }

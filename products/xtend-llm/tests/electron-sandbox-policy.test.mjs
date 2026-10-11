@@ -70,7 +70,7 @@ test('real run-electron entry preserves mandatory immutable preload binding for 
  const directory=fs.mkdtempSync('/tmp/xtend-preload-entry-'),product=path.join(directory,'products/xtend-llm');
  const git=(...args)=>{const result=spawnSync('git',['-C',directory,...args],{encoding:'utf8'});assert.equal(result.status,0,result.stderr);return result.stdout.trim();};
  try{
-  for(const name of ['scripts/run-electron.mjs','scripts/electron-launcher.mjs','scripts/electron-sandbox-policy.mjs','src/main/preload.cjs']){const file=path.join(product,name);fs.mkdirSync(path.dirname(file),{recursive:true});fs.copyFileSync(path.join(root,name),file);}
+  for(const name of ['scripts/run-electron.mjs','scripts/electron-launcher.mjs','scripts/electron-sandbox-policy.mjs','scripts/smoke-failure-diagnostics.cjs','src/main/preload.cjs']){const file=path.join(product,name);fs.mkdirSync(path.dirname(file),{recursive:true});fs.copyFileSync(path.join(root,name),file);}
   const entries=['app-control.cjs','tests/llm-terminal-runner.mjs','tests/electron-runtime-evidence.mjs','tests/native-runtime-evidence.mjs'];
   // Exact launcher is executed; controlled children inspect its environment instead of running Electron.
   const code="process.stdout.write(JSON.stringify({hash:process.env.XTEND_LLM_PRELOAD_SHA256,runAsNode:process.env.ELECTRON_RUN_AS_NODE,host:JSON.parse(process.env.XTEND_LLM_HOST_RUNTIME_EVIDENCE),args:process.argv.slice(2)}));";

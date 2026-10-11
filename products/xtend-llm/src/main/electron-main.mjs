@@ -1,3 +1,4 @@
+import {emitSmokeFailure} from '../../scripts/smoke-failure-diagnostics.cjs';
 import {emitLaunchStage, observeSync} from '../../scripts/actual-launch-diagnostics.cjs';
 import {registerApplicationPreload,assertApplicationPreload,assertExecutedPreloadProof,assertSandboxExecution,assertRendererAttestation,isTrustedMainFrame,assertOfficialRuntimeIdentity,attestationPolicy} from '../../scripts/electron-sandbox-policy.mjs';
 import {configureAppServerSession} from './app-server-session.mjs';
@@ -512,13 +513,17 @@ async function createWindow() {
   if (dev) mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
-function assertLayout(condition, message) {
-  if (!condition) throw new Error(message);
+let smokeFailureId = 'P001';
+function assertLayout(condition, message, id) {
+  if (!condition) { smokeFailureId = id; throw new Error(message); }
 }
 
-async function runSmokeScript(label, source) {
+async function runSmokeScript(label, source, id) {
+  smokeFailureId = id;
   try {
-    return await mainWindow.webContents.executeJavaScript(source);
+    const result = await mainWindow.webContents.executeJavaScript(source);
+    smokeFailureId = 'P001';
+    return result;
   } catch (error) {
     const message = error && error.stack ? error.stack : String(error);
     throw new Error(`Renderer smoke step "${label}" failed:\n${message}`);
@@ -542,7 +547,7 @@ async function runLayoutSmoke() {
       };
       tick();
     });
-  `);
+  `, 'R001');
   const boxes = await runSmokeScript('measure initial shell', `
     (() => {
       const read = (id) => {
@@ -596,44 +601,44 @@ async function runLayoutSmoke() {
         progressExists: Boolean(document.getElementById('generation-progress'))
       };
     })();
-  `);
-  assertLayout(boxes.root.width >= boxes.viewport.width - 1, 'root spans viewport width');
-  assertLayout(boxes.panel.right <= boxes.model.left - 12, 'sidebar does not overlap status row');
-  assertLayout(boxes.panel.right <= boxes.transcript.left - 12, 'sidebar does not overlap transcript');
-  assertLayout(Math.abs(boxes.model.top - boxes.active.top) < 2, 'status strip entries share a row');
-  assertLayout(Math.abs(boxes.model.height - boxes.active.height) < 2, `status strip entries have matched height: ${JSON.stringify(boxes)}`);
-  assertLayout(boxes.model.height <= 64 && boxes.active.height <= 64, `status strip should stay compact: ${JSON.stringify(boxes)}`);
-  assertLayout(boxes.transcript.top > boxes.model.bottom, 'transcript is below status row');
-  assertLayout(boxes.prompt.top > boxes.transcript.top, 'prompt is below transcript');
-  assertLayout(boxes.prompt.height >= 156 && boxes.prompt.height <= 174, `composer row should stay stable: ${JSON.stringify(boxes.prompt)}`);
-  assertLayout(boxes.prompt.control && boxes.prompt.control.height >= boxes.prompt.height - 2, `visible textarea should fill the composer shell: ${JSON.stringify(boxes.prompt)}`);
-  assertLayout(boxes.tool.left >= boxes.prompt.left + 8 && boxes.tool.right < boxes.prompt.right - 100, `tool menu should float inside composer: ${JSON.stringify(boxes)}`);
-  assertLayout(boxes.send.right <= boxes.prompt.right - 8 && boxes.send.left > boxes.prompt.left + 100, `send button should float inside composer: ${JSON.stringify(boxes)}`);
-  assertLayout(boxes.send.width >= 76 && boxes.send.height >= 40, 'send button has stable compact bounds');
-  assertLayout((boxes.send.shadowText || boxes.send.text || boxes.send.label || boxes.send.dataLabel).includes('Send'), `send button label should be visibly rendered: ${JSON.stringify(boxes.send)}`);
-  assertLayout(boxes.send.shadowColor !== boxes.send.shadowBackground, `send button text color should differ from its background: ${JSON.stringify(boxes.send)}`);
-  assertLayout(boxes.tool.width >= 110 && boxes.tool.height >= 40, `tool menu has stable compact bounds: ${JSON.stringify(boxes.tool)}`);
-  assertLayout(boxes.progressExists === false, `generation progress bar should not be rendered: ${JSON.stringify(boxes)}`);
-  assertLayout(Math.abs(boxes.tool.top - boxes.send.top) < 2, 'tool menu aligns with send button');
-  assertLayout(boxes.send.bottom <= boxes.prompt.control.bottom - 12 && boxes.tool.bottom <= boxes.prompt.control.bottom - 12, `composer controls stay inside visible textarea shell: ${JSON.stringify(boxes)}`);
-  assertLayout(boxes.search.top > boxes.newConversation.bottom, 'search field is below new-chat button');
-  assertLayout(boxes.list.top > boxes.search.bottom, 'conversation list is below search field');
-  assertLayout(boxes.newConversation.position === 'absolute', `new-chat button should use a fixed sidebar slot: ${JSON.stringify(boxes.newConversation)}`);
-  assertLayout(boxes.settings.position === 'absolute', `settings button should use a fixed sidebar slot: ${JSON.stringify(boxes.settings)}`);
-  assertLayout(boxes.search.position === 'absolute', `search field should use a fixed sidebar slot: ${JSON.stringify(boxes.search)}`);
-  assertLayout(boxes.list.position === 'absolute', `conversation list should use a fixed sidebar slot: ${JSON.stringify(boxes.list)}`);
-  assertLayout(Math.abs(boxes.newConversation.left - (boxes.panel.left + 20)) <= 2, `new-chat button is not anchored to the sidebar gutter: ${JSON.stringify(boxes)}`);
-  assertLayout(boxes.settings.left > boxes.newConversation.right + 8, `settings button is not in the sidebar action row: ${JSON.stringify(boxes)}`);
-  assertLayout(Math.abs(boxes.settings.top - boxes.newConversation.top) <= 1, `settings button is not aligned with new-chat button: ${JSON.stringify(boxes)}`);
-  assertLayout(boxes.settings.width >= 44 && boxes.settings.width <= 60 && boxes.settings.height >= 44, `settings button does not have stable icon-button bounds: ${JSON.stringify(boxes)}`);
-  assertLayout(Math.abs(boxes.search.left - boxes.newConversation.left) <= 1, `search field is not aligned with new-chat button: ${JSON.stringify(boxes)}`);
-  assertLayout(Math.abs(boxes.list.left - boxes.newConversation.left) <= 1, `conversation list is not aligned with new-chat button: ${JSON.stringify(boxes)}`);
-  assertLayout(Math.abs((boxes.newConversation.width + 12 + boxes.settings.width) - (boxes.panel.width - 40)) <= 3, `sidebar action row does not fill the fixed slot: ${JSON.stringify(boxes)}`);
-  assertLayout(Math.abs(boxes.search.width - (boxes.panel.width - 40)) <= 2, `search field width drifted from fixed sidebar slot: ${JSON.stringify(boxes)}`);
-  assertLayout(Math.abs(boxes.list.width - boxes.search.width) <= 1, `conversation list width drifted from fixed sidebar slot: ${JSON.stringify(boxes)}`);
-  assertLayout(Math.abs(boxes.search.top - (boxes.newConversation.top + 64)) <= 2, `search field slot drifted from new-chat slot: ${JSON.stringify(boxes)}`);
-  assertLayout(Math.abs(boxes.list.top - (boxes.search.top + 92)) <= 2, `conversation list slot drifted from search slot: ${JSON.stringify(boxes)}`);
-  assertLayout(boxes.list.bottom <= boxes.panel.bottom - 16, `conversation list does not leave a stable sidebar footer gap: ${JSON.stringify(boxes)}`);
+  `, 'R002');
+  assertLayout(boxes.root.width >= boxes.viewport.width - 1, 'root spans viewport width', 'A001');
+  assertLayout(boxes.panel.right <= boxes.model.left - 12, 'sidebar does not overlap status row', 'A002');
+  assertLayout(boxes.panel.right <= boxes.transcript.left - 12, 'sidebar does not overlap transcript', 'A003');
+  assertLayout(Math.abs(boxes.model.top - boxes.active.top) < 2, 'status strip entries share a row', 'A004');
+  assertLayout(Math.abs(boxes.model.height - boxes.active.height) < 2, `status strip entries have matched height: ${JSON.stringify(boxes)}`, 'A005');
+  assertLayout(boxes.model.height <= 64 && boxes.active.height <= 64, `status strip should stay compact: ${JSON.stringify(boxes)}`, 'A006');
+  assertLayout(boxes.transcript.top > boxes.model.bottom, 'transcript is below status row', 'A007');
+  assertLayout(boxes.prompt.top > boxes.transcript.top, 'prompt is below transcript', 'A008');
+  assertLayout(boxes.prompt.height >= 156 && boxes.prompt.height <= 174, `composer row should stay stable: ${JSON.stringify(boxes.prompt)}`, 'A009');
+  assertLayout(boxes.prompt.control && boxes.prompt.control.height >= boxes.prompt.height - 2, `visible textarea should fill the composer shell: ${JSON.stringify(boxes.prompt)}`, 'A010');
+  assertLayout(boxes.tool.left >= boxes.prompt.left + 8 && boxes.tool.right < boxes.prompt.right - 100, `tool menu should float inside composer: ${JSON.stringify(boxes)}`, 'A011');
+  assertLayout(boxes.send.right <= boxes.prompt.right - 8 && boxes.send.left > boxes.prompt.left + 100, `send button should float inside composer: ${JSON.stringify(boxes)}`, 'A012');
+  assertLayout(boxes.send.width >= 76 && boxes.send.height >= 40, 'send button has stable compact bounds', 'A013');
+  assertLayout((boxes.send.shadowText || boxes.send.text || boxes.send.label || boxes.send.dataLabel).includes('Send'), `send button label should be visibly rendered: ${JSON.stringify(boxes.send)}`, 'A014');
+  assertLayout(boxes.send.shadowColor !== boxes.send.shadowBackground, `send button text color should differ from its background: ${JSON.stringify(boxes.send)}`, 'A015');
+  assertLayout(boxes.tool.width >= 110 && boxes.tool.height >= 40, `tool menu has stable compact bounds: ${JSON.stringify(boxes.tool)}`, 'A016');
+  assertLayout(boxes.progressExists === false, `generation progress bar should not be rendered: ${JSON.stringify(boxes)}`, 'A017');
+  assertLayout(Math.abs(boxes.tool.top - boxes.send.top) < 2, 'tool menu aligns with send button', 'A018');
+  assertLayout(boxes.send.bottom <= boxes.prompt.control.bottom - 12 && boxes.tool.bottom <= boxes.prompt.control.bottom - 12, `composer controls stay inside visible textarea shell: ${JSON.stringify(boxes)}`, 'A019');
+  assertLayout(boxes.search.top > boxes.newConversation.bottom, 'search field is below new-chat button', 'A020');
+  assertLayout(boxes.list.top > boxes.search.bottom, 'conversation list is below search field', 'A021');
+  assertLayout(boxes.newConversation.position === 'absolute', `new-chat button should use a fixed sidebar slot: ${JSON.stringify(boxes.newConversation)}`, 'A022');
+  assertLayout(boxes.settings.position === 'absolute', `settings button should use a fixed sidebar slot: ${JSON.stringify(boxes.settings)}`, 'A023');
+  assertLayout(boxes.search.position === 'absolute', `search field should use a fixed sidebar slot: ${JSON.stringify(boxes.search)}`, 'A024');
+  assertLayout(boxes.list.position === 'absolute', `conversation list should use a fixed sidebar slot: ${JSON.stringify(boxes.list)}`, 'A025');
+  assertLayout(Math.abs(boxes.newConversation.left - (boxes.panel.left + 20)) <= 2, `new-chat button is not anchored to the sidebar gutter: ${JSON.stringify(boxes)}`, 'A026');
+  assertLayout(boxes.settings.left > boxes.newConversation.right + 8, `settings button is not in the sidebar action row: ${JSON.stringify(boxes)}`, 'A027');
+  assertLayout(Math.abs(boxes.settings.top - boxes.newConversation.top) <= 1, `settings button is not aligned with new-chat button: ${JSON.stringify(boxes)}`, 'A028');
+  assertLayout(boxes.settings.width >= 44 && boxes.settings.width <= 60 && boxes.settings.height >= 44, `settings button does not have stable icon-button bounds: ${JSON.stringify(boxes)}`, 'A029');
+  assertLayout(Math.abs(boxes.search.left - boxes.newConversation.left) <= 1, `search field is not aligned with new-chat button: ${JSON.stringify(boxes)}`, 'A030');
+  assertLayout(Math.abs(boxes.list.left - boxes.newConversation.left) <= 1, `conversation list is not aligned with new-chat button: ${JSON.stringify(boxes)}`, 'A031');
+  assertLayout(Math.abs((boxes.newConversation.width + 12 + boxes.settings.width) - (boxes.panel.width - 40)) <= 3, `sidebar action row does not fill the fixed slot: ${JSON.stringify(boxes)}`, 'A032');
+  assertLayout(Math.abs(boxes.search.width - (boxes.panel.width - 40)) <= 2, `search field width drifted from fixed sidebar slot: ${JSON.stringify(boxes)}`, 'A033');
+  assertLayout(Math.abs(boxes.list.width - boxes.search.width) <= 1, `conversation list width drifted from fixed sidebar slot: ${JSON.stringify(boxes)}`, 'A034');
+  assertLayout(Math.abs(boxes.search.top - (boxes.newConversation.top + 64)) <= 2, `search field slot drifted from new-chat slot: ${JSON.stringify(boxes)}`, 'A035');
+  assertLayout(Math.abs(boxes.list.top - (boxes.search.top + 92)) <= 2, `conversation list slot drifted from search slot: ${JSON.stringify(boxes)}`, 'A036');
+  assertLayout(boxes.list.bottom <= boxes.panel.bottom - 16, `conversation list does not leave a stable sidebar footer gap: ${JSON.stringify(boxes)}`, 'A037');
 
   const modelPrepInteractivity = await runSmokeScript('model preparation shell responsiveness', `
     (async () => {
@@ -697,14 +702,14 @@ async function runLayoutSmoke() {
         searchValue: search.getAttribute('value') || ''
       };
     })();
-  `);
-  assertLayout(modelPrepInteractivity.promptDisabled === true, `prompt should be unavailable during model preparation: ${JSON.stringify(modelPrepInteractivity)}`);
-  assertLayout(modelPrepInteractivity.sendDisabled === true, `send should be unavailable during model preparation: ${JSON.stringify(modelPrepInteractivity)}`);
-  assertLayout(modelPrepInteractivity.settingsOpened === true, `settings should remain responsive during model preparation: ${JSON.stringify(modelPrepInteractivity)}`);
-  assertLayout(modelPrepInteractivity.instructionsDisabled === true, `settings instructions tab should be visibly busy during model preparation: ${JSON.stringify(modelPrepInteractivity)}`);
-  assertLayout(modelPrepInteractivity.instructionsSelectedDuringPrep !== 'Instructions (busy)', `busy instructions tab should not become active during model preparation: ${JSON.stringify(modelPrepInteractivity)}`);
-  assertLayout(modelPrepInteractivity.runtimeTabAfterProgress === 'Runtime', `settings runtime tab should survive model preparation snapshots: ${JSON.stringify(modelPrepInteractivity)}`);
-  assertLayout(modelPrepInteractivity.searchValue === 'prep search', `conversation search should remain responsive during model preparation: ${JSON.stringify(modelPrepInteractivity)}`);
+  `, 'R003');
+  assertLayout(modelPrepInteractivity.promptDisabled === true, `prompt should be unavailable during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A038');
+  assertLayout(modelPrepInteractivity.sendDisabled === true, `send should be unavailable during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A039');
+  assertLayout(modelPrepInteractivity.settingsOpened === true, `settings should remain responsive during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A040');
+  assertLayout(modelPrepInteractivity.instructionsDisabled === true, `settings instructions tab should be visibly busy during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A041');
+  assertLayout(modelPrepInteractivity.instructionsSelectedDuringPrep !== 'Instructions (busy)', `busy instructions tab should not become active during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A042');
+  assertLayout(modelPrepInteractivity.runtimeTabAfterProgress === 'Runtime', `settings runtime tab should survive model preparation snapshots: ${JSON.stringify(modelPrepInteractivity)}`, 'A043');
+  assertLayout(modelPrepInteractivity.searchValue === 'prep search', `conversation search should remain responsive during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A044');
 
   await runSmokeScript('wait for fake model ready', `
     new Promise((resolve, reject) => {
@@ -749,7 +754,7 @@ async function runLayoutSmoke() {
       };
       tick();
     });
-  `);
+  `, 'R004');
 
   const toolMenuState = await runSmokeScript('tool menu flow', `
     (async () => {
@@ -792,13 +797,13 @@ async function runLayoutSmoke() {
         checked
       };
     })();
-  `);
-  assertLayout(toolMenuState.open === true, `tool menu did not open: ${JSON.stringify(toolMenuState)}`);
-  assertLayout(toolMenuState.menuAboveButton === true, `tool menu should open above composer controls: ${JSON.stringify(toolMenuState)}`);
-  assertLayout(toolMenuState.selected === true, `web search tool selection did not apply: ${JSON.stringify(toolMenuState)}`);
-  assertLayout(toolMenuState.ariaPressed === 'true', `tool menu pressed state is wrong: ${JSON.stringify(toolMenuState)}`);
-  assertLayout(toolMenuState.checked === 'true', `web search menu item is not checked: ${JSON.stringify(toolMenuState)}`);
-  assertLayout(toolMenuState.reset === true, `tool menu did not reset to auto: ${JSON.stringify(toolMenuState)}`);
+  `, 'R005');
+  assertLayout(toolMenuState.open === true, `tool menu did not open: ${JSON.stringify(toolMenuState)}`, 'A045');
+  assertLayout(toolMenuState.menuAboveButton === true, `tool menu should open above composer controls: ${JSON.stringify(toolMenuState)}`, 'A046');
+  assertLayout(toolMenuState.selected === true, `web search tool selection did not apply: ${JSON.stringify(toolMenuState)}`, 'A047');
+  assertLayout(toolMenuState.ariaPressed === 'true', `tool menu pressed state is wrong: ${JSON.stringify(toolMenuState)}`, 'A048');
+  assertLayout(toolMenuState.checked === 'true', `web search menu item is not checked: ${JSON.stringify(toolMenuState)}`, 'A049');
+  assertLayout(toolMenuState.reset === true, `tool menu did not reset to auto: ${JSON.stringify(toolMenuState)}`, 'A050');
 
   const settingsFlow = await runSmokeScript('settings dialog flow', `
     (async () => {
@@ -889,24 +894,24 @@ async function runLayoutSmoke() {
       }
       throw new Error('Timed out waiting for settings dialog.');
     })();
-  `);
-  assertLayout(settingsFlow.parentTag === 'x-dialog', `settings tabs are not hosted by the RMT dialog: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.iconName === 'settings', `settings button icon-name was not projected: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.iconRendered === true, `settings button cog icon did not render: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.orientation === 'vertical', `settings tabs are not vertical: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.ariaOrientation === 'vertical', `settings tabs do not expose vertical aria orientation: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.surfaceWidth >= 920, `settings dialog is too narrow: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.contentWidth >= settingsFlow.surfaceWidth - 96, `settings content leaves too much side bezel: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.tabsWidth <= settingsFlow.contentWidth + 2, `settings tabs overflow dialog content: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.tabsWidth >= settingsFlow.contentWidth - 2, `settings tabs do not fill dialog content: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.tabsHeight >= 340, `settings tabs are too short for their content: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.instructionsPanelHeight >= 320, `settings instructions panel is too cramped: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.instructionsScrolls === false, `settings instructions tab scrolls unnecessarily: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.savedTheme === 'dark', `settings theme did not save: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.resetTheme === 'automatic', `settings theme did not reset to automatic: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.promptControlColor && settingsFlow.promptControlColor !== settingsFlow.promptControlBackground, `dark prompt textarea text is not readable: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.promptControlColor !== 'rgb(0, 0, 0)', `dark prompt textarea still uses black text: ${JSON.stringify(settingsFlow)}`);
-  assertLayout(settingsFlow.footerGap >= 8, `settings content overlaps dialog actions: ${JSON.stringify(settingsFlow)}`);
+  `, 'R006');
+  assertLayout(settingsFlow.parentTag === 'x-dialog', `settings tabs are not hosted by the RMT dialog: ${JSON.stringify(settingsFlow)}`, 'A051');
+  assertLayout(settingsFlow.iconName === 'settings', `settings button icon-name was not projected: ${JSON.stringify(settingsFlow)}`, 'A052');
+  assertLayout(settingsFlow.iconRendered === true, `settings button cog icon did not render: ${JSON.stringify(settingsFlow)}`, 'A053');
+  assertLayout(settingsFlow.orientation === 'vertical', `settings tabs are not vertical: ${JSON.stringify(settingsFlow)}`, 'A054');
+  assertLayout(settingsFlow.ariaOrientation === 'vertical', `settings tabs do not expose vertical aria orientation: ${JSON.stringify(settingsFlow)}`, 'A055');
+  assertLayout(settingsFlow.surfaceWidth >= 920, `settings dialog is too narrow: ${JSON.stringify(settingsFlow)}`, 'A056');
+  assertLayout(settingsFlow.contentWidth >= settingsFlow.surfaceWidth - 96, `settings content leaves too much side bezel: ${JSON.stringify(settingsFlow)}`, 'A057');
+  assertLayout(settingsFlow.tabsWidth <= settingsFlow.contentWidth + 2, `settings tabs overflow dialog content: ${JSON.stringify(settingsFlow)}`, 'A058');
+  assertLayout(settingsFlow.tabsWidth >= settingsFlow.contentWidth - 2, `settings tabs do not fill dialog content: ${JSON.stringify(settingsFlow)}`, 'A059');
+  assertLayout(settingsFlow.tabsHeight >= 340, `settings tabs are too short for their content: ${JSON.stringify(settingsFlow)}`, 'A060');
+  assertLayout(settingsFlow.instructionsPanelHeight >= 320, `settings instructions panel is too cramped: ${JSON.stringify(settingsFlow)}`, 'A061');
+  assertLayout(settingsFlow.instructionsScrolls === false, `settings instructions tab scrolls unnecessarily: ${JSON.stringify(settingsFlow)}`, 'A062');
+  assertLayout(settingsFlow.savedTheme === 'dark', `settings theme did not save: ${JSON.stringify(settingsFlow)}`, 'A063');
+  assertLayout(settingsFlow.resetTheme === 'automatic', `settings theme did not reset to automatic: ${JSON.stringify(settingsFlow)}`, 'A064');
+  assertLayout(settingsFlow.promptControlColor && settingsFlow.promptControlColor !== settingsFlow.promptControlBackground, `dark prompt textarea text is not readable: ${JSON.stringify(settingsFlow)}`, 'A065');
+  assertLayout(settingsFlow.promptControlColor !== 'rgb(0, 0, 0)', `dark prompt textarea still uses black text: ${JSON.stringify(settingsFlow)}`, 'A066');
+  assertLayout(settingsFlow.footerGap >= 8, `settings content overlaps dialog actions: ${JSON.stringify(settingsFlow)}`, 'A067');
 
   const settingsCloseLifecycle = await runSmokeScript('settings close lifecycle flow', `
     (async () => {
@@ -935,8 +940,8 @@ async function runLayoutSmoke() {
         openAttribute: dialog.hasAttribute('open')
       };
     })();
-  `);
-  assertLayout(settingsCloseLifecycle.closed === true, `settings dialog close lifecycle did not reach RMT state: ${JSON.stringify(settingsCloseLifecycle)}`);
+  `, 'R007');
+  assertLayout(settingsCloseLifecycle.closed === true, `settings dialog close lifecycle did not reach RMT state: ${JSON.stringify(settingsCloseLifecycle)}`, 'A068');
 
   const spinnerState = await runSmokeScript('spinner pause mirroring', `
     (async () => {
@@ -965,9 +970,9 @@ async function runLayoutSmoke() {
         errors
       };
     })();
-  `);
-  assertLayout(spinnerState.errors.length === 0, `spinner paused mirroring surfaced runtime errors: ${JSON.stringify(spinnerState)}`);
-  assertLayout(spinnerState.paused === true, `spinner paused state did not settle after mirroring: ${JSON.stringify(spinnerState)}`);
+  `, 'R008');
+  assertLayout(spinnerState.errors.length === 0, `spinner paused mirroring surfaced runtime errors: ${JSON.stringify(spinnerState)}`, 'A069');
+  assertLayout(spinnerState.paused === true, `spinner paused state did not settle after mirroring: ${JSON.stringify(spinnerState)}`, 'A070');
 
   const sidePanelCollapse = await runSmokeScript('side panel collapse flow', `
     (async () => {
@@ -1018,22 +1023,22 @@ async function runLayoutSmoke() {
         expandedWidth: panel.getBoundingClientRect().width
       };
     })();
-  `);
-  assertLayout(sidePanelCollapse.capabilities.includes('collapse'), `side panel is not collapsible: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(!sidePanelCollapse.capabilities.includes('close'), `side panel should not be closable: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(!sidePanelCollapse.capabilities.includes('pin'), `side panel should not be pinnable: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.disabledCapabilities.includes('close'), `side panel close capability is not disabled: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.controls.closable === false && sidePanelCollapse.controls.pinnable === false, `side panel controls are not configured: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.controlVisibility.collapse.displayed === true, `side panel collapse control should be visible: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.controlVisibility.pin.displayed === false, `side panel pin control should be hidden: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.controlVisibility.close.displayed === false, `side panel close control should be hidden: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.expandedIcon === 'chevron-left', `expanded side panel collapse icon points the wrong way: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.collapsedIcon === 'chevron-right', `collapsed side panel expand icon points the wrong way: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.collapsedWidth <= 64, `collapsed side panel is too wide: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.columns.trim().startsWith('56px'), `collapsed grid did not shrink sidebar column: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.searchVisible === false, `collapsed sidebar content is still visible: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.settingsVisible === false, `collapsed settings button is still visible: ${JSON.stringify(sidePanelCollapse)}`);
-  assertLayout(sidePanelCollapse.expanded === true && sidePanelCollapse.expandedWidth >= 280, `side panel did not expand again: ${JSON.stringify(sidePanelCollapse)}`);
+  `, 'R009');
+  assertLayout(sidePanelCollapse.capabilities.includes('collapse'), `side panel is not collapsible: ${JSON.stringify(sidePanelCollapse)}`, 'A071');
+  assertLayout(!sidePanelCollapse.capabilities.includes('close'), `side panel should not be closable: ${JSON.stringify(sidePanelCollapse)}`, 'A072');
+  assertLayout(!sidePanelCollapse.capabilities.includes('pin'), `side panel should not be pinnable: ${JSON.stringify(sidePanelCollapse)}`, 'A073');
+  assertLayout(sidePanelCollapse.disabledCapabilities.includes('close'), `side panel close capability is not disabled: ${JSON.stringify(sidePanelCollapse)}`, 'A074');
+  assertLayout(sidePanelCollapse.controls.closable === false && sidePanelCollapse.controls.pinnable === false, `side panel controls are not configured: ${JSON.stringify(sidePanelCollapse)}`, 'A075');
+  assertLayout(sidePanelCollapse.controlVisibility.collapse.displayed === true, `side panel collapse control should be visible: ${JSON.stringify(sidePanelCollapse)}`, 'A076');
+  assertLayout(sidePanelCollapse.controlVisibility.pin.displayed === false, `side panel pin control should be hidden: ${JSON.stringify(sidePanelCollapse)}`, 'A077');
+  assertLayout(sidePanelCollapse.controlVisibility.close.displayed === false, `side panel close control should be hidden: ${JSON.stringify(sidePanelCollapse)}`, 'A078');
+  assertLayout(sidePanelCollapse.expandedIcon === 'chevron-left', `expanded side panel collapse icon points the wrong way: ${JSON.stringify(sidePanelCollapse)}`, 'A079');
+  assertLayout(sidePanelCollapse.collapsedIcon === 'chevron-right', `collapsed side panel expand icon points the wrong way: ${JSON.stringify(sidePanelCollapse)}`, 'A080');
+  assertLayout(sidePanelCollapse.collapsedWidth <= 64, `collapsed side panel is too wide: ${JSON.stringify(sidePanelCollapse)}`, 'A081');
+  assertLayout(sidePanelCollapse.columns.trim().startsWith('56px'), `collapsed grid did not shrink sidebar column: ${JSON.stringify(sidePanelCollapse)}`, 'A082');
+  assertLayout(sidePanelCollapse.searchVisible === false, `collapsed sidebar content is still visible: ${JSON.stringify(sidePanelCollapse)}`, 'A083');
+  assertLayout(sidePanelCollapse.settingsVisible === false, `collapsed settings button is still visible: ${JSON.stringify(sidePanelCollapse)}`, 'A084');
+  assertLayout(sidePanelCollapse.expanded === true && sidePanelCollapse.expandedWidth >= 280, `side panel did not expand again: ${JSON.stringify(sidePanelCollapse)}`, 'A085');
 
   const typingStatus = await runSmokeScript('typing status flow', `
     (async () => {
@@ -1082,11 +1087,11 @@ async function runLayoutSmoke() {
         }
       };
     })();
-  `);
-  assertLayout(!typingStatus.message.includes('delete-conversation-dialog'), `typing surfaced delete dialog timeout: ${JSON.stringify(typingStatus)}`);
-  assertLayout(typingStatus.promptState.required === false, `prompt should not expose required validation: ${JSON.stringify(typingStatus)}`);
-  assertLayout(typingStatus.promptState.minLength === false, `prompt should not expose minlength validation: ${JSON.stringify(typingStatus)}`);
-  assertLayout(typingStatus.promptState.invalid === false, `empty prompt should not become visibly invalid: ${JSON.stringify(typingStatus)}`);
+  `, 'R010');
+  assertLayout(!typingStatus.message.includes('delete-conversation-dialog'), `typing surfaced delete dialog timeout: ${JSON.stringify(typingStatus)}`, 'A086');
+  assertLayout(typingStatus.promptState.required === false, `prompt should not expose required validation: ${JSON.stringify(typingStatus)}`, 'A087');
+  assertLayout(typingStatus.promptState.minLength === false, `prompt should not expose minlength validation: ${JSON.stringify(typingStatus)}`, 'A088');
+  assertLayout(typingStatus.promptState.invalid === false, `empty prompt should not become visibly invalid: ${JSON.stringify(typingStatus)}`, 'A089');
 
   const messageCounts = await runSmokeScript('fake generation flow', `
     (async () => {
@@ -1211,7 +1216,7 @@ async function runLayoutSmoke() {
       }
       throw new Error('Timed out waiting for fake generation.');
     })();
-  `);
+  `, 'R011');
   const codeHydration = await runSmokeScript('code hydration flow', `
     (async () => {
       const started = Date.now();
@@ -1234,7 +1239,7 @@ async function runLayoutSmoke() {
       }
       throw new Error('Timed out waiting for x-code hydrated LLM block.');
     })();
-  `);
+  `, 'R012');
   const markdownFormatting = await runSmokeScript('markdown formatting flow', `
     (() => {
       const assistant = document.querySelector('.xtend-llm-message-assistant .xtend-llm-message-body');
@@ -1245,42 +1250,42 @@ async function runLayoutSmoke() {
         listItems: Array.from(assistant?.querySelectorAll('.xtend-llm-message-list li') || []).map((node) => node.textContent || '')
       };
     })();
-  `);
-  assertLayout(messageCounts.user === 1, `one user message is stored per click: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.assistant === 1, `one assistant message is stored per click: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.total === 2, `fake smoke conversation stores exactly one exchange: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.actionChrome.row === true, `assistant message action row did not render: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.actionChrome.copy === true, `assistant copy action did not render: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.actionChrome.regenerate === true, `assistant regenerate action did not render: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.actionChrome.copyDisabled === false, `assistant copy action is unexpectedly disabled: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.actionChrome.regenerateDisabled === false, `assistant regenerate action is unexpectedly disabled: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.actionChrome.copyTitle === 'Copied', `assistant copy action did not report copied feedback: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.actionChrome.copyIconBefore === 'copy', `assistant copy icon is wrong: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.actionChrome.copyIconAfter === 'check', `assistant copy feedback icon is wrong: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.actionChrome.regenerateIcon === 'refresh', `assistant regenerate icon is wrong: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.sendDisabled === true, `send is disabled after prompt reset: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.sendHidden === false, `send rematerializes after generation completes: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.promptDisabled === false, `prompt is enabled after generation completes: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.promptInvalid === false, `prompt reset is not visibly invalid: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.progressSeen === false, `generation progress bar reappeared during streaming: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.settingsOpen === false, `settings dialog reopened during streaming: ${JSON.stringify(messageCounts)}`);
-  assertLayout(messageCounts.appServices.enabled === true, `public AppServices controller is not active: ${JSON.stringify(messageCounts.appServices)}`);
-  assertLayout(messageCounts.appServices.serviceCount === 27, `unexpected AppService registry size: ${JSON.stringify(messageCounts.appServices)}`);
-  assertLayout(messageCounts.appServices.activeCount === 0, `AppService invocations remain active after generation: ${JSON.stringify(messageCounts.appServices)}`);
-  assertLayout(messageCounts.appServices.listenerErrorCount === 0, `AppService frame listener failed: ${JSON.stringify(messageCounts.appServices)}`);
-  assertLayout(messageCounts.appServices.history.some((entry) => entry.serviceId === 'xtend.llm.send' && entry.status === 'fulfilled'), `send did not traverse AppServices: ${JSON.stringify(messageCounts.appServices)}`);
-  assertLayout(messageCounts.appServices.history.some((entry) => entry.serviceId === 'xtend.llm.generationStream' && entry.kind === 'stream' && entry.status === 'fulfilled'), `generation stream did not settle through AppServices: ${JSON.stringify(messageCounts.appServices)}`);
-  assertLayout(messageCounts.appServices.history.every((entry) => Boolean(entry.invocationId && entry.correlationId)), `AppService history lacks invocation or correlation IDs: ${JSON.stringify(messageCounts.appServices)}`);
-  assertLayout(codeHydration.registered === true, `x-code is not registered: ${JSON.stringify(codeHydration)}`);
-  assertLayout(codeHydration.bridgePresent === true, `RMT x-code bridge is not present: ${JSON.stringify(codeHydration)}`);
-  assertLayout(codeHydration.blockCount >= 1, `LLM code fence did not materialize x-code: ${JSON.stringify(codeHydration)}`);
-  assertLayout(codeHydration.lang === 'javascript', `x-code language was not preserved: ${JSON.stringify(codeHydration)}`);
-  assertLayout(codeHydration.hydration === 'x-code', `insular hydration marker is missing: ${JSON.stringify(codeHydration)}`);
-  assertLayout(/console\.log/u.test(codeHydration.templateText), `x-code template does not contain generated code: ${JSON.stringify(codeHydration)}`);
-  assertLayout(markdownFormatting.strongText === 'XTend', `bold Markdown did not render as strong: ${JSON.stringify(markdownFormatting)}`);
-  assertLayout(markdownFormatting.emphasisText === 'emphasis', `italic Markdown did not render as emphasis: ${JSON.stringify(markdownFormatting)}`);
-  assertLayout(markdownFormatting.inlineCodeText === 'Inline code', `inline code Markdown did not render as code: ${JSON.stringify(markdownFormatting)}`);
-  assertLayout(markdownFormatting.listItems.length === 2, `Markdown list items did not render: ${JSON.stringify(markdownFormatting)}`);
+  `, 'R013');
+  assertLayout(messageCounts.user === 1, `one user message is stored per click: ${JSON.stringify(messageCounts)}`, 'A090');
+  assertLayout(messageCounts.assistant === 1, `one assistant message is stored per click: ${JSON.stringify(messageCounts)}`, 'A091');
+  assertLayout(messageCounts.total === 2, `fake smoke conversation stores exactly one exchange: ${JSON.stringify(messageCounts)}`, 'A092');
+  assertLayout(messageCounts.actionChrome.row === true, `assistant message action row did not render: ${JSON.stringify(messageCounts)}`, 'A093');
+  assertLayout(messageCounts.actionChrome.copy === true, `assistant copy action did not render: ${JSON.stringify(messageCounts)}`, 'A094');
+  assertLayout(messageCounts.actionChrome.regenerate === true, `assistant regenerate action did not render: ${JSON.stringify(messageCounts)}`, 'A095');
+  assertLayout(messageCounts.actionChrome.copyDisabled === false, `assistant copy action is unexpectedly disabled: ${JSON.stringify(messageCounts)}`, 'A096');
+  assertLayout(messageCounts.actionChrome.regenerateDisabled === false, `assistant regenerate action is unexpectedly disabled: ${JSON.stringify(messageCounts)}`, 'A097');
+  assertLayout(messageCounts.actionChrome.copyTitle === 'Copied', `assistant copy action did not report copied feedback: ${JSON.stringify(messageCounts)}`, 'A098');
+  assertLayout(messageCounts.actionChrome.copyIconBefore === 'copy', `assistant copy icon is wrong: ${JSON.stringify(messageCounts)}`, 'A099');
+  assertLayout(messageCounts.actionChrome.copyIconAfter === 'check', `assistant copy feedback icon is wrong: ${JSON.stringify(messageCounts)}`, 'A100');
+  assertLayout(messageCounts.actionChrome.regenerateIcon === 'refresh', `assistant regenerate icon is wrong: ${JSON.stringify(messageCounts)}`, 'A101');
+  assertLayout(messageCounts.sendDisabled === true, `send is disabled after prompt reset: ${JSON.stringify(messageCounts)}`, 'A102');
+  assertLayout(messageCounts.sendHidden === false, `send rematerializes after generation completes: ${JSON.stringify(messageCounts)}`, 'A103');
+  assertLayout(messageCounts.promptDisabled === false, `prompt is enabled after generation completes: ${JSON.stringify(messageCounts)}`, 'A104');
+  assertLayout(messageCounts.promptInvalid === false, `prompt reset is not visibly invalid: ${JSON.stringify(messageCounts)}`, 'A105');
+  assertLayout(messageCounts.progressSeen === false, `generation progress bar reappeared during streaming: ${JSON.stringify(messageCounts)}`, 'A106');
+  assertLayout(messageCounts.settingsOpen === false, `settings dialog reopened during streaming: ${JSON.stringify(messageCounts)}`, 'A107');
+  assertLayout(messageCounts.appServices.enabled === true, `public AppServices controller is not active: ${JSON.stringify(messageCounts.appServices)}`, 'A108');
+  assertLayout(messageCounts.appServices.serviceCount === 27, `unexpected AppService registry size: ${JSON.stringify(messageCounts.appServices)}`, 'A109');
+  assertLayout(messageCounts.appServices.activeCount === 0, `AppService invocations remain active after generation: ${JSON.stringify(messageCounts.appServices)}`, 'A110');
+  assertLayout(messageCounts.appServices.listenerErrorCount === 0, `AppService frame listener failed: ${JSON.stringify(messageCounts.appServices)}`, 'A111');
+  assertLayout(messageCounts.appServices.history.some((entry) => entry.serviceId === 'xtend.llm.send' && entry.status === 'fulfilled'), `send did not traverse AppServices: ${JSON.stringify(messageCounts.appServices)}`, 'A112');
+  assertLayout(messageCounts.appServices.history.some((entry) => entry.serviceId === 'xtend.llm.generationStream' && entry.kind === 'stream' && entry.status === 'fulfilled'), `generation stream did not settle through AppServices: ${JSON.stringify(messageCounts.appServices)}`, 'A113');
+  assertLayout(messageCounts.appServices.history.every((entry) => Boolean(entry.invocationId && entry.correlationId)), `AppService history lacks invocation or correlation IDs: ${JSON.stringify(messageCounts.appServices)}`, 'A114');
+  assertLayout(codeHydration.registered === true, `x-code is not registered: ${JSON.stringify(codeHydration)}`, 'A115');
+  assertLayout(codeHydration.bridgePresent === true, `RMT x-code bridge is not present: ${JSON.stringify(codeHydration)}`, 'A116');
+  assertLayout(codeHydration.blockCount >= 1, `LLM code fence did not materialize x-code: ${JSON.stringify(codeHydration)}`, 'A117');
+  assertLayout(codeHydration.lang === 'javascript', `x-code language was not preserved: ${JSON.stringify(codeHydration)}`, 'A118');
+  assertLayout(codeHydration.hydration === 'x-code', `insular hydration marker is missing: ${JSON.stringify(codeHydration)}`, 'A119');
+  assertLayout(/console\.log/u.test(codeHydration.templateText), `x-code template does not contain generated code: ${JSON.stringify(codeHydration)}`, 'A120');
+  assertLayout(markdownFormatting.strongText === 'XTend', `bold Markdown did not render as strong: ${JSON.stringify(markdownFormatting)}`, 'A121');
+  assertLayout(markdownFormatting.emphasisText === 'emphasis', `italic Markdown did not render as emphasis: ${JSON.stringify(markdownFormatting)}`, 'A122');
+  assertLayout(markdownFormatting.inlineCodeText === 'Inline code', `inline code Markdown did not render as code: ${JSON.stringify(markdownFormatting)}`, 'A123');
+  assertLayout(markdownFormatting.listItems.length === 2, `Markdown list items did not render: ${JSON.stringify(markdownFormatting)}`, 'A124');
 
   const secondPromptState = await runSmokeScript('second prompt flow', `
     (async () => {
@@ -1342,15 +1347,15 @@ async function runLayoutSmoke() {
         }
       };
     })();
-  `);
-  assertLayout(secondPromptState.promptDisabled === false, `prompt stays enabled when typing a follow-up: ${JSON.stringify(secondPromptState)}`);
-  assertLayout(secondPromptState.sendHidden === false, `send stays visible when typing a follow-up: ${JSON.stringify(secondPromptState)}`);
-  assertLayout(secondPromptState.sendDisabled === false, `send enables for a follow-up prompt: ${JSON.stringify(secondPromptState)}`);
-  assertLayout((secondPromptState.sendVisual.shadowText || secondPromptState.sendVisual.text || secondPromptState.sendVisual.label || secondPromptState.sendVisual.dataLabel).includes('Send'), `send label is not rendered for a follow-up prompt: ${JSON.stringify(secondPromptState)}`);
-  assertLayout(secondPromptState.sendVisual.display !== 'none' && secondPromptState.sendVisual.visibility !== 'hidden' && Number(secondPromptState.sendVisual.opacity) > 0, `send host is not paintable for a follow-up prompt: ${JSON.stringify(secondPromptState)}`);
-  assertLayout(secondPromptState.sendVisual.buttonDisplay !== 'none' && secondPromptState.sendVisual.buttonVisibility !== 'hidden' && Number(secondPromptState.sendVisual.buttonOpacity) > 0, `send shadow button is not paintable for a follow-up prompt: ${JSON.stringify(secondPromptState)}`);
-  assertLayout(secondPromptState.sendVisual.buttonWidth >= 44 && secondPromptState.sendVisual.buttonHeight >= 44, `send shadow button collapsed for a follow-up prompt: ${JSON.stringify(secondPromptState)}`);
-  assertLayout(secondPromptState.sendVisual.buttonColor !== secondPromptState.sendVisual.buttonBackground, `send text color blends into its background for a follow-up prompt: ${JSON.stringify(secondPromptState)}`);
+  `, 'R014');
+  assertLayout(secondPromptState.promptDisabled === false, `prompt stays enabled when typing a follow-up: ${JSON.stringify(secondPromptState)}`, 'A125');
+  assertLayout(secondPromptState.sendHidden === false, `send stays visible when typing a follow-up: ${JSON.stringify(secondPromptState)}`, 'A126');
+  assertLayout(secondPromptState.sendDisabled === false, `send enables for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A127');
+  assertLayout((secondPromptState.sendVisual.shadowText || secondPromptState.sendVisual.text || secondPromptState.sendVisual.label || secondPromptState.sendVisual.dataLabel).includes('Send'), `send label is not rendered for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A128');
+  assertLayout(secondPromptState.sendVisual.display !== 'none' && secondPromptState.sendVisual.visibility !== 'hidden' && Number(secondPromptState.sendVisual.opacity) > 0, `send host is not paintable for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A129');
+  assertLayout(secondPromptState.sendVisual.buttonDisplay !== 'none' && secondPromptState.sendVisual.buttonVisibility !== 'hidden' && Number(secondPromptState.sendVisual.buttonOpacity) > 0, `send shadow button is not paintable for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A130');
+  assertLayout(secondPromptState.sendVisual.buttonWidth >= 44 && secondPromptState.sendVisual.buttonHeight >= 44, `send shadow button collapsed for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A131');
+  assertLayout(secondPromptState.sendVisual.buttonColor !== secondPromptState.sendVisual.buttonBackground, `send text color blends into its background for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A132');
 
   const deleteFlow = await runSmokeScript('delete conversation flow', `
     (async () => {
@@ -1401,19 +1406,24 @@ async function runLayoutSmoke() {
         activeConversationId: status.conversation.activeConversationId || ''
       };
     })();
-  `);
-  assertLayout(deleteFlow.dialogTag === 'x-dialog', `delete confirmation uses x-dialog: ${JSON.stringify(deleteFlow)}`);
-  assertLayout(/Delete/.test(deleteFlow.message), `delete confirmation copy is present: ${JSON.stringify(deleteFlow)}`);
-  assertLayout(deleteFlow.remaining === 0, `conversation is deleted from sidebar: ${JSON.stringify(deleteFlow)}`);
-  assertLayout(deleteFlow.activeConversationId === '', `active chat is cleared after deleting final chat: ${JSON.stringify(deleteFlow)}`);
+  `, 'R015');
+  assertLayout(deleteFlow.dialogTag === 'x-dialog', `delete confirmation uses x-dialog: ${JSON.stringify(deleteFlow)}`, 'A133');
+  assertLayout(/Delete/.test(deleteFlow.message), `delete confirmation copy is present: ${JSON.stringify(deleteFlow)}`, 'A134');
+  assertLayout(deleteFlow.remaining === 0, `conversation is deleted from sidebar: ${JSON.stringify(deleteFlow)}`, 'A135');
+  assertLayout(deleteFlow.activeConversationId === '', `active chat is cleared after deleting final chat: ${JSON.stringify(deleteFlow)}`, 'A136');
 
   const resultDir = path.join(productRoot, '.xtend-llm-results');
+  smokeFailureId = 'P002';
   fs.mkdirSync(resultDir, { recursive: true });
   const screenshotPath = path.join(resultDir, 'layout-smoke.png');
+  smokeFailureId = 'P003';
   const image = await mainWindow.webContents.capturePage();
+  smokeFailureId = 'P004';
   const screenshot = image.toPNG();
+  smokeFailureId = 'P005';
   fs.writeFileSync(screenshotPath, screenshot);
   const reportPath = path.join(resultDir, 'layout-smoke.json');
+  smokeFailureId = 'P006';
   fs.writeFileSync(reportPath, `${JSON.stringify({
     schema: 'xtend-llm.layout-smoke-report.v1',
     ok: true,
@@ -1444,6 +1454,7 @@ async function runLayoutSmoke() {
       sha256: crypto.createHash('sha256').update(screenshot).digest('hex')
     }
   }, null, 2)}\n`, 'utf8');
+  smokeFailureId = 'P007';
   console.log(`layout smoke ok: ${screenshotPath}`);
   console.log(`layout smoke report: ${reportPath}`);
 }
@@ -1481,9 +1492,12 @@ app.whenReady().then(async () => {
   await createWindow();
   if (layoutSmoke) {
     try {
+      smokeFailureId = 'P001';
       await runLayoutSmoke();
+      smokeFailureId = 'P008';
       app.quit();
     } catch (error) {
+      emitSmokeFailure(smokeFailureId);
       console.error(error && error.stack ? error.stack : error);
       app.exit(1);
     }
