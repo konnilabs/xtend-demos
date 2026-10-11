@@ -116,7 +116,7 @@ test('real consumer rejects Git-byte tampered diagnostic helper before runtime p
  const os=require('node:os'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
  const sourceRoot=path.resolve(__dirname,'..'),root=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-consumer-helper-binding-'));
  const helper='products/xtend-llm/scripts/actual-launch-diagnostics.cjs';
- const files=[...sourcePaths.map(file=>'products/xtend-llm/'+file),helper,'scripts/verify-electron-app-attestation.cjs','scripts/provision-electron-sandbox.cjs'];
+ const files=['products/xtend-llm/scripts/run-layout-smoke.mjs','products/xtend-llm/scripts/run-electron.mjs',...sourcePaths.map(file=>'products/xtend-llm/'+file),helper,'scripts/verify-electron-app-attestation.cjs','scripts/provision-electron-sandbox.cjs'];
  const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']});
  try {
   for(const file of files){fs.mkdirSync(path.dirname(path.join(root,file)),{recursive:true});fs.copyFileSync(path.join(sourceRoot,file),path.join(root,file));}
@@ -132,6 +132,7 @@ test('real consumer rejects Git-byte tampered diagnostic helper before runtime p
   assert.throws(()=>consumer.consume(options),error=>error.message===expected);
   console.log(JSON.stringify({proof:'real-consumer-git-byte-negative-only',fixtureDemoSha:demoSha,helperOriginalSha256:crypto.createHash('sha256').update(original).digest('hex'),helperTamperedSha256:crypto.createHash('sha256').update(mutated).digest('hex'),rejection:expected,intactControl:'reaches missing runtime receipt; NOT actual-app proof'}));
   fs.writeFileSync(path.join(root,helper),original);assert.throws(()=>consumer.consume(options),error=>error.code==='ENOENT'&&error.path===receipt);
+  const launcher='products/xtend-llm/scripts/run-layout-smoke.mjs',launcherBytes=fs.readFileSync(path.join(root,launcher));fs.appendFileSync(path.join(root,launcher),'\n// controlled launch-source tamper\n');assert.throws(()=>consumer.consume(options),error=>error.message==='Dirty/substituted attestation source: '+launcher);fs.writeFileSync(path.join(root,launcher),launcherBytes);assert.throws(()=>consumer.consume(options),error=>error.code==='ENOENT'&&error.path===receipt);
  } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
 

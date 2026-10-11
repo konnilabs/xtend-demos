@@ -146,4 +146,7 @@ contextBridge.exposeInMainWorld('xtendLlm', {
 });
 
 // Trusted actual preload; not exposed through the public renderer API.
-ipcRenderer.send('xtend-llm:sandbox-attestation',{sandboxed:process.sandboxed===true,contextIsolated:process.contextIsolated===true});
+ipcRenderer.invoke('xtend-llm:preload-identity').then(identity=>{
+  if(typeof identity?.registrationId!=='string'||!identity.registrationId||!/^[a-f0-9]{64}$/.test(identity.nonce)||!/^[a-f0-9]{64}$/.test(identity.sourceSha256))throw new Error('Invalid private preload identity');
+  ipcRenderer.send('xtend-llm:sandbox-attestation',{sandboxed:process.sandboxed===true,contextIsolated:process.contextIsolated===true,preloadRegistrationId:identity.registrationId,preloadNonce:identity.nonce,preloadSourceSha256:identity.sourceSha256});
+}).catch(()=>ipcRenderer.send('xtend-llm:sandbox-attestation',null));

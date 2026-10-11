@@ -1,5 +1,5 @@
 import {emitLaunchStage, observeSync} from './actual-launch-diagnostics.cjs';
-import {assertSandboxExecution} from './electron-sandbox-policy.mjs';
+import {assertSandboxExecution,bindPreloadLaunchEnvironment} from './electron-sandbox-policy.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -27,7 +27,7 @@ try {
   throw new Error('XTend LLM browser catfood requires its pinned Electron dev dependency. Run npm ci --prefix products/xtend-llm.', { cause: error });
 }
 
-const environment = { ...process.env };
+const environment = observeSync('prelaunch-guard',()=>bindPreloadLaunchEnvironment({repoRoot:path.resolve(productRoot,'../..'),environment:process.env}));
 delete environment.ELECTRON_RUN_AS_NODE;
 const headless = process.platform === 'linux' && !environment.DISPLAY && !environment.WAYLAND_DISPLAY;
 const electronArgs = [];

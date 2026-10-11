@@ -1,5 +1,5 @@
 import {emitLaunchStage, observeSync} from '../../scripts/actual-launch-diagnostics.cjs';
-import {assertSandboxExecution,assertRendererAttestation,isTrustedMainFrame,assertOfficialRuntimeIdentity,attestationPolicy} from '../../scripts/electron-sandbox-policy.mjs';
+import {registerApplicationPreload,assertApplicationPreload,assertExecutedPreloadProof,assertSandboxExecution,assertRendererAttestation,isTrustedMainFrame,assertOfficialRuntimeIdentity,attestationPolicy} from '../../scripts/electron-sandbox-policy.mjs';
 import {configureAppServerSession} from './app-server-session.mjs';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
@@ -438,12 +438,19 @@ async function createWindow() {
   const appSession = session.fromPartition(`xtend-llm-${crypto.randomUUID()}`);
   configureAppServerSession(appSession, serverUrl, appServer.capability);
   const preload = path.join(productRoot, 'src', 'main', 'preload.cjs');
+  const preloadBinding=registerApplicationPreload(appSession,{canonicalPath:preload,expectedSourceHash:process.env.XTEND_LLM_PRELOAD_SHA256,mandatory:attestationPolicy().requireOfficialHelper});
+  const identityChannel='xtend-llm:preload-identity';
+  ipcMain.handle(identityChannel,event=>{
+    if(!isTrustedMainFrame(event,mainWindow.webContents))throw new Error('Untrusted preload identity request');
+    assertApplicationPreload(preloadBinding,mainWindow.webContents);
+    return {registrationId:preloadBinding.id,nonce:preloadBinding.nonce,sourceSha256:preloadBinding.sourceSha256};
+  });
   const attestationChannel='xtend-llm:sandbox-attestation';
   let disposeAttestation;
   const preloadAttestation=new Promise((resolve,reject)=>{
     const timeout=setTimeout(()=>{ipcMain.removeListener(attestationChannel,receive);reject(new Error('Missing actual application preload sandbox attestation'));},15000);
-    function receive(event,proof){if(!isTrustedMainFrame(event,mainWindow.webContents))return;clearTimeout(timeout);ipcMain.removeListener(attestationChannel,receive);resolve(proof);}
-    ipcMain.on(attestationChannel,receive);disposeAttestation=()=>{clearTimeout(timeout);ipcMain.removeListener(attestationChannel,receive);};
+    function receive(event,proof){if(!isTrustedMainFrame(event,mainWindow.webContents))return;clearTimeout(timeout);ipcMain.removeListener(attestationChannel,receive);try{assertExecutedPreloadProof(preloadBinding,mainWindow.webContents,event,proof);resolve(proof);}catch(error){reject(error);}}
+    ipcMain.on(attestationChannel,receive);disposeAttestation=()=>{clearTimeout(timeout);ipcMain.removeListener(attestationChannel,receive);ipcMain.removeHandler(identityChannel);};
   });
   mainWindow = new BrowserWindow({
     width: 1160,
@@ -454,7 +461,6 @@ async function createWindow() {
     show: !layoutSmoke,
     backgroundColor: '#f7f7f4',
     webPreferences: {
-      preload,
       session: appSession,
       nodeIntegration: false,
       contextIsolation: true,
@@ -498,8 +504,8 @@ async function createWindow() {
       assertOfficialRuntimeIdentity(runtimeIdentity);
     }
     launchStage('source-identity');
-    if(path.resolve(preferences.preload)!==path.resolve(productRoot,'src/main/preload.cjs'))throw new Error('Actual application preload identity/path mismatch');
-    const attestation={format:1,proofKind:'actual-application-main-frame',runtimeIdentity,mainFrameAttestation:true,preloadPath:preferences.preload,generatedAt:new Date().toISOString(),applicationUid:process.getuid?.(),rendererPid,rendererSeccomp:linuxStatus?/^Seccomp:\s*(\d+)/m.exec(linuxStatus)?.[1]:null,sandboxed:proof.sandboxed,contextIsolated:proof.contextIsolated,nodeIntegration:preferences.nodeIntegration,sandboxPreference:preferences.sandbox,electronVersion:process.versions.electron,executable:fs.realpathSync(process.execPath),executableSha256:sha(process.execPath),coreSha:process.env.XTEND_CORE_SHA||null,demoSha:process.env.XTEND_DEMO_SHA||null,sources:Object.fromEntries(['src/main/electron-main.mjs','src/main/preload.cjs','src/renderer/app-controller.mjs','src/main/app-server.mjs','src/main/app-server-session.mjs','site/index.html','scripts/electron-sandbox-policy.mjs'].map(relative=>[relative,sha(path.join(productRoot,relative))]))};
+    assertApplicationPreload(preloadBinding,mainWindow.webContents);
+    const attestation={format:1,proofKind:'actual-application-main-frame',runtimeIdentity,mainFrameAttestation:true,preloadPath:preloadBinding.filePath,generatedAt:new Date().toISOString(),applicationUid:process.getuid?.(),rendererPid,rendererSeccomp:linuxStatus?/^Seccomp:\s*(\d+)/m.exec(linuxStatus)?.[1]:null,sandboxed:proof.sandboxed,contextIsolated:proof.contextIsolated,nodeIntegration:preferences.nodeIntegration,sandboxPreference:preferences.sandbox,electronVersion:process.versions.electron,executable:fs.realpathSync(process.execPath),executableSha256:sha(process.execPath),coreSha:process.env.XTEND_CORE_SHA||null,demoSha:process.env.XTEND_DEMO_SHA||null,sources:Object.fromEntries(['src/main/electron-main.mjs','src/main/preload.cjs','src/renderer/app-controller.mjs','src/main/app-server.mjs','src/main/app-server-session.mjs','site/index.html','scripts/electron-sandbox-policy.mjs'].map(relative=>[relative,sha(path.join(productRoot,relative))]))};
     launchStage('report-write');
     const directory=path.resolve(productRoot,'../../.xtend-test-results');fs.mkdirSync(directory,{recursive:true});fs.writeFileSync(path.join(directory,'electron-sandbox-attestation.json'),JSON.stringify(attestation,null,2)+'\n');
   } finally {disposeAttestation();}

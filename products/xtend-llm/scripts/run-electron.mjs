@@ -1,4 +1,4 @@
-import {assertSandboxExecution} from './electron-sandbox-policy.mjs';
+import {assertSandboxExecution,bindPreloadLaunchEnvironment} from './electron-sandbox-policy.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -64,7 +64,7 @@ if (!executableOverride && inputArgs.length === 0) {
       executable,
       args: electronArgs,
       cwd: productRoot,
-      env: createElectronEnvironment()
+      env: createElectronEnvironment(bindPreloadLaunchEnvironment({repoRoot:path.resolve(productRoot,'../..'),environment:process.env}))
     });
     mirrorChildExit(result);
   } catch (error) {
