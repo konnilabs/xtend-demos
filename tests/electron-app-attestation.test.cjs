@@ -15,3 +15,56 @@ test('both Demo workflows require mode and real gate consumes app proof; missing
 test('actual consumer rejects obsolete runtime location despite consistent provisioning substitution',()=>{
  const f=fixture(),old=f.report.runtimeIdentity.executable.replace('/usr/lib/xtend-electron','/opt/xtend-electron');f.report.runtimeIdentity.executable=old;f.report.runtimeIdentity.helper=f.report.runtimeIdentity.helper.replace('/usr/lib/xtend-electron','/opt/xtend-electron');f.expected.provisioning.dist=f.expected.provisioning.dist.replace('/usr/lib/xtend-electron','/opt/xtend-electron');assert.throws(()=>validateActualReport(f.report,f.expected),/official sandbox helper\/runtime identity mismatch/);
 });
+
+const {emitActualAppOutcome}=require('../scripts/actual-app-outcome-annotation.cjs');
+test('actual-app annotation fixed presence and verification grammar',()=>{
+ for(const [reportPresent,verified,expected] of [[true,true,'::notice::electron-actual-app-attestation report=present verification=passed\n'],[true,false,'::error::electron-actual-app-attestation report=present verification=failed\n'],[false,false,'::error::electron-actual-app-attestation report=missing verification=failed\n']]){
+  let output='';emitActualAppOutcome({reportPresent,verified},line=>{output+=line;});assert.equal(output,expected);
+ }
+});
+test('actual-app annotation ignores malicious raw fields and rejects nonboolean injection without leakage',()=>{
+ const malicious='SECRET\n::error::injected%0A::set-output name=token::SECRET';
+ let output='';emitActualAppOutcome({reportPresent:false,verified:false,stderr:malicious,stdout:malicious,path:malicious,environment:{TOKEN:malicious}},line=>{output+=line;});
+ assert.equal(output,'::error::electron-actual-app-attestation report=missing verification=failed\n');assert.doesNotMatch(output,/SECRET|injected|set-output|TOKEN/);
+ for(const altered of [{reportPresent:malicious,verified:false},{reportPresent:true,verified:malicious},{reportPresent:false,verified:true}]){
+  assert.throws(()=>emitActualAppOutcome(altered,line=>{output+=line;}),error=>error.message==='Invalid fixed actual-app outcome');
+ }
+ assert.equal(output,'::error::electron-actual-app-attestation report=missing verification=failed\n');
+});
+test('actual-app outcome annotation is after retained verification and does not replace failure reporting',()=>{
+ const source=fs.readFileSync(path.resolve(__dirname,'../scripts/run-product-gates.cjs'),'utf8');
+ const annotation=source.indexOf("if(id==='electron-actual-app-attestation')emitActualAppOutcome");
+ assert.ok(annotation>source.indexOf("catch(error){record.status='failed';record.failures.push(error.message);}"));
+ assert.ok(annotation<source.indexOf("commands.push(record);return record.status==='passed';"));
+ assert.ok(source.includes("for(const record of commands)saveReport(record);"));
+});
+
+test('throwing annotation writer leaves actual execute record and saveReport flow unchanged',()=>{
+ const vm=require('node:vm'),source=fs.readFileSync(path.resolve(__dirname,'../scripts/run-product-gates.cjs'),'utf8');
+ const save=source.slice(source.indexOf('function saveReport('),source.indexOf('function execute('));
+ const execute=source.slice(source.indexOf('function execute('),source.indexOf(" execute('migration-runner-contracts'"));
+ function flow(throwing,defaultWriter=false){
+  const commands=[],writes=new Map(),environment={XTEND_CORE_SHA:'a'.repeat(40),XTEND_DEMO_SHA:'b'.repeat(40)};
+  const sandbox={root:'/controlled',path,commands,process:{env:environment},Date,JSON,Buffer,
+   spawnSync:()=>({status:1,stdout:'',stderr:'controlled retained error'}),
+   evaluateResult:()=>({status:'failed',skips:[],failures:['retained failure'],sources:[]}),
+   fs:{existsSync:()=>false,mkdirSync:()=>{},writeFileSync:(file,bytes)=>writes.set(file,bytes)},
+   emitActualAppOutcome:input=>defaultWriter?emitActualAppOutcome(input):emitActualAppOutcome(input,()=>{if(throwing){const error=Error('EPIPE');error.code='EPIPE';throw error;}})};
+  const api=vm.runInNewContext(save+execute+';({execute,saveReport});',sandbox);
+  assert.equal(api.execute('electron-actual-app-attestation',['controlled-command']),false);
+  for(const record of commands)api.saveReport(record);
+  return {records:JSON.parse(JSON.stringify(commands)),writes:[...writes]};
+ }
+ const originalWriteSync=fs.writeSync,calls=[];
+ try {
+  fs.writeSync=(fd,line)=>{calls.push({fd,line});const error=Error('EPIPE');error.code='EPIPE';throw error;};
+  assert.deepEqual(flow(false,true),flow(false));
+  assert.deepEqual(calls,[{fd:2,line:'::error::electron-actual-app-attestation report=missing verification=failed\n'}]);
+  assert.throws(()=>emitActualAppOutcome({reportPresent:'injected',verified:false}),/Invalid fixed actual-app outcome/);
+  assert.equal(calls.length,1);
+ } finally {fs.writeSync=originalWriteSync;}
+ assert.deepEqual(flow(true),flow(false));
+ const result=flow(true);assert.equal(result.records[0].status,'failed');assert.equal(result.records[0].exitCode,1);
+ assert.ok(result.writes.some(([file,bytes])=>file.endsWith('/suites/electron-actual-app-attestation.json')&&JSON.parse(bytes).status==='failed'));
+ let called=false;assert.throws(()=>emitActualAppOutcome({reportPresent:'injected',verified:false},()=>{called=true;throw Error('EPIPE');}),/Invalid fixed actual-app outcome/);assert.equal(called,false);
+});

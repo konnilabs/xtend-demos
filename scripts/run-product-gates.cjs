@@ -2,6 +2,7 @@
 const fs=require('node:fs'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {evaluateResult}=require('./product-result-evidence.cjs');
+const {emitActualAppOutcome}=require('./actual-app-outcome-annotation.cjs');
 const root=path.resolve(__dirname,'..');
 async function run() {
  const commands=[];
@@ -22,6 +23,7 @@ async function run() {
     record.attestation={coreSha:consumer.coreSha,demoSha:consumer.demoSha,sourceHashes:consumer.sourceHashes,provisioningReceiptSha256:consumer.provisioningReceiptSha256,app:{file:'electron-sandbox-attestation.json',sha256:digest(appBytes)},consumer:{file:'electron-app-attestation-consumer.json',sha256:digest(consumerBytes)}};
    }catch(error){record.status='failed';record.failures.push(error.message);}
   }
+  if(id==='electron-actual-app-attestation')emitActualAppOutcome({reportPresent:fs.existsSync(path.join(root,'.xtend-test-results/electron-sandbox-attestation.json')),verified:record.status==='passed'});
   commands.push(record);return record.status==='passed';
  }
  execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/runtime-preparation-diagnostics.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/shop-generated-discovery.test.cjs','tests/migration/material-product-runtime.test.cjs']);
