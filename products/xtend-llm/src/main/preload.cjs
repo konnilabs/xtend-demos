@@ -18,7 +18,7 @@ function createReasonObserver(nativeDetail, send) {
  }catch{}try{send(id);}catch{}};
 }
  const detail = Object.getOwnPropertyDescriptor(CustomEvent.prototype, 'detail').get;
- observeBootReason = createReasonObserver(detail, id => ipcRenderer.send('xtend-llm:boot-reason', id));
+ if (typeof detail === 'function') observeBootReason = createReasonObserver(detail, id => ipcRenderer.send('xtend-llm:boot-reason', id));
 } catch {}
 
 // Passive fixed-topic observation; payloads and outcomes remain untouched.

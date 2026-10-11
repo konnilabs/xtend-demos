@@ -18,3 +18,13 @@ test('trusted main enum dedup, foreign rejection, independent closed streams, ab
 test('one summary keeps independent sets and raw result; writer failure never changes original result',()=>{const result={status:1,stdout:'xtend-reason format=1 id=L001\nPRIVATE',stderr:'xtend-reason format=1 id=V001\n'},copy={...result},lines=[];emitRuntimeSummary(result,false,x=>lines.push(x));assert.equal(lines.length,1);assert.ok(!lines[0].includes('PRIVATE'));assert.match(lines[0],/reason_stdout=1[01]{41} reason_stderr=0{23}1[01]{18}/);assert.deepEqual(result,copy);assert.doesNotThrow(()=>emitRuntimeSummary(result,false,()=>{throw Error('PRIVATE')}));});
 
 test('every41 mapping entry matches exact pinned producer source line, never inferred metadata',()=>{const fixture=require('./boot-reason-producer-bindings.json');for(const row of mapping){const name=row.source?'plan-runtime.mjs':'rmt-dom-descriptor-renderer.js';const numbers=row.source?[row.source.split(':')[1]]:row.sourceLines;for(const n of numbers)assert.ok(fixture[name].lines[n].includes(row.literal||row.prefix));}});
+
+test('unavailable native setup NONE, actual reader failure U000; original eight registrations and event bits conserved',()=>{
+ const s=fs.readFileSync(require.resolve('../products/xtend-llm/src/main/preload.cjs'),'utf8'),block=s.slice(s.indexOf('// Source-bound reason observation'),s.indexOf('// Diagnostic-only'));
+ for(const mode of ['absent','missing','undefined','null','number','throwing','malformed']){
+  const sent=[],listeners={},ctx={window:{addEventListener(t,fn){listeners[t]=fn;}},ipcRenderer:{send(c,id){sent.push([c,id]);}}};
+  if(mode!=='absent'){const prototype={};if(!['missing','throwing','malformed'].includes(mode))Object.defineProperty(prototype,'detail',{value:mode==='null'?null:mode==='number'?7:undefined});if(mode==='throwing'||mode==='malformed')Object.defineProperty(prototype,'detail',{get(){if(mode==='throwing')throw Error('PRIVATE');return null;}});ctx.CustomEvent={prototype};}
+  vm.runInNewContext(block,ctx);assert.equal(Object.keys(listeners).length,8);assert.deepEqual(sent.map(x=>x[1]),['B000','B001','B002','B003','B004','B005','B006','B007','B008']);
+  listeners['xtend-maraca:boot-error']({});listeners['xtend-maraca:orchestration-diagnostic']({});assert.deepEqual(sent.filter(x=>x[0]==='xtend-llm:boot-observation').slice(-2).map(x=>x[1]),['B105','B108']);assert.deepEqual(sent.filter(x=>x[0]==='xtend-llm:boot-reason').map(x=>x[1]),['throwing','malformed'].includes(mode)?['U000','U000']:[]);
+ }
+});
