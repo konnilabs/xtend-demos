@@ -5,8 +5,23 @@ VERSION='42.10.0'
 ZIP_SHA='edcfae0a8cf2a75ceee8a9842a0117521283164708b193495f4cb60ab2d6aa0d'
 DEST=pathlib.Path('/opt/xtend-electron')/VERSION/ZIP_SHA
 
+PREFLIGHT_REASONS={'Ephemeral GitHub Linux x64 runner required': 'epf-runner-context', 'Application must remain non-root Linux x64': 'epf-app-context', 'Unreviewed sandbox/runtime override rejected': 'epf-runtime-override', 'Sandbox-disabling option rejected': 'epf-sandbox-option', 'Missing immutable destination ancestor': 'epf-ancestor-missing', 'Symlink/non-directory destination ancestor': 'epf-ancestor-type', 'Destination ancestor not root-owned immutable': 'epf-ancestor-owner-mode', 'Foreign destination': 'epf-destination-identity', 'Destination must be new': 'epf-destination-existing', 'Official ZIP checksum mismatch': 'epf-archive-digest', 'Unsafe official archive member': 'epf-archive-path', 'Archive links/special members rejected': 'epf-archive-type', 'Archive privileged mode rejected': 'epf-archive-mode', 'Duplicate archive member': 'epf-archive-duplicate', 'Official helper/executable missing': 'epf-archive-required'}
+
+def emit_preflight_reason(error,mode,env=None,write=None):
+    # Only validator-owned fixed codes; never emit message/path/stdout/stderr.
+    try:
+        if mode!='preflight' or (os.environ if env is None else env).get('GITHUB_ACTIONS')!='true':return
+        reason=getattr(error,'_owned_preflight_reason',None)
+        if reason not in PREFLIGHT_REASONS.values():return
+        line='::error::runtime-preparation stage=checksum-preflight reason='+reason+' exit=1'
+        (write or (lambda value:print(value,file=sys.stderr)))(line)
+    except Exception:pass # Observability cannot replace the original blocking failure.
+
 def check(value,message):
-    if not value: raise ValueError(message)
+    if not value:
+        error=ValueError(message)
+        error._owned_preflight_reason=PREFLIGHT_REASONS.get(message)
+        raise error
 def sha(data):return hashlib.sha256(data).hexdigest()
 def archive(zip_path):
     data=pathlib.Path(zip_path).read_bytes();check(sha(data)==ZIP_SHA,'Official ZIP checksum mismatch')
@@ -75,4 +90,4 @@ if __name__=='__main__':
             check(pathlib.Path(sys.argv[2])==DEST/'distribution.zip','Foreign copied ZIP');ancestors(DEST,True);st=pathlib.Path(sys.argv[2]).lstat();check(stat.S_ISREG(st.st_mode) and st.st_uid==0 and st.st_gid==0 and stat.S_IMODE(st.st_mode)==0o444,'Copied ZIP not immutable root-owned');archive(sys.argv[2]);print('immutable copied ZIP passed')
         elif mode in ('installed-unarmed','installed'):print(json.dumps(installed(sys.argv[2],sys.argv[3],mode=='installed'),sort_keys=True))
         else:raise ValueError('Unknown validation mode')
-    except Exception as error:print(str(error),file=sys.stderr);sys.exit(1)
+    except Exception as error:emit_preflight_reason(error,locals().get('mode'));print(str(error),file=sys.stderr);sys.exit(1)

@@ -64,4 +64,25 @@ class Integrity(unittest.TestCase):
   (dist/'chrome-sandbox').unlink()
   with patch.object(v,'DEST',self.root),patch.object(v,'ZIP_SHA',v.sha(p.read_bytes())),patch.object(v,'ancestors'),patch.object(pathlib.Path,'lstat',metadata()):
    with self.assertRaisesRegex(ValueError,'Missing'):v.installed(p,dist)
+ def test_owned_preflight_reasons_preserve_original_failure_and_never_leak(self):
+  for message,reason in v.PREFLIGHT_REASONS.items():
+   with self.assertRaises(ValueError) as caught:v.check(False,message)
+   self.assertEqual(str(caught.exception),message);out=[]
+   v.emit_preflight_reason(caught.exception,'preflight',{'GITHUB_ACTIONS':'true'},out.append)
+   self.assertEqual(out,['::error::runtime-preparation stage=checksum-preflight reason='+reason+' exit=1'])
+   for mode,env in [('archive',{'GITHUB_ACTIONS':'true'}),('preflight',{})]:
+    quiet=[];v.emit_preflight_reason(caught.exception,mode,env,quiet.append);self.assertEqual(quiet,[])
+  secret='/private/token=SECRET\n::error file=SECRET::LEAK'
+  for reason in [None,secret,'epf-archive-digest-foreign']:
+   error=ValueError(secret);error._owned_preflight_reason=reason;out=[]
+   v.emit_preflight_reason(error,'preflight',{'GITHUB_ACTIONS':'true'},out.append);self.assertEqual(out,[])
+  error=ValueError(secret);out=[];v.emit_preflight_reason(error,'preflight',{'GITHUB_ACTIONS':'true'},out.append);self.assertEqual(out,[])
+  v.emit_preflight_reason(caught.exception,'preflight',{'GITHUB_ACTIONS':'true'},lambda _:(_ for _ in ()).throw(RuntimeError(secret)))
+ def test_actual_cli_context_failure_retains_exit_and_adds_only_fixed_reason(self):
+  # Deliberately incomplete synthetic environment, NOT hosted-context evidence.
+  import subprocess,sys
+  script=pathlib.Path(__file__).parents[1]/'scripts/electron-sandbox-integrity.py'
+  result=subprocess.run([sys.executable,str(script),'preflight',str(v.DEST),'unused'],env={'GITHUB_ACTIONS':'true'},capture_output=True,text=True)
+  self.assertEqual(result.returncode,1);self.assertEqual(result.stdout,'')
+  self.assertEqual(result.stderr,'::error::runtime-preparation stage=checksum-preflight reason=epf-runner-context exit=1\nEphemeral GitHub Linux x64 runner required\n')
 if __name__=='__main__':unittest.main(verbosity=2)
