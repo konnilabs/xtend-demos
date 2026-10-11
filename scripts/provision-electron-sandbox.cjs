@@ -4,6 +4,7 @@ const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),{exe
 const version='42.10.0',zipSha='edcfae0a8cf2a75ceee8a9842a0117521283164708b193495f4cb60ab2d6aa0d';
 const destination='/opt/xtend-electron/'+version+'/'+zipSha,dist=destination+'/dist';
 const validator=path.join(__dirname,'electron-sandbox-integrity.py');
+const {annotate}=require('./runtime-preparation-diagnostics.cjs');
 const run=(cmd,args)=>execFileSync(cmd,args,{encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:600000});
 function commands(zip){return [
  ['sudo',['install','-d','-o','root','-g','root','-m','0755',destination]],
@@ -21,26 +22,29 @@ function verifyReceipt(receipt){
  return true;
 }
 function provision(electronRoot,execute=run){
+ let stage='identity';
+ try {
  if(process.env.REQUIRED_CI_ATTESTATION!=='1')throw Error('Explicit REQUIRED_CI_ATTESTATION=1 is required before provisioning');
  const pkg=JSON.parse(fs.readFileSync(path.join(electronRoot,'package.json'))),checksums=JSON.parse(fs.readFileSync(path.join(electronRoot,'checksums.json'))),name='electron-v'+version+'-linux-x64.zip';
  if(pkg.version!==version||checksums[name]!==zipSha)throw Error('Locked official Electron identity changed');
- execute('python3',[validator,'live-policy',path.resolve(electronRoot,'../../src/main/electron-main.mjs')]);
- if(process.getuid()===0)throw Error('Application must remain unprivileged');
+ stage='live-policy';execute('python3',[validator,'live-policy',path.resolve(electronRoot,'../../src/main/electron-main.mjs')]);
+ stage='identity';if(process.getuid()===0)throw Error('Application must remain unprivileged');
  if(fs.existsSync(path.join(electronRoot,'dist'))||fs.lstatSync(electronRoot).isSymbolicLink())throw Error('Fresh ignored-script Electron installation required; existing dist is not deleted');
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-electron-verified-'));
  try{
-  const zip=path.join(temp,name);execute('curl',['--fail','--location','--silent','--show-error','https://github.com/electron/electron/releases/download/v'+version+'/'+name,'--output',zip]);
-  execute('python3',[validator,'preflight',destination,zip]);
-  execute(process.execPath,['--test',path.join(__dirname,'../tests/electron-sandbox-provisioning.test.cjs')]);
+  stage='download';const zip=path.join(temp,name);execute('curl',['--fail','--location','--silent','--show-error','https://github.com/electron/electron/releases/download/v'+version+'/'+name,'--output',zip]);
+  stage='checksum';execute('python3',[validator,'preflight',destination,zip]);
+  stage='validation';execute(process.execPath,['--test',path.join(__dirname,'../tests/electron-sandbox-provisioning.test.cjs')]);
   execute('env',['XTEND_OFFICIAL_ELECTRON_ZIP='+zip,'PYTHONDONTWRITEBYTECODE=1','python3',path.join(__dirname,'../tests/electron-sandbox-integrity.test.py')]);
-  let receipt;for(const [cmd,args] of commands(zip)){const output=execute(cmd,args);if(cmd==='python3'&&args[1]==='installed')receipt=JSON.parse(output);}
+  let receipt;let index=0;for(const [cmd,args] of commands(zip)){stage=['helper-install','helper-install','checksum','extract','extract','checksum','helper-install','checksum'][index++];const output=execute(cmd,args);if(cmd==='python3'&&args[1]==='installed')receipt=JSON.parse(output);}
   // One immutable installation for require('electron'), CLI and canary children.
-  fs.symlinkSync(dist,path.join(electronRoot,'dist'),'dir');fs.writeFileSync(path.join(electronRoot,'path.txt'),'electron');
+  stage='identity';fs.symlinkSync(dist,path.join(electronRoot,'dist'),'dir');fs.writeFileSync(path.join(electronRoot,'path.txt'),'electron');
   if(fs.realpathSync(path.join(electronRoot,'dist'))!==dist)throw Error('Electron module resolution differs from verified runtime');
-  const probeOutput=execute('xvfb-run',['-a',dist+'/electron',path.join(__dirname,'electron-sandbox-probe.cjs')]);
+  stage='probe';const probeOutput=execute('xvfb-run',['-a',dist+'/electron',path.join(__dirname,'electron-sandbox-probe.cjs')]);
   const proof=JSON.parse(probeOutput.trim().split('\n').at(-1));if(proof.sandboxed!==true||proof.rendererSeccomp!==2||proof.applicationUid===0||proof.executable!==dist+'/electron'||proof.electronVersion!==version)throw Error('Actual Electron sandbox capability proof failed');
-  receipt.runtimeProof=proof;verifyReceipt(receipt);
+  stage='receipt';receipt.runtimeProof=proof;verifyReceipt(receipt);
   const receiptFile=path.join(electronRoot,'xtend-sandbox-receipt.json');fs.writeFileSync(receiptFile,JSON.stringify({...receipt,electronRoot:fs.realpathSync(electronRoot)},null,2)+'\n');return receipt;
  }finally{fs.rmSync(temp,{recursive:true,force:true});}
+ }catch(error){annotate(stage,error);throw error;}
 }
 module.exports={provision,commands,destination,dist,version,zipSha,verifyReceipt};

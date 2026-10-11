@@ -24,7 +24,7 @@ async function run() {
   }
   commands.push(record);return record.status==='passed';
  }
- execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/material-product-runtime.test.cjs']);
+ execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/runtime-preparation-diagnostics.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/material-product-runtime.test.cjs']);
  execute('http-security',[process.execPath,'--test','--test-reporter=tap','tests/security/http.test.mjs']);
  const xss=await require('../tests/security/product_xss_suite.cjs').runProductXss({rootDir:root}).catch(error=>({ok:false,failures:[error.message]}));
  commands.push({id:'product-xss',command:['runProductXss'],exitCode:xss.ok?0:1,status:xss.ok?'passed':'failed',skips:xss.skips||[],failures:xss.failures||[]});
