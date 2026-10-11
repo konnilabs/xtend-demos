@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "suites": [
+    {
+      "id": "xtend-llm-app-services-catfood",
+      "label": "XTend LLM AppServices Catfood",
+      "description": "Builds the XTend LLM production product through Maraca and validates its AppServices source, service graph, bundle, types and budget evidence.",
+      "defaultIncluded": true,
+      "handler": "xtend-llm-app-services-catfood",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_llm_app_services_catfood_suite.js",
+          "function": "runXtendLlmAppServicesCatfoodSuite",
+          "arguments": [
+            "{ rootDir }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "maraca-app-services-test-bench",
+      "label": "Maraca App Services Test Bench",
+      "description": "Builds and exercises the strict CLI-generated Node/SQLite AppServices catfood product.",
+      "defaultIncluded": true,
+      "handler": "maraca-app-services-test-bench",
+      "implementations": [
+        {
+          "path": "tests/products/maraca_app_services_test_bench_suite.js",
+          "function": "runMaracaAppServicesTestBenchSuite",
+          "arguments": [
+            "{ rootDir }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "xtend-material-catfooding",
+      "label": "XTM-12 XTend Material Catfooding Workbench",
+      "description": "Builds and tunes the RMT-first Workbench, captures product browser evidence and gates lessons, Dev Surface, Trusted DOM and anti-monkeypatching ownership.",
+      "defaultIncluded": true,
+      "handler": "xtend-material-catfooding",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_material_catfooding_suite.js",
+          "function": "runXtendMaterialCatfoodingSuite",
+          "arguments": [
+            "{ rootDir }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "erp-resumability-catfood",
+      "label": "RMT ERP Resumability Catfooding",
+      "description": "Builds and tunes the tracked ERP product, then gates signed resume, exact node adoption, intent replay, fallback and the eight-XTension matrix in Chromium.",
+      "defaultIncluded": true,
+      "handler": "erp-resumability-catfood",
+      "implementations": [
+        {
+          "path": "tests/products/erp_resumability_catfooding_suite.js",
+          "function": "runErpResumabilityCatfoodingSuite",
+          "arguments": [
+            "{ rootDir }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "xtend-shop-contracts",
+      "label": "XTend.store compiler and browser contracts",
+      "description": "XTend.store compiler and browser contracts",
+      "defaultIncluded": false,
+      "handler": "xtend-shop-contracts",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_shop_suite.js",
+          "function": "runXtendShopSuite",
+          "arguments": [
+            "{ rootDir, group: \"contracts\" }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "xtend-shop-php",
+      "label": "XTend.store PHP parity and domain",
+      "description": "XTend.store PHP parity and domain",
+      "defaultIncluded": false,
+      "handler": "xtend-shop-php",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_shop_suite.js",
+          "function": "runXtendShopSuite",
+          "arguments": [
+            "{ rootDir, group: \"php\" }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "xtend-shop-browser",
+      "label": "XTend.store isolated guest checkout",
+      "description": "XTend.store isolated guest checkout",
+      "defaultIncluded": false,
+      "handler": "xtend-shop-browser",
+      "implementations": [
+        {
+          "path": "tests/products/xtend_shop_suite.js",
+          "function": "runXtendShopSuite",
+          "arguments": [
+            "{ rootDir, group: \"browser\" }"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "shop-browser-fpm",
+      "label": "Required Shop PHP-FPM host acceptance",
+      "defaultIncluded": true,
+      "handler": "shop-browser-fpm",
+      "implementations": [
+        {
+          "path": "scripts/run-shop-host-gate.cjs",
+          "function": "runShopHostGate",
+          "arguments": [
+            "{mode: \"fpm\"}"
+          ]
+        }
+      ],
+      "resources": [
+        "repository",
+        "browser",
+        "php-fpm"
+      ],
+      "timeoutMs": 300000
+    }
+  ],
+  "profiles": {
+    "xtend-material-catfooding": {
+      "suites": [
+        "xtend-material-catfooding"
+      ],
+      "reports": [],
+      "includes": []
+    },
+    "erp-resumability-catfood": {
+      "suites": [
+        "erp-resumability-catfood"
+      ],
+      "reports": [
+        ".xtend-test-results/erp-resumability-catfood-report.json"
+      ],
+      "includes": []
+    },
+    "pr": {
+      "suites": [
+        "xtend-llm-app-services-catfood"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-pr-gate-report.json"
+      ],
+      "includes": []
+    },
+    "release:full": {
+      "suites": [
+        "xtend-llm-app-services-catfood"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-release-gate-report.json"
+      ],
+      "includes": []
+    },
+    "release": {
+      "suites": [
+        "xtend-llm-app-services-catfood"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-release-report.json"
+      ],
+      "includes": []
+    },
+    "xtend-llm-app-services-catfood": {
+      "suites": [
+        "xtend-llm-app-services-catfood"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-llm-app-services-catfood-report.json"
+      ],
+      "includes": []
+    },
+    "maraca-app-services-test-bench": {
+      "suites": [
+        "maraca-app-services-test-bench"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-maraca-app-services-test-bench-report.json"
+      ],
+      "includes": []
+    },
+    "maraca-app-services": {
+      "suites": [
+        "xtend-llm-app-services-catfood"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-maraca-app-services-gate-report.json"
+      ],
+      "includes": []
+    },
+    "maraca": {
+      "suites": [
+        "xtend-llm-app-services-catfood"
+      ],
+      "reports": [
+        ".xtend-test-results/xtend-maraca-gate-report.json"
+      ],
+      "includes": []
+    },
+    "xtend-shop-contracts": {
+      "suites": [
+        "xtend-shop-contracts"
+      ],
+      "reports": [],
+      "requireNoSkips": true,
+      "includes": []
+    },
+    "xtend-shop-php": {
+      "suites": [
+        "xtend-shop-php"
+      ],
+      "reports": [],
+      "requireNoSkips": true,
+      "includes": []
+    },
+    "xtend-shop-browser": {
+      "suites": [
+        "xtend-shop-browser"
+      ],
+      "reports": [],
+      "requireNoSkips": true,
+      "includes": []
+    }
+  },
+  "ci": {
+    "requiredSuites": [
+      "erp-resumability-catfood",
+      "maraca-app-services-test-bench",
+      "xtend-llm-app-services-catfood",
+      "xtend-material-catfooding",
+      "xtend-shop-browser",
+      "xtend-shop-contracts",
+      "xtend-shop-php",
+      "shop-browser-fpm"
+    ],
+    "installation": "candidate-packages",
+    "requireNoSkips": true,
+    "shopHostMatrix": {
+      "workflow": ".github/workflows/xtend-shop-host-matrix.yml",
+      "laravel12Php": [
+        "8.2",
+        "8.3",
+        "8.4",
+        "8.5"
+      ],
+      "laravel13Php": [
+        "8.3",
+        "8.4",
+        "8.5"
+      ],
+      "fpm": {
+        "laravel": "12",
+        "php": "8.3",
+        "binary": "/usr/sbin/php-fpm8.3",
+        "required": true
+      },
+      "coreCandidateFpm": {
+        "php": "8.4",
+        "required": true
+      }
+    }
+  }
+}

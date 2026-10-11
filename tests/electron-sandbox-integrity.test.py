@@ -1,0 +1,152 @@
+"""Portable validation/risk tests only: no privileged execution or ownership mutation."""
+import importlib.util,os,pathlib,stat,tempfile,unittest,zipfile
+from unittest.mock import patch
+spec=importlib.util.spec_from_file_location('integrity',pathlib.Path(__file__).parents[1]/'scripts/electron-sandbox-integrity.py');v=importlib.util.module_from_spec(spec);spec.loader.exec_module(v)
+class Integrity(unittest.TestCase):
+ def setUp(self):self.tmp=tempfile.TemporaryDirectory();self.root=pathlib.Path(self.tmp.name);self.addCleanup(self.tmp.cleanup)
+ def zip(self,name='fixture.zip',members=None):
+  p=self.root/name
+  with zipfile.ZipFile(p,'w') as z:
+   for name,mode,data in members or [('chrome-sandbox',stat.S_IFREG|0o755,b'helper'),('electron',stat.S_IFREG|0o755,b'app')]:
+    row=zipfile.ZipInfo(name);row.external_attr=mode<<16;z.writestr(row,data)
+  return p
+ def test_real_official_archive_identity_and_regular_closure(self):
+  p=os.environ['XTEND_OFFICIAL_ELECTRON_ZIP'];members=v.archive(p);self.assertGreater(len(members),2);self.assertIn('chrome-sandbox',members);self.assertIn('electron',members)
+ def test_actual_source_sandbox_false_mutation_blocks_provisioning(self):
+  main=pathlib.Path(__file__).parents[1]/'products/xtend-llm/src/main/electron-main.mjs'
+  p=self.root/'actual-main-negative.mjs';p.write_text(main.read_text().replace('sandbox: true','sandbox: false'))
+  with self.assertRaisesRegex(ValueError,'disables sandbox'):v.live_policy(p)
+ def test_explicit_sandboxed_product_policy_positive_control(self):
+  p=self.root/'main.mjs';p.write_text('new BrowserWindow({webPreferences:{sandbox: true,nodeIntegration: false,contextIsolation: true}})');self.assertTrue(v.live_policy(p))
+ def test_wrong_zip_digest_rejects(self):
+  with self.assertRaisesRegex(ValueError,'checksum'):v.archive(self.zip())
+ def test_path_escape_symlink_privileged_extra_duplicate_members_reject(self):
+  for name,mode in [('../outside',stat.S_IFREG|0o644),('/absolute',stat.S_IFREG|0o644),('link',stat.S_IFLNK|0o777),('setuid',stat.S_IFREG|0o4755),('device',stat.S_IFCHR|0o644)]:
+   p=self.zip(members=[(name,mode,b'x')])
+   with patch.object(v,'ZIP_SHA',v.sha(p.read_bytes())):
+    with self.assertRaises(ValueError):v.archive(p)
+  p=self.zip(members=[('electron',stat.S_IFREG|0o755,b'a'),('electron',stat.S_IFREG|0o755,b'b')])
+  with patch.object(v,'ZIP_SHA',v.sha(p.read_bytes())):
+   with self.assertRaisesRegex(ValueError,'Duplicate'):v.archive(p)
+ def test_missing_helper_rejects(self):
+  p=self.zip(members=[('electron',stat.S_IFREG|0o755,b'app')])
+  with patch.object(v,'ZIP_SHA',v.sha(p.read_bytes())):
+   with self.assertRaisesRegex(ValueError,'missing'):v.archive(p)
+ def test_nonrunner_root_foreign_arch_override_and_flags_reject(self):
+  env={'GITHUB_ACTIONS':'true','RUNNER_OS':'Linux','RUNNER_ARCH':'X64'};v.context(env,1000,'linux','x86_64')
+  for args in [({},1000,'linux','x86_64'),(env,0,'linux','x86_64'),(env,1000,'linux','arm64'),({**env,'ELECTRON_OVERRIDE_DIST_PATH':'/foreign'},1000,'linux','x86_64'),({**env,'CHROME_DEVEL_SANDBOX':'/foreign'},1000,'linux','x86_64'),({**env,'NODE_OPTIONS':'--no-sandbox'},1000,'linux','x86_64'),({**env,'ELECTRON_ARGS':'--disable-setuid-sandbox'},1000,'linux','x86_64')]:
+   with self.assertRaises(ValueError):v.context(*args)
+ def test_symlink_ancestor_rejects_before_any_write(self):
+  outside=self.root/'outside';outside.mkdir();link=self.root/'link';link.symlink_to(outside,target_is_directory=True)
+  with self.assertRaises(ValueError):v.ancestors(link/'new'/'dist')
+  self.assertEqual(list(outside.iterdir()),[])
+ def test_writable_or_nonroot_ancestor_rejects(self):
+  with self.assertRaises(ValueError):v.ancestors(self.root/'new')
+ def test_foreign_installation_destination_rejects(self):
+  p=self.zip()
+  with patch.object(v,'ZIP_SHA',v.sha(p.read_bytes())):
+   with self.assertRaisesRegex(ValueError,'Foreign'):v.installed(p,self.root/'foreign')
+ def test_exact_helper_mode_uid_gid_bytes_extra_suid_and_missing_member_reject(self):
+  # Controlled metadata simulation is boundary evidence, never installed/runtime proof.
+  p=self.zip();dist=self.root/'dist';dist.mkdir();(dist/'electron').write_bytes(b'app');(dist/'chrome-sandbox').write_bytes(b'helper')
+  original=pathlib.Path.lstat
+  def metadata(mode=0o4755,uid=0,gid=0,extra=False):
+   def read(file):
+    st=original(file);values=list(st);values[0]=stat.S_IFDIR|0o555 if file.is_dir() else stat.S_IFREG|(mode if file.name=='chrome-sandbox' else (0o4555 if extra else 0o555));values[4]=uid;values[5]=gid;return os.stat_result(values)
+   return read
+  with patch.object(v,'DEST',self.root),patch.object(v,'ZIP_SHA',v.sha(p.read_bytes())),patch.object(v,'ancestors'),patch.object(pathlib.Path,'lstat',metadata()):self.assertTrue(v.installed(p,dist)['rootOwned'])
+  for changes in [{'mode':0o755},{'uid':1000},{'gid':1000},{'extra':True}]:
+   with patch.object(v,'DEST',self.root),patch.object(v,'ZIP_SHA',v.sha(p.read_bytes())),patch.object(v,'ancestors'),patch.object(pathlib.Path,'lstat',metadata(**changes)):
+    with self.assertRaises(ValueError):v.installed(p,dist)
+  (dist/'chrome-sandbox').write_bytes(b'tampered')
+  with patch.object(v,'DEST',self.root),patch.object(v,'ZIP_SHA',v.sha(p.read_bytes())),patch.object(v,'ancestors'),patch.object(pathlib.Path,'lstat',metadata()):
+   with self.assertRaisesRegex(ValueError,'digest'):v.installed(p,dist)
+  (dist/'chrome-sandbox').unlink()
+  with patch.object(v,'DEST',self.root),patch.object(v,'ZIP_SHA',v.sha(p.read_bytes())),patch.object(v,'ancestors'),patch.object(pathlib.Path,'lstat',metadata()):
+   with self.assertRaisesRegex(ValueError,'Missing'):v.installed(p,dist)
+ def test_owned_preflight_reasons_preserve_original_failure_and_never_leak(self):
+  for message,reason in v.PREFLIGHT_REASONS.items():
+   with self.assertRaises(ValueError) as caught:v.check(False,message)
+   self.assertEqual(str(caught.exception),message);out=[]
+   v.emit_preflight_reason(caught.exception,'preflight',{'GITHUB_ACTIONS':'true'},out.append)
+   self.assertEqual(out,['::error::runtime-preparation stage=checksum-preflight reason='+reason+' exit=1'])
+   for mode,env in [('archive',{'GITHUB_ACTIONS':'true'}),('preflight',{})]:
+    quiet=[];v.emit_preflight_reason(caught.exception,mode,env,quiet.append);self.assertEqual(quiet,[])
+  secret='/private/token=SECRET\n::error file=SECRET::LEAK'
+  for reason in [None,secret,'epf-archive-digest-foreign']:
+   error=ValueError(secret);error._owned_preflight_reason=reason;out=[]
+   v.emit_preflight_reason(error,'preflight',{'GITHUB_ACTIONS':'true'},out.append);self.assertEqual(out,[])
+  error=ValueError(secret);out=[];v.emit_preflight_reason(error,'preflight',{'GITHUB_ACTIONS':'true'},out.append);self.assertEqual(out,[])
+  v.emit_preflight_reason(caught.exception,'preflight',{'GITHUB_ACTIONS':'true'},lambda _:(_ for _ in ()).throw(RuntimeError(secret)))
+ def test_actual_cli_context_failure_retains_exit_and_adds_only_fixed_reason(self):
+  # Deliberately incomplete synthetic environment, NOT hosted-context evidence.
+  import subprocess,sys
+  script=pathlib.Path(__file__).parents[1]/'scripts/electron-sandbox-integrity.py'
+  result=subprocess.run([sys.executable,str(script),'preflight',str(v.DEST),'unused'],env={'GITHUB_ACTIONS':'true'},capture_output=True,text=True)
+  self.assertEqual(result.returncode,1);self.assertEqual(result.stdout,'')
+  self.assertEqual(result.stderr,'::error::runtime-preparation stage=checksum-preflight reason=epf-runner-context exit=1\nEphemeral GitHub Linux x64 runner required\n')
+ def test_fixed_ancestor_position_and_first_failed_invariant_preserve_guard(self):
+  from types import SimpleNamespace
+  paths=[*reversed(v.DEST.parents),v.DEST]
+  self.assertEqual(len(paths),len(v.ANCESTOR_POSITIONS))
+  for index,position in enumerate(v.ANCESTOR_POSITIONS):
+   for invariant in v.ANCESTOR_INVARIANTS:
+    def info(p):
+     uid=1 if p==paths[index] and invariant=='root-uid' else 0
+     gid=1 if p==paths[index] and invariant=='root-gid' else 0
+     mode=stat.S_IFDIR|(0o775 if p==paths[index] and invariant=='writable-mode' else 0o755)
+     return SimpleNamespace(st_uid=uid,st_gid=gid,st_mode=mode)
+    with patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'lstat',info):
+     with self.assertRaisesRegex(ValueError,'^Destination ancestor not root-owned immutable$') as caught:v.ancestors(v.DEST)
+    self.assertEqual(type(caught.exception),ValueError)
+    out=[];v.emit_preflight_reason(caught.exception,'preflight',{'GITHUB_ACTIONS':'true'},out.append)
+    self.assertEqual(out,['::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode position='+position+' invariant='+invariant+' exit=1'])
+  good=SimpleNamespace(st_uid=0,st_gid=0,st_mode=stat.S_IFDIR|0o755)
+  with patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'lstat',return_value=good):self.assertIsNone(v.ancestors(v.DEST))
+ def test_ancestor_detail_never_emits_foreign_or_raw_data(self):
+  error=ValueError('/SECRET\n::error file=SECRET::LEAK');error._owned_preflight_reason='epf-ancestor-owner-mode'
+  for position,invariant in [('/SECRET','root-uid'),('root','root-uid-foreign'),('root\n::error file=SECRET::LEAK','root-gid')]:
+   error._owned_ancestor_position=position;error._owned_ancestor_invariant=invariant;out=[]
+   v.emit_preflight_reason(error,'preflight',{'GITHUB_ACTIONS':'true'},out.append)
+   self.assertEqual(out,['::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode exit=1'])
+ def test_fixed_destination_and_six_position_mapping(self):
+  expected=pathlib.Path('/usr/lib/xtend-electron')/v.VERSION/v.ZIP_SHA
+  self.assertEqual(v.DEST,expected)
+  self.assertEqual([*reversed(v.DEST.parents),v.DEST],[pathlib.Path('/'),pathlib.Path('/usr'),pathlib.Path('/usr/lib'),pathlib.Path('/usr/lib/xtend-electron'),pathlib.Path('/usr/lib/xtend-electron')/v.VERSION,expected])
+  self.assertEqual(v.ANCESTOR_POSITIONS,('root','usr','usr-lib','installation-parent','version-parent','destination'))
+ def test_existing_system_prefix_is_required_and_never_repaired(self):
+  from types import SimpleNamespace
+  prefix=pathlib.Path('/usr/lib');good=SimpleNamespace(st_uid=0,st_gid=0,st_mode=stat.S_IFDIR|0o755)
+  def present(path):return path!=prefix
+  with patch.object(pathlib.Path,'exists',present),patch.object(pathlib.Path,'is_symlink',return_value=False),patch.object(pathlib.Path,'lstat',return_value=good):
+   with self.assertRaisesRegex(ValueError,'Missing immutable destination ancestor'):v.ancestors(prefix,True)
+  source=(pathlib.Path(__file__).parents[1]/'scripts/electron-sandbox-integrity.py').read_text()
+  self.assertIn("ancestors(pathlib.Path('/usr/lib'),True);ancestors(DEST);check(not DEST.exists()",source)
+  self.assertNotIn('os.chown(',source);self.assertNotIn('os.chmod(',source);self.assertNotIn('mkdir(',source)
+ def test_system_prefix_owner_reason_maps_to_fixed_position(self):
+  from types import SimpleNamespace
+  prefix=pathlib.Path('/usr/lib')
+  def info(path):return SimpleNamespace(st_uid=0,st_gid=0,st_mode=stat.S_IFDIR|(0o775 if path==prefix else 0o755))
+  with patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'lstat',info):
+   with self.assertRaisesRegex(ValueError,'Destination ancestor not root-owned immutable') as caught:v.ancestors(prefix,True)
+  out=[];v.emit_preflight_reason(caught.exception,'preflight',{'GITHUB_ACTIONS':'true'},out.append)
+  self.assertEqual(out,['::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode position=usr-lib invariant=writable-mode exit=1'])
+ def test_every_fixed_ancestor_symlink_or_nondirectory_rejects(self):
+  from types import SimpleNamespace
+  paths=[*reversed(v.DEST.parents),v.DEST]
+  for bad in paths:
+   for kind in [stat.S_IFLNK,stat.S_IFREG]:
+    def info(path):return SimpleNamespace(st_uid=0,st_gid=0,st_mode=(kind if path==bad else stat.S_IFDIR)|0o755)
+    with patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'lstat',info):
+     with self.assertRaisesRegex(ValueError,'Symlink/non-directory destination ancestor'):v.ancestors(v.DEST)
+ def test_actual_preflight_foreign_and_existing_destinations_block_before_archive(self):
+  # Controlled context/stat simulation only, never trusted-runner suitability proof.
+  import runpy,sys,io,contextlib,platform
+  from types import SimpleNamespace
+  script=pathlib.Path(__file__).parents[1]/'scripts/electron-sandbox-integrity.py'
+  for destination,message in [(str(v.DEST),'Destination must be new'),(str(v.DEST).replace('/usr/lib/xtend-electron','/opt/xtend-electron'),'Foreign destination')]:
+   error=io.StringIO()
+   with patch.dict(os.environ,{'GITHUB_ACTIONS':'true','RUNNER_OS':'Linux','RUNNER_ARCH':'X64'},clear=True),patch.object(os,'getuid',return_value=1000),patch.object(platform,'machine',return_value='x86_64'),patch.object(sys,'platform','linux'),patch.object(sys,'argv',[str(script),'preflight',destination,'never-open-archive']),patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'is_symlink',return_value=False),patch.object(pathlib.Path,'lstat',return_value=SimpleNamespace(st_uid=0,st_gid=0,st_mode=stat.S_IFDIR|0o755)),patch.object(zipfile,'ZipFile',side_effect=AssertionError('Must fail before archive')),contextlib.redirect_stderr(error):
+    with self.assertRaises(SystemExit) as caught:runpy.run_path(str(script),run_name='__main__')
+   self.assertEqual(caught.exception.code,1);self.assertIn(message,error.getvalue());self.assertNotIn('never-open-archive',error.getvalue())
+if __name__=='__main__':unittest.main(verbosity=2)

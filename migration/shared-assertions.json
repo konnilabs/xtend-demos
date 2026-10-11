@@ -1,0 +1,125 @@
+{
+  "http": [
+    {
+      "source": "tests/security/http.test.mjs",
+      "testId": "companion checks Host, Origin, token format, query bearer and single-use expiring tickets",
+      "owner": "core",
+      "destination": "tests/security/http.test.mjs",
+      "assertions": "preserved verbatim"
+    },
+    {
+      "source": "tests/security/http.test.mjs",
+      "testId": "AppService provenance checks run before body reading and state changes",
+      "owner": "core",
+      "destination": "tests/security/http.test.mjs",
+      "assertions": "preserved verbatim"
+    },
+    {
+      "source": "tests/security/http.test.mjs",
+      "testId": "Electron capability protects every route and proxy limits bound actual bytes, cache, concurrency and deduplication",
+      "owner": "demos",
+      "destination": "tests/security/http.test.mjs",
+      "assertions": "preserved verbatim"
+    },
+    {
+      "source": "tests/security/http.test.mjs",
+      "testId": "ResumeStore expires, consumes and bounds entries and retained bytes",
+      "owner": "demos",
+      "destination": "tests/security/http.test.mjs",
+      "assertions": "preserved verbatim"
+    },
+    {
+      "source": "tests/security/http.test.mjs",
+      "testId": "local upstream fixture enforces proxy concurrency, timeouts and failed-download cleanup",
+      "owner": "demos",
+      "destination": "tests/security/http.test.mjs",
+      "assertions": "preserved verbatim"
+    },
+    {
+      "source": "tests/security/http.test.mjs",
+      "testId": "zero-byte model objects obey the cache entry quota",
+      "owner": "demos",
+      "destination": "tests/security/http.test.mjs",
+      "assertions": "preserved verbatim"
+    },
+    {
+      "source": "tests/security/http.test.mjs",
+      "testId": "ERP and animation directory/encoded traversal requests leave servers alive; resume requires and consumes its token",
+      "owner": "demos",
+      "destination": "tests/security/http.test.mjs",
+      "assertions": "preserved verbatim"
+    },
+    {
+      "source": "tests/security/http.test.mjs",
+      "testId": "animation server rejects excess parallel renders and recovers when work completes",
+      "owner": "demos",
+      "destination": "tests/security/http.test.mjs",
+      "assertions": "preserved verbatim"
+    }
+  ],
+  "xss": {
+    "targets": [
+      "products/xtend-llm/src/main/app-server.mjs",
+      "products/xtend-llm/src/main/external-navigation.mjs",
+      "products/xtend-llm/src/main/ipc-contract.mjs",
+      "products/xtend-llm/src/renderer/app-controller.mjs",
+      "products/xtend-llm/src/renderer/markdown-format-bridge.mjs",
+      "products/xtend-llm/src/renderer/citation-source-bridge.mjs",
+      "products/xtend-llm/src/renderer/code-block-bridge.mjs"
+    ],
+    "productProbeFunction": "assertXtendLlmProbes",
+    "assertions": [
+      "XTend LLM markdown parser does not create clickable javascript links",
+      "XTend LLM code fences preserve HTML as code text",
+      "XTend LLM citations reject javascript URLs",
+      "XTend LLM citations reject data HTML URLs",
+      "XTend LLM source map filters unsafe source URLs and keeps safe sources",
+      "XTend LLM external navigation rejects javascript URLs",
+      "XTend LLM external navigation blocks same-origin openExternal",
+      "XTend LLM external navigation allows external https through controlled opener",
+      "XTend LLM IPC source normalization filters unsafe URLs",
+      "XTend LLM prompt input remains text data",
+      "XTend LLM custom instructions remain text data",
+      "XTend LLM app server serves SSR shell for XSS probe",
+      "XTend LLM app server emits COOP header",
+      "XTend LLM SSR shell includes object-src CSP",
+      "XTend LLM SSR shell includes base-uri CSP",
+      "XTend LLM SSR shell includes hydration template",
+      "XTend LLM hydration payload escapes executable markup"
+    ],
+    "corePreserved": [
+      "trusted DOM sanitizer",
+      "DOM descriptor renderer",
+      "CSP/browser fixture",
+      "three runtime artifact probes",
+      "static Core sinks"
+    ]
+  },
+  "additionalGroups": [
+    {
+      "source": "tests/rmt/xscaler_protocol_suite.js",
+      "function": "validateTestbenchDriftGuards",
+      "destination": "tests/products/xscaler_testbench_suite.js",
+      "assertionCode": "function validateTestbenchDriftGuards(context, rootDir) {\n  const files = [\n    'products/rmt-animation-testbench/src/shared/testbench-data.mjs',\n    'products/rmt-animation-testbench/server/index.mjs',\n    'products/rmt-animation-testbench/src/client/testbench-controller.mjs',\n    'products/rmt-animation-testbench/scripts/verify.mjs',\n    'products/rmt-animation-testbench/scripts/browser-smoke.mjs'\n  ];\n  const combined = files.map((file) => readText(file, rootDir)).join('\\n');\n  OLD_TESTBENCH_SCHEMAS.forEach((schema) => {\n    context.assert(!combined.includes(schema), `Testbench no longer references old schema ${schema}`);\n  });\n  context.assert(combined.includes(XSCALER_PREFLIGHT_RESPONSE_SCHEMA), 'Testbench references canonical preflight response schema');\n  context.assert(combined.includes(XSCALER_ATC_HANDOFF_SCHEMA), 'Testbench references canonical ATC handoff schema');\n  context.assert(combined.includes('accepted: true'), 'Testbench emits accepted preflight alias');\n  context.assert(combined.includes('ok: true'), 'Testbench keeps ok compatibility alias');\n}\n",
+      "assertions": "verbatim"
+    },
+    {
+      "source": "tests/rmt/xscaler_source_to_sea_suite.js",
+      "function": "validateTestbenchEvidence",
+      "destination": "tests/products/xscaler_testbench_suite.js",
+      "assertionCode": "function validateTestbenchEvidence(context, rootDir) {\n  const shared = readText(TESTBENCH_SHARED, rootDir);\n  const server = readText(TESTBENCH_SERVER, rootDir);\n  const client = readText(TESTBENCH_CLIENT, rootDir);\n\n  context.assert(shared.includes(XSCALER_PREFLIGHT_RESPONSE_SCHEMA), 'Testbench shared data uses canonical preflight response schema');\n  context.assert(shared.includes(XSCALER_ATC_HANDOFF_SCHEMA), 'Testbench shared data uses canonical ATC handoff schema');\n  context.assert(shared.includes('accepted: true') && shared.includes('ok: true'), 'Testbench preflight keeps accepted/ok compatibility');\n  context.assert(server.includes('/api/xscaler/preflight'), 'Testbench server exposes XScaler preflight endpoint');\n  context.assert(server.includes('/api/lazy-surface/'), 'Testbench server exposes lazy-surface endpoint');\n  context.assert(client.includes('/api/xscaler/preflight') && client.includes('/api/lazy-surface/'), 'Testbench client gates lazy surface loading through preflight');\n}\n",
+      "assertions": "verbatim"
+    },
+    {
+      "source": "tests/platform/node_runtime_policy_suite.js",
+      "destination": "tests/products/node_host_contract_suite.js",
+      "assertionCode": "  const llmLock = readJson('products/xtend-llm/package-lock.json', rootDir);\n  context.assert(\n    llmLock.packages && llmLock.packages[''] && llmLock.packages[''].engines\n      && llmLock.packages[''].engines.node === PUBLIC_ENGINE,\n    'XTend LLM lock root mirrors its Node >=24 host contract'\n  );"
+    },
+    {
+      "source": "tests/docs/xtend_material_docs_suite.js",
+      "destination": "tests/products/product_boundary_suite.js",
+      "assertionCode": "  context.assert(migration.businessRecords.stateCount >= 15 && migration.businessRecords.actionCount >= 3 && migration.businessRecords.surfaceCount >= 15, 'migration proof retains substantial state, action and surface records');",
+      "reason": "Substantial business UI belongs to Workbench; semantic provider contracts use small Core fixture."
+    }
+  ]
+}

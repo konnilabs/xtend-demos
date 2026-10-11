@@ -1,0 +1,75 @@
+{
+  "schema": "xtend.maraca.build-config.v1",
+  "source": "src/app.rmt",
+  "sourceFingerprint": "52b269127c54d77931f0f21511d888117b45a847aa72a82a3aae30c63b98ca04",
+  "serviceGraphFingerprint": null,
+  "output": "dist",
+  "selected": {
+    "profile": "max",
+    "lazy": "none",
+    "css": "inline"
+  },
+  "locked": {
+    "orchestration": "strict",
+    "kernel": "strict",
+    "kernelBootMode": "direct",
+    "hydration": "strict",
+    "validation": "strict",
+    "transitions": "strict",
+    "componentMode": "document",
+    "stackMode": "plan",
+    "enablePrewarmWorker": false,
+    "enableUiCoprocessor": false,
+    "enablePwa": false,
+    "enableServiceWorker": false,
+    "enableWebAppManifest": false,
+    "allowDynamicComponents": false,
+    "cssProvider": "tailwind",
+    "cssInput": "src/app.css",
+    "cssSources": [
+      "src/app.rmt",
+      "src/app.css"
+    ],
+    "cssPreflight": "disabled",
+    "cssBudget": null,
+    "cssProviderFallback": "none"
+  },
+  "options": {
+    "source": "src/app.rmt",
+    "out": "dist",
+    "profile": "max",
+    "lazy": "none",
+    "css": "inline",
+    "sizeBudget": "strict",
+    "orchestration": "strict",
+    "kernel": "strict",
+    "kernelBootMode": "direct",
+    "hydration": "strict",
+    "validation": "strict",
+    "transitions": "strict",
+    "componentMode": "document",
+    "stackMode": "plan",
+    "enablePrewarmWorker": false,
+    "enableUiCoprocessor": false,
+    "enablePwa": false,
+    "enableServiceWorker": false,
+    "enableWebAppManifest": false,
+    "allowDynamicComponents": false,
+    "cssProvider": "tailwind",
+    "cssInput": "src/app.css",
+    "cssSources": [
+      "src/app.rmt",
+      "src/app.css"
+    ],
+    "cssPreflight": "disabled",
+    "cssBudget": null,
+    "cssProviderFallback": "none"
+  },
+  "toolchain": {
+    "rollup": "4.64.3",
+    "terser": "5.51.2",
+    "mode": "rollup-terser"
+  },
+  "candidateMatrixFingerprint": "a0adc006285b3f7fdde8a02bc34dc68fa050836983058541984d392c84b7e16d",
+  "configFingerprint": "16510abba0cfb7e14a13a96ebf06bb78b0b7a33d24858f6707495fc2568c39bc"
+}

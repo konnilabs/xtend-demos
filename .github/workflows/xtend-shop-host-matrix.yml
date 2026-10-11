@@ -1,0 +1,85 @@
+name: XTend Shop preserved PHP and FPM host matrix
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '27 4 * * *'
+permissions:
+  contents: read
+jobs:
+  shop:
+    name: Shop Laravel ${{ matrix.laravel }} / PHP ${{ matrix.php }} / ${{ matrix.host }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {laravel: '12', php: '8.2', host: cli, browser: false}
+          - {laravel: '12', php: '8.3', host: fpm, browser: true}
+          - {laravel: '12', php: '8.4', host: cli, browser: false}
+          - {laravel: '12', php: '8.5', host: cli, browser: false}
+          - {laravel: '13', php: '8.3', host: cli, browser: true}
+          - {laravel: '13', php: '8.4', host: cli, browser: false}
+          - {laravel: '13', php: '8.5', host: cli, browser: false}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24.18.0
+          package-manager-cache: false
+      - name: Pin npm 11.17.0
+        working-directory: ${{ runner.temp }}
+        run: npm install --global npm@11.17.0 --no-audit --no-fund
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        env:
+          update: true
+          use_package_cache: false
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, dom, xml, xmlwriter, pdo_sqlite, curl, zip
+          tools: composer:2.10.3
+      - name: Provide the preserved PHP 8.3 FPM lane
+        if: matrix.host == 'fpm'
+        run: node scripts/provision-product-fpm.cjs 8.3
+      - name: Install immutable Chromium and matching WebDriver
+        if: matrix.browser
+        run: node scripts/prepare-browser-toolchain.cjs "${{ runner.temp }}/xtend-browser"
+      - name: Reproduce pinned Core artifacts and candidate locks
+        run: node scripts/prepare-ci-candidates.cjs
+      - name: Prepare the independent Shop compatibility fixture
+        run: |
+          printf 'XTEND_SHOP_FIXTURE=%s/xtend-shop\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          node products/xtend-shop/scripts/prepare-fixture.cjs "$RUNNER_TEMP/xtend-shop" "${{ matrix.laravel }}" "$GITHUB_WORKSPACE/.candidate-source"
+      - name: Install locked PHP dependencies and assert actual platform
+        working-directory: ${{ env.XTEND_SHOP_FIXTURE }}
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist --no-scripts
+          composer check-platform-reqs
+          composer install --working-dir=payment-provider --no-interaction --no-progress --prefer-dist --no-scripts
+          composer check-platform-reqs --working-dir=payment-provider
+          php scripts/setup.php
+          npm run build
+      - name: Required Shop PHP contracts and actual Laravel identity
+        working-directory: ${{ env.XTEND_SHOP_FIXTURE }}
+        env:
+          XTEND_EXPECTED_LARAVEL_MAJOR: ${{ matrix.laravel }}
+          XTEND_EXPECTED_PHP: ${{ matrix.php }}
+        run: |
+          node "$GITHUB_WORKSPACE/scripts/verify-shop-platform.cjs"
+          npm run test:php
+      - name: Required actual Shop browser host-mode acceptance
+        if: matrix.browser
+        run: node scripts/run-shop-host-gate.cjs "${{ matrix.host }}"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: shop-laravel-${{ matrix.laravel }}-php-${{ matrix.php }}-${{ matrix.host }}
+          include-hidden-files: true
+          path: |
+            ${{ env.XTEND_SHOP_FIXTURE }}/storage/reports/
+            .candidate-source/manifest.json
+          if-no-files-found: error

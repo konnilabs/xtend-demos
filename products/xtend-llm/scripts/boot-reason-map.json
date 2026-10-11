@@ -1,0 +1,338 @@
+[
+  {
+    "id": "L001",
+    "match": "exact equality",
+    "literal": "The Maraca View Projection Port does not implement the complete host projection contract.",
+    "source": "plan-runtime.mjs:496",
+    "originalErrorCode": "xtend.maraca.mvc.view-projection-port-invalid",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L002",
+    "match": "exact equality",
+    "literal": "Maraca requires an injected Runtime Module Loader port or explicit ESM module APIs.",
+    "source": "plan-runtime.mjs:513",
+    "originalErrorCode": "xtend.maraca.mvc.module-loader-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L003",
+    "match": "exact equality",
+    "literal": "Maraca requires an injected kernel scheduler authority.",
+    "source": "plan-runtime.mjs:525",
+    "originalErrorCode": "xtend.maraca.mvc.kernel-scheduler-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L004",
+    "match": "exact equality",
+    "literal": "Disposed Maraca plan runtimes cannot be booted again.",
+    "source": "plan-runtime.mjs:2336",
+    "originalErrorCode": null,
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L005",
+    "match": "exact equality",
+    "literal": "Strict Maraca requires an injected Maraca View Projection Port.",
+    "source": "plan-runtime.mjs:2346",
+    "originalErrorCode": "xtend.maraca.mvc.view-projection-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L006",
+    "match": "exact equality",
+    "literal": "Maraca compatibility mode could not construct the canonical View Projection Port.",
+    "source": "plan-runtime.mjs:2362",
+    "originalErrorCode": "xtend.maraca.mvc.view-projection-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L007",
+    "match": "exact equality",
+    "literal": "Strict Maraca requires batchUpdate() for atomic Model projection.",
+    "source": "plan-runtime.mjs:2399",
+    "originalErrorCode": "rmt.state.projection-batch-required",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L008",
+    "match": "exact equality",
+    "literal": "Strict Maraca forbids a Surface-owned State projection; RMT Model is the sole application-state authority.",
+    "source": "plan-runtime.mjs:2404",
+    "originalErrorCode": "xtend.maraca.mvc.surface-state-writer-forbidden",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L009",
+    "match": "exact equality",
+    "literal": "The plan requires the official RMT state and DOM descriptor runtimes.",
+    "source": "plan-runtime.mjs:2409",
+    "originalErrorCode": null,
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L010",
+    "match": "exact equality",
+    "literal": "Strict Maraca requires createRmtDomDescriptorRenderer().commit() and dispose().",
+    "source": "plan-runtime.mjs:2431",
+    "originalErrorCode": "rmt.dom.renderer-contract-incomplete",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L011",
+    "match": "exact equality",
+    "literal": "Strict Maraca requires the complete read-only Model and Model command ports.",
+    "source": "plan-runtime.mjs:2467",
+    "originalErrorCode": "xtend.maraca.mvc.model-ports-incomplete",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L012",
+    "match": "exact equality",
+    "literal": "Strict Maraca validation requires separate evaluator and View projector ports.",
+    "source": "plan-runtime.mjs:2554",
+    "originalErrorCode": "xtend.maraca.mvc.validation-ports-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L013",
+    "match": "exact equality",
+    "literal": "Strict Maraca validation requires the evaluator and View projector ports.",
+    "source": "plan-runtime.mjs:2587",
+    "originalErrorCode": "xtend.maraca.mvc.validation-ports-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L014",
+    "match": "exact equality",
+    "literal": "Strict Maraca requires the Surface Controller lifecycle port.",
+    "source": "plan-runtime.mjs:2647",
+    "originalErrorCode": "xtend.maraca.mvc.surface-controller-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L015",
+    "match": "exact equality",
+    "literal": "The injected PresentationEffectPort must expose invoke(effect, context).",
+    "source": "plan-runtime.mjs:2742",
+    "originalErrorCode": "xtend.maraca.mvc.presentation-port-invalid",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L016",
+    "match": "exact equality",
+    "literal": "Strict Maraca plans with actions require the Action command port.",
+    "source": "plan-runtime.mjs:2762",
+    "originalErrorCode": "xtend.maraca.mvc.action-command-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L017",
+    "match": "exact equality",
+    "literal": "Strict Maraca plans with actions require the Application Controller port.",
+    "source": "plan-runtime.mjs:2767",
+    "originalErrorCode": "xtend.maraca.mvc.application-controller-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L018",
+    "match": "exact equality",
+    "literal": "Strict Maraca plans with application events require the Event Router port.",
+    "source": "plan-runtime.mjs:2776",
+    "originalErrorCode": "xtend.maraca.mvc.event-router-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L019",
+    "match": "exact equality",
+    "literal": "Strict Maraca plans with surfaces require the complete Surface Controller lifecycle port.",
+    "source": "plan-runtime.mjs:2787",
+    "originalErrorCode": "xtend.maraca.mvc.surface-controller-port-incomplete",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L020",
+    "match": "exact equality",
+    "literal": "Strict Maraca plans with surfaces require the Surface projection port.",
+    "source": "plan-runtime.mjs:2796",
+    "originalErrorCode": "xtend.maraca.mvc.surface-projection-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L021",
+    "match": "exact equality",
+    "literal": "Strict Maraca transition plans require the Animation adapter port.",
+    "source": "plan-runtime.mjs:2801",
+    "originalErrorCode": "xtend.maraca.mvc.animation-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L022",
+    "match": "exact equality",
+    "literal": "Strict Maraca transition plans require the Transition Controller port.",
+    "source": "plan-runtime.mjs:2810",
+    "originalErrorCode": "xtend.maraca.mvc.transition-port-missing",
+    "codeAvailability": "NOT preserved by generic boot catches"
+  },
+  {
+    "id": "L023",
+    "match": "exact equality",
+    "literal": "The Maraca composition root could not construct a PresentationEffectPort.",
+    "source": "plan-runtime.mjs:2750",
+    "producerPayloadCode": "xtend.maraca.mvc.presentation-port-missing"
+  },
+  {
+    "id": "V001",
+    "match": "exact equality",
+    "literal": "DOM Descriptor muss strukturiert sein.",
+    "sourceLines": [
+      1983
+    ]
+  },
+  {
+    "id": "V002",
+    "match": "exact equality",
+    "literal": "DOM Descriptor ueberschreitet die maximal erlaubte Verschachtelung.",
+    "sourceLines": [
+      1967
+    ]
+  },
+  {
+    "id": "V003",
+    "match": "exact equality",
+    "literal": "Style darf nur als strukturiertes Objekt gesetzt werden.",
+    "sourceLines": [
+      813,
+      1853
+    ]
+  },
+  {
+    "id": "V004",
+    "match": "exact equality",
+    "literal": "Trusted HTML benoetigt die explizite Trusted-DOM-Boundary.",
+    "sourceLines": [
+      1751
+    ]
+  },
+  {
+    "id": "V005",
+    "match": "exact equality",
+    "literal": "Trusted HTML benoetigt eine explizite policyRef.",
+    "sourceLines": [
+      1755
+    ]
+  },
+  {
+    "id": "V006",
+    "match": "exact equality",
+    "literal": "Trusted HTML benoetigt einen expliziten trustedDomRenderer ausserhalb des Standard-Renderers.",
+    "sourceLines": [
+      1761
+    ]
+  },
+  {
+    "id": "V007",
+    "match": "exact equality",
+    "literal": "trustedDomRenderer muss Node oder Node[] liefern.",
+    "sourceLines": [
+      1798
+    ]
+  },
+  {
+    "id": "V008",
+    "match": "exact equality",
+    "literal": "Slot-Inhalt darf nicht gleichzeitig markup und html deklarieren.",
+    "sourceLines": [
+      1677
+    ]
+  },
+  {
+    "id": "V009",
+    "match": "exact equality",
+    "literal": "Strukturierter Slot-Inhalt benoetigt descriptor, template oder einen expliziten DOM Descriptor.",
+    "sourceLines": [
+      1723
+    ]
+  },
+  {
+    "id": "V010",
+    "match": "startsWith exact anchored prefix at position zero; no captures, suffix read, or output",
+    "prefix": "Nicht unterstuetzter DOM Descriptor Type ",
+    "sourceLines": [
+      2065,
+      2591
+    ]
+  },
+  {
+    "id": "V011",
+    "match": "startsWith exact anchored prefix at position zero; no captures, suffix read, or output",
+    "prefix": "Unsicherer oder ungueltiger Tag ",
+    "sourceLines": [
+      1830,
+      2080
+    ]
+  },
+  {
+    "id": "V012",
+    "match": "startsWith exact anchored prefix at position zero; no captures, suffix read, or output",
+    "prefix": "Unsichere Property ",
+    "sourceLines": [
+      643
+    ]
+  },
+  {
+    "id": "V013",
+    "match": "startsWith exact anchored prefix at position zero; no captures, suffix read, or output",
+    "prefix": "Nicht freigegebene Property ",
+    "sourceLines": [
+      653,
+      658
+    ]
+  },
+  {
+    "id": "V014",
+    "match": "startsWith exact anchored prefix at position zero; no captures, suffix read, or output",
+    "prefix": "Unsicheres Attribut ",
+    "sourceLines": [
+      758,
+      1868
+    ]
+  },
+  {
+    "id": "V015",
+    "match": "startsWith exact anchored prefix at position zero; no captures, suffix read, or output",
+    "prefix": "Unsichere URL fuer Attribut ",
+    "sourceLines": [
+      764,
+      1873
+    ]
+  },
+  {
+    "id": "V016",
+    "match": "startsWith exact anchored prefix at position zero; no captures, suffix read, or output",
+    "prefix": "Unsicherer Event-Name ",
+    "sourceLines": [
+      1098,
+      1920,
+      1948
+    ]
+  },
+  {
+    "id": "V017",
+    "match": "startsWith exact anchored prefix at position zero; no captures, suffix read, or output",
+    "prefix": "Doppelter DOM-Reconcile-Key ",
+    "sourceLines": [
+      3063,
+      3387
+    ]
+  },
+  {
+    "id": "V018",
+    "match": "startsWith exact anchored prefix at position zero; no captures, suffix read, or output",
+    "prefix": "trustedDomRenderer ist fehlgeschlagen: ",
+    "sourceLines": [
+      1788
+    ]
+  }
+]

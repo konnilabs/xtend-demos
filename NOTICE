@@ -1,0 +1,12 @@
+XTend product demonstrations
+Source: https://github.com/konnilabs/xtend
+Original source commit: 31d8c01f92538b55e57e741ed4e71a4e4a6604b5
+
+The applications retain their original source notices and Apache-2.0 licensing.
+Original tracked generated kernel runtime fixtures can contain third-party code;
+the corresponding DOMPurify license is preserved in third-party/DOMPurify-LICENSE.
+Other third-party dependency notices remain in their exact locked npm/Composer
+packages and verified Core candidate artifacts. This notice does not relicense them.
+
+This migration is a local review checkpoint with red gates. No package release,
+deployment, repository push or pull request has been performed.

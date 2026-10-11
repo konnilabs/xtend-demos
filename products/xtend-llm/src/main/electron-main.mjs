@@ -1,0 +1,1530 @@
+import {installBootObserver} from '../../scripts/boot-observation.cjs';
+import {installEntryObserver} from '../../scripts/entry-load-diagnostics.cjs';
+import {observeR001} from '../../scripts/r001-diagnostics.cjs';
+import {emitSmokeFailure} from '../../scripts/smoke-failure-diagnostics.cjs';
+import {emitLaunchStage, observeSync} from '../../scripts/actual-launch-diagnostics.cjs';
+import {registerApplicationPreload,assertApplicationPreload,assertExecutedPreloadProof,assertSandboxExecution,assertRendererAttestation,isTrustedMainFrame,assertOfficialRuntimeIdentity,attestationPolicy} from '../../scripts/electron-sandbox-policy.mjs';
+import {configureAppServerSession} from './app-server-session.mjs';
+import fs from 'node:fs';
+import crypto from 'node:crypto';
+import os from 'node:os';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import {
+  CHANNELS,
+  PRODUCT_TITLE,
+  RMT_KNOWLEDGE_TOOL_NAME,
+  WEB_SEARCH_TOOL_NAME,
+  TARGET_MODEL_ID
+} from './constants.mjs';
+import { ConversationStore } from './conversation-store.mjs';
+import { SettingsStore } from './settings-store.mjs';
+import {
+  createId,
+  normalizeAttachGenerationSources,
+  normalizeCancelGeneration,
+  normalizeCopyText,
+  normalizeDeleteConversation,
+  normalizeExecuteTool,
+  normalizeGenerationComplete,
+  normalizeGenerationDelta,
+  normalizeGenerationError,
+  normalizeModelProgress,
+  normalizeRegenerateAssistantMessage,
+  normalizeResetApp,
+  normalizeSubmitMessage,
+  normalizeUpdateSettings
+} from './ipc-contract.mjs';
+import {
+  createModelCachePaths,
+  createModelState,
+  readInstalledModelManifest,
+  validateInstalledModelManifest
+} from './model-cache.mjs';
+import { createXtendLlmAppServer } from './app-server.mjs';
+import { configureElectronWebGpu } from './electron-webgpu.mjs';
+import {
+  configureExternalNavigation,
+  shouldOpenExternalUrl
+} from './external-navigation.mjs';
+import { executeWebSearch } from './tools/web-search.mjs';
+import { closeXtendMcpClient } from '@ccslabs/xtend-mcp/client';
+import { executeRmtKnowledge } from './tools/rmt-knowledge.mjs';
+
+const require = createRequire(import.meta.url);
+observeSync('prelaunch-guard', () => assertSandboxExecution());
+let actualLaunchStage = 'main-start';
+emitLaunchStage(actualLaunchStage, 0);
+function launchStage(stage) { actualLaunchStage = stage; emitLaunchStage(stage, 0); }
+const { app, BrowserWindow, clipboard, ipcMain, shell, session } = require('electron');
+const productRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const dev = process.argv.includes('--dev') || process.argv.includes('--') && process.argv.includes('--dev');
+const layoutSmoke = process.argv.includes('--layout-smoke');
+
+if (layoutSmoke && process.platform === 'linux' && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY) {
+  app.commandLine.appendSwitch('headless', 'new');
+  app.commandLine.appendSwitch('ozone-platform', 'headless');
+  app.commandLine.appendSwitch('disable-gpu');
+  app.commandLine.appendSwitch('disable-dev-shm-usage');
+}
+
+configureElectronWebGpu(app);
+app.setName(PRODUCT_TITLE);
+
+if (layoutSmoke) {
+  app.setPath('userData', fs.mkdtempSync(path.join(os.tmpdir(), 'xtend-llm-layout-')));
+}
+
+let mainWindow = null;
+let appServer = null;
+let serverUrl = '';
+let store = null;
+let settingsStore = null;
+let runtimeModelId = TARGET_MODEL_ID;
+let modelState = createModelState({ model: runtimeModelId });
+const activeJobs = new Map();
+const maracaReportPath = path.join(productRoot, 'site', 'build', 'xtend.maraca.report.json');
+
+function emit(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(channel, payload);
+  }
+}
+
+function conversationPatch(extra = {}) {
+  return {
+    schema: 'xtend-llm.conversation-patch.v1',
+    activeConversationId: store.state.activeConversationId,
+    conversations: store.listConversations(),
+    activeConversation: store.activeConversation,
+    ...extra
+  };
+}
+
+function settingsPatch(extra = {}) {
+  return {
+    schema: 'xtend-llm.settings-patch.v1',
+    settings: settingsStore.snapshot(),
+    ...extra
+  };
+}
+
+function readJsonFile(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (error) {
+    return {
+      ok: false,
+      error: error && error.message ? error.message : String(error)
+    };
+  }
+}
+
+function summarizeTemplateArtifacts(report = {}) {
+  const artifacts = report && report.templateArtifacts || null;
+  if (!artifacts) return null;
+  return {
+    ok: artifacts.ok === true,
+    status: artifacts.status || 'unknown',
+    trusted: artifacts.trusted === true,
+    sourceFingerprint: artifacts.sourceFingerprint || '',
+    artifactBundleFingerprint: artifacts.artifactBundleFingerprint || '',
+    bundleFingerprint: artifacts.bundleFingerprint || '',
+    documentIds: Array.isArray(artifacts.documentIds) ? artifacts.documentIds : [],
+    templateIds: Array.isArray(artifacts.templateIds) ? artifacts.templateIds : []
+  };
+}
+
+function summarizeMaracaReport(report = {}) {
+  const productionClosure = report && report.productionClosure || null;
+  const kernel = report && report.kernel || {};
+  const prewarmWorker = kernel && kernel.prewarmWorker || report.prewarmWorker || null;
+  const hydration = report && report.hydration || {};
+  const workerPrerender = hydration.workerPrerender || hydration.summary?.workerPrerender || null;
+  const serverPrerender = hydration.serverPrerender || hydration.summary?.serverPrerender || null;
+  const policyParity = report && (report.policyParity || kernel.policyParity) || null;
+  const kernelFeatureAdoption = report && (report.kernelFeatureAdoption || kernel.featureAdoption) || null;
+  const strictFallbackCount = productionClosure && productionClosure.releaseConstraint
+    ? Number(productionClosure.releaseConstraint.strictFallbackCount || 0)
+    : 0;
+  return {
+    schema: 'xtend-llm.maraca-telemetry-summary.v1',
+    reportPath: maracaReportPath,
+    reportPresent: Boolean(report && report.schema),
+    ok: report.ok !== false,
+    profile: report.profile || '',
+    status: report.status || '',
+    productionClosure,
+    kernelFeatureAdoption,
+    templateArtifacts: summarizeTemplateArtifacts(report),
+    policyParity,
+    productSurface: kernel && kernel.productSurface || null,
+    prewarmWorker,
+    workerPrerender,
+    serverPrerender,
+    warmReentry: report && report.warmReentry || null,
+    strictFallbackCount
+  };
+}
+
+function createMainTelemetrySnapshot() {
+  const report = readJsonFile(maracaReportPath);
+  const maraca = summarizeMaracaReport(report && report.schema ? report : {});
+  const prewarmWorkerStatus = maraca.prewarmWorker && (maraca.prewarmWorker.runtimeExpectedStatus || maraca.prewarmWorker.status) || 'unknown';
+  return {
+    schema: 'xtend-llm.telemetry-snapshot.v1',
+    at: new Date().toISOString(),
+    maraca,
+    runtime: {
+      mainProcess: {
+        schema: 'xtend-llm.main-runtime-telemetry.v1',
+        activeJobCount: activeJobs.size,
+        activeJobs: Array.from(activeJobs.keys()),
+        model: modelState
+      }
+    },
+    worker: null,
+    summary: {
+      ok: maraca.ok !== false && (!maraca.productionClosure || maraca.productionClosure.ok !== false),
+      backpressureLevel: 'normal',
+      prewarmWorkerStatus,
+      strictFallbackCount: maraca.strictFallbackCount || 0
+    }
+  };
+}
+
+function registerIpc() {
+  ipcMain.handle(CHANNELS.status, async () => ({
+    schema: 'xtend-llm.status.v1',
+    serverUrl,
+    model: modelState,
+    targetModel: runtimeModelId,
+    conversation: conversationPatch(),
+    settings: settingsStore.snapshot()
+  }));
+
+  ipcMain.handle(CHANNELS.createConversation, async () => {
+    const conversation = store.createConversation();
+    const patch = conversationPatch({ activeConversation: conversation });
+    emit(CHANNELS.conversationPatch, patch);
+    return patch;
+  });
+
+  ipcMain.handle(CHANNELS.selectConversation, async (_event, id) => {
+    const conversation = store.selectConversation(String(id || ''));
+    const patch = conversationPatch({ activeConversation: conversation });
+    emit(CHANNELS.conversationPatch, patch);
+    return patch;
+  });
+
+  ipcMain.handle(CHANNELS.deleteConversation, async (_event, input) => {
+    const request = normalizeDeleteConversation(input);
+    for (const [jobId, job] of activeJobs.entries()) {
+      if (job.conversationId === request.conversationId) activeJobs.delete(jobId);
+    }
+    const result = store.deleteConversation(request.conversationId);
+    const patch = conversationPatch({
+      activeConversation: result.activeConversation,
+      deletedConversationId: request.conversationId
+    });
+    emit(CHANNELS.conversationPatch, patch);
+    return patch;
+  });
+
+  ipcMain.handle(CHANNELS.getSettings, async () => settingsPatch());
+
+  ipcMain.handle(CHANNELS.updateSettings, async (_event, input) => {
+    const update = normalizeUpdateSettings(input);
+    const settings = settingsStore.update(update);
+    store.setCustomInstructions(settings.customInstructions);
+    const patch = settingsPatch({ settings });
+    emit(CHANNELS.settingsPatch, patch);
+    return patch;
+  });
+
+  ipcMain.handle(CHANNELS.resetApp, async (_event, input) => {
+    normalizeResetApp(input);
+    for (const job of activeJobs.values()) {
+      emit(CHANNELS.generationError, {
+        schema: 'xtend-llm.generation-error.v1',
+        jobId: job.jobId,
+        conversationId: job.conversationId,
+        code: 'xtend-llm.app_reset',
+        message: 'App reset canceled the active generation.'
+      });
+    }
+    activeJobs.clear();
+    store.reset();
+    const settings = settingsStore.reset();
+    store.setCustomInstructions(settings.customInstructions);
+    const conversation = conversationPatch({ activeConversation: null, reset: true });
+    const settingsResult = settingsPatch({ settings, reset: true });
+    emit(CHANNELS.conversationPatch, conversation);
+    emit(CHANNELS.settingsPatch, settingsResult);
+    return {
+      ok: true,
+      conversation,
+      settings: settingsResult
+    };
+  });
+
+  ipcMain.handle(CHANNELS.submitMessage, async (_event, input) => {
+    const request = normalizeSubmitMessage(input);
+    const user = store.addUserMessage(request.conversationId, request.text);
+    const jobId = createId('generation');
+    store.startAssistantMessage(user.conversation.id, jobId);
+    const promptMessages = store.buildPromptMessages(user.conversation.id);
+    const job = {
+      schema: 'xtend-llm.generation-job.v1',
+      jobId,
+      conversationId: user.conversation.id,
+      messages: promptMessages,
+      model: runtimeModelId,
+      maxNewTokens: request.maxNewTokens,
+      startedAt: new Date().toISOString()
+    };
+    activeJobs.set(jobId, job);
+    const patch = conversationPatch({ job });
+    emit(CHANNELS.conversationPatch, patch);
+    return patch;
+  });
+
+  ipcMain.handle(CHANNELS.copyText, async (_event, input) => {
+    const request = normalizeCopyText(input);
+    clipboard.writeText(request.text);
+    return {
+      schema: 'xtend-llm.copy-text-result.v1',
+      ok: true,
+      messageId: request.messageId
+    };
+  });
+
+  ipcMain.handle(CHANNELS.regenerateAssistantMessage, async (_event, input) => {
+    const request = normalizeRegenerateAssistantMessage(input);
+    if (activeJobs.size > 0) throw new Error('A generation is already running.');
+    const jobId = createId('generation');
+    const result = store.regenerateAssistantMessage(request.conversationId, request.messageId, { jobId });
+    const job = {
+      schema: 'xtend-llm.generation-job.v1',
+      jobId,
+      conversationId: request.conversationId,
+      regeneratedMessageId: request.messageId,
+      messages: result.promptMessages,
+      originalPrompt: result.originalPrompt,
+      model: runtimeModelId,
+      maxNewTokens: request.maxNewTokens,
+      startedAt: new Date().toISOString()
+    };
+    activeJobs.set(jobId, job);
+    const patch = conversationPatch({
+      activeConversation: result.conversation,
+      job,
+      regeneratedMessageId: request.messageId
+    });
+    emit(CHANNELS.conversationPatch, patch);
+    return patch;
+  });
+
+  ipcMain.handle(CHANNELS.cancelGeneration, async (_event, input) => {
+    const request = normalizeCancelGeneration(input);
+    const job = activeJobs.get(request.jobId);
+    activeJobs.delete(request.jobId);
+    if (job) {
+      store.completeAssistantMessage(job.conversationId, job.jobId, '', 'canceled');
+      emit(CHANNELS.generationError, {
+        schema: 'xtend-llm.generation-error.v1',
+        jobId: job.jobId,
+        conversationId: job.conversationId,
+        code: 'xtend-llm.generation_canceled',
+        message: 'Generation canceled.'
+      });
+      emit(CHANNELS.conversationPatch, conversationPatch());
+    }
+    return { ok: true, jobId: request.jobId };
+  });
+
+  ipcMain.handle(CHANNELS.telemetrySnapshot, async () => createMainTelemetrySnapshot());
+
+  ipcMain.handle(CHANNELS.executeTool, async (_event, input) => {
+    const request = normalizeExecuteTool(input);
+    if (request.name === WEB_SEARCH_TOOL_NAME) {
+      return executeWebSearch(request);
+    }
+    if (request.name === RMT_KNOWLEDGE_TOOL_NAME) {
+      return executeRmtKnowledge(request);
+    }
+    throw new Error(`Unsupported XTend LLM tool: ${request.name}`);
+  });
+
+  ipcMain.handle(CHANNELS.openExternal, async (_event, input) => {
+    const href = shouldOpenExternalUrl(input, serverUrl);
+    if (!href) {
+      return {
+        schema: 'xtend-llm.external-open-result.v1',
+        ok: false,
+        reason: 'blocked'
+      };
+    }
+    await shell.openExternal(href);
+    return {
+      schema: 'xtend-llm.external-open-result.v1',
+      ok: true,
+      url: href
+    };
+  });
+
+  ipcMain.handle(CHANNELS.attachGenerationSources, async (_event, input) => {
+    const request = normalizeAttachGenerationSources(input);
+    if (!activeJobs.has(request.jobId)) {
+      return { ok: false, skipped: true, jobId: request.jobId };
+    }
+    const result = store.attachAssistantSources(request.conversationId, request.jobId, request.sources);
+    emit(CHANNELS.conversationPatch, conversationPatch({ activeConversation: result.conversation }));
+    return {
+      ok: true,
+      jobId: request.jobId,
+      conversationId: request.conversationId,
+      sources: result.message.sources || []
+    };
+  });
+
+  ipcMain.on(CHANNELS.workerModelProgress, (_event, input) => {
+    modelState = {
+      ...modelState,
+      ...normalizeModelProgress(input),
+      model: input && input.model ? String(input.model) : modelState.model
+    };
+    emit(CHANNELS.modelProgress, {
+      schema: 'xtend-llm.model-progress.v1',
+      ...modelState
+    });
+  });
+
+  ipcMain.on(CHANNELS.workerGenerationDelta, (_event, input) => {
+    const delta = normalizeGenerationDelta(input);
+    if (!activeJobs.has(delta.jobId)) return;
+    store.appendAssistantDelta(delta.conversationId, delta.jobId, delta.delta);
+    emit(CHANNELS.generationDelta, {
+      schema: 'xtend-llm.generation-delta.v1',
+      ...delta
+    });
+    emit(CHANNELS.conversationPatch, conversationPatch());
+  });
+
+  ipcMain.on(CHANNELS.workerGenerationComplete, (_event, input) => {
+    const complete = normalizeGenerationComplete(input);
+    if (!activeJobs.has(complete.jobId)) return;
+    activeJobs.delete(complete.jobId);
+    store.completeAssistantMessage(complete.conversationId, complete.jobId, complete.text, complete.finishReason);
+    emit(CHANNELS.generationComplete, {
+      schema: 'xtend-llm.generation-complete.v1',
+      ...complete
+    });
+    emit(CHANNELS.conversationPatch, conversationPatch());
+  });
+
+  ipcMain.on(CHANNELS.workerGenerationError, (_event, input) => {
+    const error = normalizeGenerationError(input);
+    if (error.jobId) activeJobs.delete(error.jobId);
+    if (error.conversationId && error.jobId) store.failAssistantMessage(error.conversationId, error.jobId, error.message);
+    emit(CHANNELS.generationError, {
+      schema: 'xtend-llm.generation-error.v1',
+      ...error
+    });
+    emit(CHANNELS.conversationPatch, conversationPatch());
+  });
+}
+
+async function createWindow() {
+  launchStage('window');
+  const appSession = session.fromPartition(`xtend-llm-${crypto.randomUUID()}`);
+  configureAppServerSession(appSession, serverUrl, appServer.capability);
+  const preload = path.join(productRoot, 'src', 'main', 'preload.cjs');
+  const preloadBinding=registerApplicationPreload(appSession,{canonicalPath:preload,expectedSourceHash:process.env.XTEND_LLM_PRELOAD_SHA256,mandatory:attestationPolicy().requireOfficialHelper});
+  const identityChannel='xtend-llm:preload-identity';
+  ipcMain.handle(identityChannel,event=>{
+    if(!isTrustedMainFrame(event,mainWindow.webContents))throw new Error('Untrusted preload identity request');
+    assertApplicationPreload(preloadBinding,mainWindow.webContents);
+    return {registrationId:preloadBinding.id,nonce:preloadBinding.nonce,sourceSha256:preloadBinding.sourceSha256};
+  });
+  const attestationChannel='xtend-llm:sandbox-attestation';
+  let disposeAttestation;
+  const preloadAttestation=new Promise((resolve,reject)=>{
+    const timeout=setTimeout(()=>{ipcMain.removeListener(attestationChannel,receive);reject(new Error('Missing actual application preload sandbox attestation'));},15000);
+    function receive(event,proof){if(!isTrustedMainFrame(event,mainWindow.webContents))return;clearTimeout(timeout);ipcMain.removeListener(attestationChannel,receive);try{assertExecutedPreloadProof(preloadBinding,mainWindow.webContents,event,proof);resolve(proof);}catch(error){reject(error);}}
+    ipcMain.on(attestationChannel,receive);disposeAttestation=()=>{clearTimeout(timeout);ipcMain.removeListener(attestationChannel,receive);ipcMain.removeHandler(identityChannel);};
+  });
+  mainWindow = new BrowserWindow({
+    width: 1160,
+    height: 860,
+    minWidth: 960,
+    minHeight: 720,
+    title: 'XTend Local LLM',
+    show: !layoutSmoke,
+    backgroundColor: '#f7f7f4',
+    webPreferences: {
+      session: appSession,
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true
+    }
+  });
+  installBootObserver(ipcMain, mainWindow, event => isTrustedMainFrame(event, mainWindow.webContents));
+  installEntryObserver(ipcMain, mainWindow, event => isTrustedMainFrame(event, mainWindow.webContents));
+  configureExternalNavigation(mainWindow.webContents, {
+    appOrigin: serverUrl,
+    openExternal: (url) => shell.openExternal(url)
+  });
+  if (layoutSmoke) {
+    mainWindow.webContents.on('console-message', (details) => {
+      const level = typeof details.level === 'string' ? details.level : String(details.level);
+      if (level === 'warning' || level === 'error') {
+        console.error(`[renderer ${level}] ${details.message} (${details.sourceId}:${details.lineNumber})`);
+      }
+    });
+    mainWindow.webContents.on('render-process-gone', (_event, details) => {
+      console.error(`[renderer gone] ${details.reason}: ${details.exitCode}`);
+    });
+    mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+      console.error(`[renderer load failed] ${errorCode} ${errorDescription} ${validatedURL}`);
+    });
+  }
+  try {
+    launchStage('load');
+    await mainWindow.loadURL(layoutSmoke ? `${serverUrl}?fakeModel=1&fakeModelLoadDelayMs=1200` : serverUrl);
+    launchStage('preload-ipc');
+    const proof=await preloadAttestation,rendererPid=mainWindow.webContents.getOSProcessId();
+    const linuxStatus=process.platform==='linux'?fs.readFileSync('/proc/'+rendererPid+'/status','utf8'):null;
+    const preferences=mainWindow.webContents.getLastWebPreferences();
+    launchStage('renderer-check');
+    assertRendererAttestation({uid:process.getuid?.(),preferences,proof,linuxStatus,platform:process.platform});
+    const sha=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+    launchStage('runtime-identity');
+    const identityPolicy=attestationPolicy(),executable=fs.realpathSync(process.execPath);
+    const runtimeIdentity={electronVersion:process.versions.electron,executable,executableSha256:sha(executable),attestationMode:identityPolicy.mode};
+    if(identityPolicy.requireOfficialHelper){
+      const helper=fs.realpathSync(path.join(path.dirname(executable),'chrome-sandbox')),helperStat=fs.statSync(helper);
+      Object.assign(runtimeIdentity,{helper,helperSha256:sha(helper),helperUid:helperStat.uid,helperGid:helperStat.gid,helperMode:helperStat.mode&0o7777});
+      assertOfficialRuntimeIdentity(runtimeIdentity);
+    }
+    launchStage('source-identity');
+    assertApplicationPreload(preloadBinding,mainWindow.webContents);
+    const attestation={format:1,proofKind:'actual-application-main-frame',runtimeIdentity,mainFrameAttestation:true,preloadPath:preloadBinding.filePath,generatedAt:new Date().toISOString(),applicationUid:process.getuid?.(),rendererPid,rendererSeccomp:linuxStatus?/^Seccomp:\s*(\d+)/m.exec(linuxStatus)?.[1]:null,sandboxed:proof.sandboxed,contextIsolated:proof.contextIsolated,nodeIntegration:preferences.nodeIntegration,sandboxPreference:preferences.sandbox,electronVersion:process.versions.electron,executable:fs.realpathSync(process.execPath),executableSha256:sha(process.execPath),coreSha:process.env.XTEND_CORE_SHA||null,demoSha:process.env.XTEND_DEMO_SHA||null,sources:Object.fromEntries(['src/main/electron-main.mjs','src/main/preload.cjs','src/renderer/app-controller.mjs','src/main/app-server.mjs','src/main/app-server-session.mjs','site/index.html','scripts/electron-sandbox-policy.mjs'].map(relative=>[relative,sha(path.join(productRoot,relative))]))};
+    launchStage('report-write');
+    const directory=path.resolve(productRoot,'../../.xtend-test-results');fs.mkdirSync(directory,{recursive:true});fs.writeFileSync(path.join(directory,'electron-sandbox-attestation.json'),JSON.stringify(attestation,null,2)+'\n');
+  } finally {disposeAttestation();}
+  if (dev) mainWindow.webContents.openDevTools({ mode: 'detach' });
+}
+
+let smokeFailureId = 'P001';
+function assertLayout(condition, message, id) {
+  if (!condition) { smokeFailureId = id; throw new Error(message); }
+}
+
+async function runSmokeScript(label, source, id) {
+  smokeFailureId = id;
+  try {
+    const execute = () => mainWindow.webContents.executeJavaScript(source);
+    const result = await (id === 'R001' ? observeR001(mainWindow.webContents, execute) : execute());
+    smokeFailureId = 'P001';
+    return result;
+  } catch (error) {
+    const message = error && error.stack ? error.stack : String(error);
+    throw new Error(`Renderer smoke step "${label}" failed:\n${message}`);
+  }
+}
+
+async function runLayoutSmoke() {
+  await runSmokeScript('wait for shell', `
+    new Promise((resolve, reject) => {
+      const started = Date.now();
+      const tick = () => {
+        if (document.querySelector('#chat-transcript') && customElements.get('x-side-panel')) {
+          resolve(true);
+          return;
+        }
+        if (Date.now() - started > 8000) {
+          try {
+            const transcript = document.querySelector('#chat-transcript') ? '1' : '0';
+            const sidepanel = customElements.get('x-side-panel') ? '1' : '0';
+            const ready = ['loading', 'interactive', 'complete'].includes(document.readyState) ? document.readyState : 'unknown';
+            console.debug('xtend-r001-timeout format=1 transcript=' + transcript + ' sidepanel=' + sidepanel + ' ready=' + ready);
+          } catch {}
+          reject(new Error('Timed out waiting for XTend LLM shell.'));
+          return;
+        }
+        setTimeout(tick, 50);
+      };
+      tick();
+    });
+  `, 'R001');
+  const boxes = await runSmokeScript('measure initial shell', `
+    (() => {
+      const read = (id) => {
+        const node = document.getElementById(id);
+        if (!node) return null;
+        const rect = node.getBoundingClientRect();
+        const shadowButton = node.shadowRoot?.querySelector('button') || null;
+        const shadowLabel = node.shadowRoot?.querySelector('.label') || node.shadowRoot?.querySelector('[part~="label"]') || null;
+        const shadowControl = node.shadowRoot?.querySelector('textarea') || null;
+        const controlRect = shadowControl?.getBoundingClientRect() || null;
+        return {
+          id,
+          left: rect.left,
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
+          text: node.textContent.trim(),
+          label: node.getAttribute('label') || '',
+          dataLabel: node.dataset?.label || '',
+          shadowText: shadowLabel?.textContent.trim() || '',
+          shadowColor: shadowButton ? getComputedStyle(shadowButton).color : '',
+          shadowBackground: shadowButton ? getComputedStyle(shadowButton).backgroundColor : '',
+          control: controlRect ? {
+            left: controlRect.left,
+            top: controlRect.top,
+            right: controlRect.right,
+            bottom: controlRect.bottom,
+            width: controlRect.width,
+            height: controlRect.height
+          } : null,
+          display: getComputedStyle(node).display,
+          position: getComputedStyle(node).position
+        };
+      };
+      return {
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        root: read('xtend-maraca-root'),
+        panel: read('conversation-panel'),
+        search: read('conversation-search'),
+        newConversation: read('new-conversation'),
+        settings: read('settings-button'),
+        list: read('conversation-list'),
+        model: read('model-status'),
+        active: read('active-conversation'),
+        transcript: read('chat-transcript'),
+        prompt: read('prompt-input'),
+        tool: read('tool-menu'),
+        send: read('send-message'),
+        progressExists: Boolean(document.getElementById('generation-progress'))
+      };
+    })();
+  `, 'R002');
+  assertLayout(boxes.root.width >= boxes.viewport.width - 1, 'root spans viewport width', 'A001');
+  assertLayout(boxes.panel.right <= boxes.model.left - 12, 'sidebar does not overlap status row', 'A002');
+  assertLayout(boxes.panel.right <= boxes.transcript.left - 12, 'sidebar does not overlap transcript', 'A003');
+  assertLayout(Math.abs(boxes.model.top - boxes.active.top) < 2, 'status strip entries share a row', 'A004');
+  assertLayout(Math.abs(boxes.model.height - boxes.active.height) < 2, `status strip entries have matched height: ${JSON.stringify(boxes)}`, 'A005');
+  assertLayout(boxes.model.height <= 64 && boxes.active.height <= 64, `status strip should stay compact: ${JSON.stringify(boxes)}`, 'A006');
+  assertLayout(boxes.transcript.top > boxes.model.bottom, 'transcript is below status row', 'A007');
+  assertLayout(boxes.prompt.top > boxes.transcript.top, 'prompt is below transcript', 'A008');
+  assertLayout(boxes.prompt.height >= 156 && boxes.prompt.height <= 174, `composer row should stay stable: ${JSON.stringify(boxes.prompt)}`, 'A009');
+  assertLayout(boxes.prompt.control && boxes.prompt.control.height >= boxes.prompt.height - 2, `visible textarea should fill the composer shell: ${JSON.stringify(boxes.prompt)}`, 'A010');
+  assertLayout(boxes.tool.left >= boxes.prompt.left + 8 && boxes.tool.right < boxes.prompt.right - 100, `tool menu should float inside composer: ${JSON.stringify(boxes)}`, 'A011');
+  assertLayout(boxes.send.right <= boxes.prompt.right - 8 && boxes.send.left > boxes.prompt.left + 100, `send button should float inside composer: ${JSON.stringify(boxes)}`, 'A012');
+  assertLayout(boxes.send.width >= 76 && boxes.send.height >= 40, 'send button has stable compact bounds', 'A013');
+  assertLayout((boxes.send.shadowText || boxes.send.text || boxes.send.label || boxes.send.dataLabel).includes('Send'), `send button label should be visibly rendered: ${JSON.stringify(boxes.send)}`, 'A014');
+  assertLayout(boxes.send.shadowColor !== boxes.send.shadowBackground, `send button text color should differ from its background: ${JSON.stringify(boxes.send)}`, 'A015');
+  assertLayout(boxes.tool.width >= 110 && boxes.tool.height >= 40, `tool menu has stable compact bounds: ${JSON.stringify(boxes.tool)}`, 'A016');
+  assertLayout(boxes.progressExists === false, `generation progress bar should not be rendered: ${JSON.stringify(boxes)}`, 'A017');
+  assertLayout(Math.abs(boxes.tool.top - boxes.send.top) < 2, 'tool menu aligns with send button', 'A018');
+  assertLayout(boxes.send.bottom <= boxes.prompt.control.bottom - 12 && boxes.tool.bottom <= boxes.prompt.control.bottom - 12, `composer controls stay inside visible textarea shell: ${JSON.stringify(boxes)}`, 'A019');
+  assertLayout(boxes.search.top > boxes.newConversation.bottom, 'search field is below new-chat button', 'A020');
+  assertLayout(boxes.list.top > boxes.search.bottom, 'conversation list is below search field', 'A021');
+  assertLayout(boxes.newConversation.position === 'absolute', `new-chat button should use a fixed sidebar slot: ${JSON.stringify(boxes.newConversation)}`, 'A022');
+  assertLayout(boxes.settings.position === 'absolute', `settings button should use a fixed sidebar slot: ${JSON.stringify(boxes.settings)}`, 'A023');
+  assertLayout(boxes.search.position === 'absolute', `search field should use a fixed sidebar slot: ${JSON.stringify(boxes.search)}`, 'A024');
+  assertLayout(boxes.list.position === 'absolute', `conversation list should use a fixed sidebar slot: ${JSON.stringify(boxes.list)}`, 'A025');
+  assertLayout(Math.abs(boxes.newConversation.left - (boxes.panel.left + 20)) <= 2, `new-chat button is not anchored to the sidebar gutter: ${JSON.stringify(boxes)}`, 'A026');
+  assertLayout(boxes.settings.left > boxes.newConversation.right + 8, `settings button is not in the sidebar action row: ${JSON.stringify(boxes)}`, 'A027');
+  assertLayout(Math.abs(boxes.settings.top - boxes.newConversation.top) <= 1, `settings button is not aligned with new-chat button: ${JSON.stringify(boxes)}`, 'A028');
+  assertLayout(boxes.settings.width >= 44 && boxes.settings.width <= 60 && boxes.settings.height >= 44, `settings button does not have stable icon-button bounds: ${JSON.stringify(boxes)}`, 'A029');
+  assertLayout(Math.abs(boxes.search.left - boxes.newConversation.left) <= 1, `search field is not aligned with new-chat button: ${JSON.stringify(boxes)}`, 'A030');
+  assertLayout(Math.abs(boxes.list.left - boxes.newConversation.left) <= 1, `conversation list is not aligned with new-chat button: ${JSON.stringify(boxes)}`, 'A031');
+  assertLayout(Math.abs((boxes.newConversation.width + 12 + boxes.settings.width) - (boxes.panel.width - 40)) <= 3, `sidebar action row does not fill the fixed slot: ${JSON.stringify(boxes)}`, 'A032');
+  assertLayout(Math.abs(boxes.search.width - (boxes.panel.width - 40)) <= 2, `search field width drifted from fixed sidebar slot: ${JSON.stringify(boxes)}`, 'A033');
+  assertLayout(Math.abs(boxes.list.width - boxes.search.width) <= 1, `conversation list width drifted from fixed sidebar slot: ${JSON.stringify(boxes)}`, 'A034');
+  assertLayout(Math.abs(boxes.search.top - (boxes.newConversation.top + 64)) <= 2, `search field slot drifted from new-chat slot: ${JSON.stringify(boxes)}`, 'A035');
+  assertLayout(Math.abs(boxes.list.top - (boxes.search.top + 92)) <= 2, `conversation list slot drifted from search slot: ${JSON.stringify(boxes)}`, 'A036');
+  assertLayout(boxes.list.bottom <= boxes.panel.bottom - 16, `conversation list does not leave a stable sidebar footer gap: ${JSON.stringify(boxes)}`, 'A037');
+
+  const modelPrepInteractivity = await runSmokeScript('model preparation shell responsiveness', `
+    (async () => {
+      const prompt = document.getElementById('prompt-input');
+      const send = document.getElementById('send-message');
+      const settings = document.getElementById('settings-button');
+      const search = document.getElementById('conversation-search');
+      if (!prompt || !send || !settings || !settings.shadowRoot || !search) {
+        throw new Error('Missing model-preparation shell controls.');
+      }
+      const waitFor = async (predicate, label) => {
+        const started = Date.now();
+        while (Date.now() - started < 3000) {
+          if (predicate()) return true;
+          await new Promise((resolve) => setTimeout(resolve, 25));
+        }
+        throw new Error('Timed out waiting for ' + label);
+      };
+      search.dispatchEvent(new CustomEvent('xtend-command', {
+        detail: {
+          schema: 'xtend.rmt.command.v1',
+          id: 'layout-smoke:prep-search:' + Date.now(),
+          source: { kind: 'layout-smoke', id: 'conversation-search', event: 'xtend-command', surfaceId: 'xtend.llm.conversationSearch' },
+          command: 'xtend.llm.updateConversationSearch',
+          payload: { value: 'prep search' },
+          correlationId: 'layout-smoke:' + Date.now(),
+          lane: 'test',
+          timestamp: new Date().toISOString()
+        },
+        bubbles: true,
+        composed: true,
+        cancelable: true
+      }));
+      await waitFor(() => document.getElementById('conversation-search')?.getAttribute('value') === 'prep search', 'search update during model prep');
+      settings.shadowRoot.querySelector('button').click();
+      await waitFor(() => document.getElementById('settings-dialog')?.hasAttribute('open') === true, 'settings open during model prep');
+      const opened = document.getElementById('settings-dialog')?.hasAttribute('open') === true;
+      const tabs = document.getElementById('settings-tabs');
+      await waitFor(() => Boolean(tabs?.shadowRoot?.querySelector('[role="tab"]')), 'settings tabs during model prep');
+      const instructionsTab = Array.from(tabs.shadowRoot.querySelectorAll('[role="tab"]')).find((tab) => tab.textContent.trim() === 'Instructions (busy)');
+      if (!instructionsTab) throw new Error('Busy instructions tab missing during model prep.');
+      const instructionsDisabled = instructionsTab.disabled === true || instructionsTab.getAttribute('aria-disabled') === 'true';
+      instructionsTab.click();
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      const instructionsSelectedDuringPrep = tabs.querySelector('x-tab.active')?.getAttribute('label') || '';
+      const runtimeTab = Array.from(tabs.shadowRoot.querySelectorAll('[role="tab"]')).find((tab) => tab.textContent.trim() === 'Runtime');
+      if (!runtimeTab) throw new Error('Runtime tab missing during model prep.');
+      runtimeTab.click();
+      await waitFor(() => tabs.querySelector('x-tab.active')?.getAttribute('label') === 'Runtime', 'runtime tab selected during model prep');
+      await new Promise((resolve) => setTimeout(resolve, 720));
+      const runtimeTabAfterProgress = tabs.querySelector('x-tab.active')?.getAttribute('label') || '';
+      document.getElementById('settings-cancel')?.click();
+      await waitFor(() => document.getElementById('settings-dialog')?.hasAttribute('open') === false, 'settings close during model prep');
+      return {
+        promptDisabled: prompt.hasAttribute('disabled'),
+        sendDisabled: send.hasAttribute('disabled'),
+        settingsOpened: opened,
+        instructionsDisabled,
+        instructionsSelectedDuringPrep,
+        runtimeTabAfterProgress,
+        searchValue: search.getAttribute('value') || ''
+      };
+    })();
+  `, 'R003');
+  assertLayout(modelPrepInteractivity.promptDisabled === true, `prompt should be unavailable during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A038');
+  assertLayout(modelPrepInteractivity.sendDisabled === true, `send should be unavailable during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A039');
+  assertLayout(modelPrepInteractivity.settingsOpened === true, `settings should remain responsive during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A040');
+  assertLayout(modelPrepInteractivity.instructionsDisabled === true, `settings instructions tab should be visibly busy during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A041');
+  assertLayout(modelPrepInteractivity.instructionsSelectedDuringPrep !== 'Instructions (busy)', `busy instructions tab should not become active during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A042');
+  assertLayout(modelPrepInteractivity.runtimeTabAfterProgress === 'Runtime', `settings runtime tab should survive model preparation snapshots: ${JSON.stringify(modelPrepInteractivity)}`, 'A043');
+  assertLayout(modelPrepInteractivity.searchValue === 'prep search', `conversation search should remain responsive during model preparation: ${JSON.stringify(modelPrepInteractivity)}`, 'A044');
+
+  await runSmokeScript('wait for fake model ready', `
+    new Promise((resolve, reject) => {
+      const started = Date.now();
+      const clearSearch = () => {
+        const search = document.getElementById('conversation-search');
+        search?.dispatchEvent(new CustomEvent('xtend-command', {
+          detail: {
+            schema: 'xtend.rmt.command.v1',
+            id: 'layout-smoke:prep-search-clear:' + Date.now(),
+            source: { kind: 'layout-smoke', id: 'conversation-search', event: 'xtend-command', surfaceId: 'xtend.llm.conversationSearch' },
+            command: 'xtend.llm.updateConversationSearch',
+            payload: { value: '' },
+            correlationId: 'layout-smoke:' + Date.now(),
+            lane: 'test',
+            timestamp: new Date().toISOString()
+          },
+          bubbles: true,
+          composed: true,
+          cancelable: true
+        }));
+      };
+      const tick = () => {
+        const prompt = document.getElementById('prompt-input');
+        const send = document.getElementById('send-message');
+        const status = document.getElementById('model-status')?.textContent || '';
+        if (prompt && send && !prompt.hasAttribute('disabled')) {
+          clearSearch();
+          setTimeout(() => resolve(true), 50);
+          return;
+        }
+        if (Date.now() - started > 5000) {
+          reject(new Error('Timed out waiting for fake model readiness: ' + JSON.stringify({
+            promptDisabled: prompt?.hasAttribute('disabled') || false,
+            sendDisabled: send?.hasAttribute('disabled') || false,
+            modelStatus: status,
+            modelStatusText: document.getElementById('model-status')?.textContent || ''
+          })));
+          return;
+        }
+        setTimeout(tick, 50);
+      };
+      tick();
+    });
+  `, 'R004');
+
+  const toolMenuState = await runSmokeScript('tool menu flow', `
+    (async () => {
+      const button = document.getElementById('tool-menu-button');
+      const menu = document.getElementById('tool-menu-options');
+      if (!button || !menu) throw new Error('Tool menu missing.');
+      const waitFor = async (predicate, label) => {
+        const started = Date.now();
+        while (Date.now() - started < 3000) {
+          if (predicate()) return true;
+          await new Promise((resolve) => setTimeout(resolve, 25));
+        }
+        throw new Error('Timed out waiting for ' + label);
+      };
+      button.click();
+      await waitFor(() => menu.hidden === false && button.getAttribute('aria-expanded') === 'true', 'tool menu open');
+      const open = menu.hidden === false && button.getAttribute('aria-expanded') === 'true';
+      const buttonRect = button.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const search = menu.querySelector('[data-tool-name="web_search"]');
+      const rmtKnowledge = menu.querySelector('[data-tool-name="rmt_knowledge"]');
+      if (!rmtKnowledge) throw new Error('RMT knowledge tool missing.');
+      search.click();
+      await waitFor(() => button.dataset.activeTool === 'web_search' && menu.hidden === true, 'tool selection');
+      const selected = button.dataset.activeTool === 'web_search'
+        && button.textContent.trim() === 'Web search'
+        && menu.hidden === true;
+      const ariaPressed = button.getAttribute('aria-pressed');
+      const checked = search.getAttribute('aria-checked');
+      button.click();
+      await waitFor(() => menu.hidden === false, 'tool menu reopen');
+      menu.querySelector('[data-tool-name="auto"]').click();
+      await waitFor(() => button.dataset.activeTool === '' && menu.hidden === true, 'tool reset');
+      return {
+        open,
+        menuAboveButton: menuRect.bottom <= buttonRect.top + 1,
+        selected,
+        reset: button.dataset.activeTool === '' && button.textContent.trim() === 'Use tool',
+        ariaPressed,
+        checked
+      };
+    })();
+  `, 'R005');
+  assertLayout(toolMenuState.open === true, `tool menu did not open: ${JSON.stringify(toolMenuState)}`, 'A045');
+  assertLayout(toolMenuState.menuAboveButton === true, `tool menu should open above composer controls: ${JSON.stringify(toolMenuState)}`, 'A046');
+  assertLayout(toolMenuState.selected === true, `web search tool selection did not apply: ${JSON.stringify(toolMenuState)}`, 'A047');
+  assertLayout(toolMenuState.ariaPressed === 'true', `tool menu pressed state is wrong: ${JSON.stringify(toolMenuState)}`, 'A048');
+  assertLayout(toolMenuState.checked === 'true', `web search menu item is not checked: ${JSON.stringify(toolMenuState)}`, 'A049');
+  assertLayout(toolMenuState.reset === true, `tool menu did not reset to auto: ${JSON.stringify(toolMenuState)}`, 'A050');
+
+  const settingsFlow = await runSmokeScript('settings dialog flow', `
+    (async () => {
+      const button = document.getElementById('settings-button');
+      if (!button || !button.shadowRoot) throw new Error('Settings button missing.');
+      const iconName = button.getAttribute('icon-name') || '';
+      const iconRendered = Boolean(button.shadowRoot.querySelector('x-icon[name="settings"]'));
+      button.shadowRoot.querySelector('button').click();
+      const started = Date.now();
+      while (Date.now() - started < 5000) {
+        const dialog = document.getElementById('settings-dialog');
+        const tabs = document.getElementById('settings-tabs');
+        const tablist = tabs?.shadowRoot?.querySelector('[role="tablist"]');
+        if (dialog?.hasAttribute('open') && tabs?.parentElement === dialog && tablist) {
+          const dark = document.querySelector('[data-theme-mode="dark"]');
+          const save = document.getElementById('settings-save');
+          const close = document.getElementById('settings-cancel');
+          const tabButtons = Array.from(tabs.shadowRoot.querySelectorAll('[role="tab"]'));
+          const appearanceTab = tabButtons.find((tab) => tab.textContent.trim() === 'Appearance');
+          const instructionsTab = tabButtons.find((tab) => tab.textContent.trim() === 'Instructions');
+          if (!appearanceTab || !instructionsTab) throw new Error('Settings tab controls missing.');
+          const waitForSettings = async (predicate, label) => {
+            const waitStarted = Date.now();
+            while (Date.now() - waitStarted < 3000) {
+              if (predicate()) return true;
+              await new Promise((resolve) => setTimeout(resolve, 25));
+            }
+            throw new Error('Timed out waiting for ' + label);
+          };
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          const tabsRect = tabs.getBoundingClientRect();
+          const surfaceRect = dialog.shadowRoot?.querySelector('.xdialog')?.getBoundingClientRect() || { width: 0 };
+          const contentRect = dialog.shadowRoot?.querySelector('.xdialog-content')?.getBoundingClientRect() || { width: 0 };
+          const activePanel = tabs.querySelector('x-tab.active') || tabs.querySelector('x-tab');
+          const panelRect = activePanel.getBoundingClientRect();
+          instructionsTab.click();
+          await waitForSettings(() => tabs.querySelector('x-tab.active')?.getAttribute('label') === 'Instructions', 'instructions tab selected');
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          const instructionsPanel = tabs.querySelector('x-tab.active') || activePanel;
+          const instructionsPanelRect = instructionsPanel.getBoundingClientRect();
+          const instructionsScrolls = instructionsPanel.scrollHeight > instructionsPanel.clientHeight + 1;
+          appearanceTab.click();
+          await waitForSettings(() => tabs.querySelector('x-tab.active')?.getAttribute('label') === 'Appearance', 'appearance tab selected');
+          const footerTop = Math.min(
+            save.getBoundingClientRect().top,
+            close.getBoundingClientRect().top
+          );
+          const footerGap = footerTop - Math.max(tabsRect.bottom, panelRect.bottom);
+          dark.click();
+          await waitForSettings(() => document.getElementById('settings-save')?.disabled === false, 'settings save enabled');
+          document.getElementById('settings-save').click();
+          await waitForSettings(() => document.getElementById('settings-dialog')?.hasAttribute('open') === false, 'settings save close');
+          const saved = await window.xtendLlm.getSettings();
+          const promptControl = document.getElementById('prompt-input')?.shadowRoot?.querySelector('textarea');
+          const promptStyle = promptControl ? getComputedStyle(promptControl) : null;
+          const promptControlColor = promptStyle?.color || '';
+          const promptControlBackground = promptStyle?.backgroundColor || '';
+          button.shadowRoot.querySelector('button').click();
+          await waitForSettings(() => document.getElementById('settings-dialog')?.hasAttribute('open') === true, 'settings reopen');
+          document.querySelector('[data-theme-mode="automatic"]').click();
+          await waitForSettings(() => document.getElementById('settings-save')?.disabled === false, 'settings reset save enabled');
+          document.getElementById('settings-save').click();
+          await waitForSettings(() => document.getElementById('settings-dialog')?.hasAttribute('open') === false, 'settings reset save close');
+          const reset = await window.xtendLlm.getSettings();
+          return {
+            open: dialog.hasAttribute('open'),
+            iconName,
+            iconRendered,
+            orientation: tabs.getAttribute('orientation'),
+            ariaOrientation: tablist.getAttribute('aria-orientation'),
+            parentTag: tabs.parentElement?.tagName?.toLowerCase() || '',
+            surfaceWidth: surfaceRect.width,
+            contentWidth: contentRect.width,
+            tabsWidth: tabsRect.width,
+            savedTheme: saved.settings.themeMode,
+            resetTheme: reset.settings.themeMode,
+            documentTheme: document.documentElement.getAttribute('data-theme') || '',
+            promptControlColor,
+            promptControlBackground,
+            footerGap,
+            tabsHeight: tabsRect.height,
+            panelHeight: panelRect.height,
+            instructionsPanelHeight: instructionsPanelRect.height,
+            instructionsScrolls
+          };
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      throw new Error('Timed out waiting for settings dialog.');
+    })();
+  `, 'R006');
+  assertLayout(settingsFlow.parentTag === 'x-dialog', `settings tabs are not hosted by the RMT dialog: ${JSON.stringify(settingsFlow)}`, 'A051');
+  assertLayout(settingsFlow.iconName === 'settings', `settings button icon-name was not projected: ${JSON.stringify(settingsFlow)}`, 'A052');
+  assertLayout(settingsFlow.iconRendered === true, `settings button cog icon did not render: ${JSON.stringify(settingsFlow)}`, 'A053');
+  assertLayout(settingsFlow.orientation === 'vertical', `settings tabs are not vertical: ${JSON.stringify(settingsFlow)}`, 'A054');
+  assertLayout(settingsFlow.ariaOrientation === 'vertical', `settings tabs do not expose vertical aria orientation: ${JSON.stringify(settingsFlow)}`, 'A055');
+  assertLayout(settingsFlow.surfaceWidth >= 920, `settings dialog is too narrow: ${JSON.stringify(settingsFlow)}`, 'A056');
+  assertLayout(settingsFlow.contentWidth >= settingsFlow.surfaceWidth - 96, `settings content leaves too much side bezel: ${JSON.stringify(settingsFlow)}`, 'A057');
+  assertLayout(settingsFlow.tabsWidth <= settingsFlow.contentWidth + 2, `settings tabs overflow dialog content: ${JSON.stringify(settingsFlow)}`, 'A058');
+  assertLayout(settingsFlow.tabsWidth >= settingsFlow.contentWidth - 2, `settings tabs do not fill dialog content: ${JSON.stringify(settingsFlow)}`, 'A059');
+  assertLayout(settingsFlow.tabsHeight >= 340, `settings tabs are too short for their content: ${JSON.stringify(settingsFlow)}`, 'A060');
+  assertLayout(settingsFlow.instructionsPanelHeight >= 320, `settings instructions panel is too cramped: ${JSON.stringify(settingsFlow)}`, 'A061');
+  assertLayout(settingsFlow.instructionsScrolls === false, `settings instructions tab scrolls unnecessarily: ${JSON.stringify(settingsFlow)}`, 'A062');
+  assertLayout(settingsFlow.savedTheme === 'dark', `settings theme did not save: ${JSON.stringify(settingsFlow)}`, 'A063');
+  assertLayout(settingsFlow.resetTheme === 'automatic', `settings theme did not reset to automatic: ${JSON.stringify(settingsFlow)}`, 'A064');
+  assertLayout(settingsFlow.promptControlColor && settingsFlow.promptControlColor !== settingsFlow.promptControlBackground, `dark prompt textarea text is not readable: ${JSON.stringify(settingsFlow)}`, 'A065');
+  assertLayout(settingsFlow.promptControlColor !== 'rgb(0, 0, 0)', `dark prompt textarea still uses black text: ${JSON.stringify(settingsFlow)}`, 'A066');
+  assertLayout(settingsFlow.footerGap >= 8, `settings content overlaps dialog actions: ${JSON.stringify(settingsFlow)}`, 'A067');
+
+  const settingsCloseLifecycle = await runSmokeScript('settings close lifecycle flow', `
+    (async () => {
+      const button = document.getElementById('settings-button');
+      if (!button || !button.shadowRoot) throw new Error('Settings button missing.');
+      const waitFor = async (predicate, label) => {
+        const started = Date.now();
+        while (Date.now() - started < 3000) {
+          const value = predicate();
+          if (value) return value;
+          await new Promise((resolve) => setTimeout(resolve, 25));
+        }
+        throw new Error('Timed out waiting for ' + label);
+      };
+      button.shadowRoot.querySelector('button').click();
+      const dialog = await waitFor(() => {
+        const node = document.getElementById('settings-dialog');
+        return node && node.hasAttribute('open') ? node : null;
+      }, 'settings dialog reopen');
+      const closeButton = dialog.shadowRoot?.querySelector('.xdialog-close');
+      if (!closeButton) throw new Error('Settings dialog close button missing.');
+      closeButton.click();
+      await waitFor(() => !dialog.hasAttribute('open'), 'settings dialog close lifecycle');
+      return {
+        closed: !dialog.hasAttribute('open'),
+        openAttribute: dialog.hasAttribute('open')
+      };
+    })();
+  `, 'R007');
+  assertLayout(settingsCloseLifecycle.closed === true, `settings dialog close lifecycle did not reach RMT state: ${JSON.stringify(settingsCloseLifecycle)}`, 'A068');
+
+  const spinnerState = await runSmokeScript('spinner pause mirroring', `
+    (async () => {
+      const spinner = document.getElementById('generation-spinner');
+      if (!spinner) throw new Error('Generation spinner missing.');
+      const errors = [];
+      const onError = (event) => {
+        errors.push(String(event.error && event.error.stack || event.message || event));
+      };
+      window.addEventListener('error', onError);
+      try {
+        const key = 'xspinner-paused-' + spinner.id;
+        window.XTend.state.set(key, false);
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        window.XTend.state.set(key, true);
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        spinner.removeAttribute('paused');
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        spinner.setAttribute('paused', '');
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      } finally {
+        window.removeEventListener('error', onError);
+      }
+      return {
+        paused: spinner.hasAttribute('paused'),
+        errors
+      };
+    })();
+  `, 'R008');
+  assertLayout(spinnerState.errors.length === 0, `spinner paused mirroring surfaced runtime errors: ${JSON.stringify(spinnerState)}`, 'A069');
+  assertLayout(spinnerState.paused === true, `spinner paused state did not settle after mirroring: ${JSON.stringify(spinnerState)}`, 'A070');
+
+  const sidePanelCollapse = await runSmokeScript('side panel collapse flow', `
+    (async () => {
+      const panel = document.getElementById('conversation-panel');
+      const root = document.getElementById('xtend-maraca-root');
+      if (!panel || !root) throw new Error('Conversation side panel missing.');
+      const record = panel.toSurfaceRecord ? panel.toSurfaceRecord('layout-smoke') : null;
+      if (!record) throw new Error('Conversation side panel surface record missing.');
+      const controlState = (action) => {
+        const button = panel.shadowRoot && panel.shadowRoot.querySelector('button[data-action="' + action + '"]');
+        if (!button) return { exists: false, hidden: true, displayed: false };
+        const style = getComputedStyle(button);
+        return {
+          exists: true,
+          hidden: button.hidden || button.hasAttribute('hidden'),
+          displayed: style.display !== 'none' && style.visibility !== 'hidden'
+        };
+      };
+      const collapseIconName = () => (
+        panel.shadowRoot?.querySelector('button[data-action="collapse"] x-icon')?.getAttribute('name') || ''
+      );
+      const expandedIcon = collapseIconName();
+      panel.collapsePanel();
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const collapsedIcon = collapseIconName();
+      const collapsedWidth = panel.getBoundingClientRect().width;
+      const columns = getComputedStyle(root).gridTemplateColumns;
+      const searchVisible = getComputedStyle(document.getElementById('conversation-search')).display !== 'none';
+      const settingsVisible = getComputedStyle(document.getElementById('settings-button')).display !== 'none';
+      panel.expandPanel('docked');
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return {
+        capabilities: record.capabilities || [],
+        disabledCapabilities: record.disabledCapabilities || [],
+        controls: record.metadata?.controls || {},
+        controlVisibility: {
+          collapse: controlState('collapse'),
+          pin: controlState('pin'),
+          close: controlState('close')
+        },
+        expandedIcon,
+        collapsedIcon,
+        collapsedWidth,
+        columns,
+        searchVisible,
+        settingsVisible,
+        expanded: !panel.hasAttribute('collapsed'),
+        expandedWidth: panel.getBoundingClientRect().width
+      };
+    })();
+  `, 'R009');
+  assertLayout(sidePanelCollapse.capabilities.includes('collapse'), `side panel is not collapsible: ${JSON.stringify(sidePanelCollapse)}`, 'A071');
+  assertLayout(!sidePanelCollapse.capabilities.includes('close'), `side panel should not be closable: ${JSON.stringify(sidePanelCollapse)}`, 'A072');
+  assertLayout(!sidePanelCollapse.capabilities.includes('pin'), `side panel should not be pinnable: ${JSON.stringify(sidePanelCollapse)}`, 'A073');
+  assertLayout(sidePanelCollapse.disabledCapabilities.includes('close'), `side panel close capability is not disabled: ${JSON.stringify(sidePanelCollapse)}`, 'A074');
+  assertLayout(sidePanelCollapse.controls.closable === false && sidePanelCollapse.controls.pinnable === false, `side panel controls are not configured: ${JSON.stringify(sidePanelCollapse)}`, 'A075');
+  assertLayout(sidePanelCollapse.controlVisibility.collapse.displayed === true, `side panel collapse control should be visible: ${JSON.stringify(sidePanelCollapse)}`, 'A076');
+  assertLayout(sidePanelCollapse.controlVisibility.pin.displayed === false, `side panel pin control should be hidden: ${JSON.stringify(sidePanelCollapse)}`, 'A077');
+  assertLayout(sidePanelCollapse.controlVisibility.close.displayed === false, `side panel close control should be hidden: ${JSON.stringify(sidePanelCollapse)}`, 'A078');
+  assertLayout(sidePanelCollapse.expandedIcon === 'chevron-left', `expanded side panel collapse icon points the wrong way: ${JSON.stringify(sidePanelCollapse)}`, 'A079');
+  assertLayout(sidePanelCollapse.collapsedIcon === 'chevron-right', `collapsed side panel expand icon points the wrong way: ${JSON.stringify(sidePanelCollapse)}`, 'A080');
+  assertLayout(sidePanelCollapse.collapsedWidth <= 64, `collapsed side panel is too wide: ${JSON.stringify(sidePanelCollapse)}`, 'A081');
+  assertLayout(sidePanelCollapse.columns.trim().startsWith('56px'), `collapsed grid did not shrink sidebar column: ${JSON.stringify(sidePanelCollapse)}`, 'A082');
+  assertLayout(sidePanelCollapse.searchVisible === false, `collapsed sidebar content is still visible: ${JSON.stringify(sidePanelCollapse)}`, 'A083');
+  assertLayout(sidePanelCollapse.settingsVisible === false, `collapsed settings button is still visible: ${JSON.stringify(sidePanelCollapse)}`, 'A084');
+  assertLayout(sidePanelCollapse.expanded === true && sidePanelCollapse.expandedWidth >= 280, `side panel did not expand again: ${JSON.stringify(sidePanelCollapse)}`, 'A085');
+
+  const typingStatus = await runSmokeScript('typing status flow', `
+    (async () => {
+      await new Promise((resolve) => setTimeout(resolve, 2800));
+      const prompt = document.getElementById('prompt-input');
+      const model = document.getElementById('model-status');
+      if (!prompt || !model) throw new Error('Prompt or model status missing.');
+      const dispatchPromptCommand = (value) => {
+        prompt.dispatchEvent(new CustomEvent('xtend-command', {
+          detail: {
+            schema: 'xtend.rmt.command.v1',
+            id: 'layout-smoke:update-prompt:' + Date.now(),
+            source: { kind: 'layout-smoke', id: 'prompt-input', event: 'xtend-command', surfaceId: 'xtend.llm.prompt' },
+            command: 'xtend.llm.updatePrompt',
+            payload: {
+              value,
+              length: value.length,
+              trimmedLength: value.trim().length,
+              empty: value.trim().length === 0
+            },
+            correlationId: 'layout-smoke:' + Date.now(),
+            lane: 'test',
+            timestamp: new Date().toISOString()
+          },
+          bubbles: true,
+          composed: true,
+          cancelable: true
+        }));
+      };
+      prompt.value = 'W';
+      dispatchPromptCommand(prompt.value);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const message = model.getAttribute('message') || model.textContent || '';
+      const type = model.getAttribute('type') || '';
+      prompt.value = '';
+      prompt.setAttribute('value', '');
+      dispatchPromptCommand('');
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return {
+        message,
+        type,
+        promptState: {
+          required: prompt.hasAttribute('required'),
+          minLength: prompt.hasAttribute('minlength'),
+          invalid: prompt.hasAttribute('invalid')
+        }
+      };
+    })();
+  `, 'R010');
+  assertLayout(!typingStatus.message.includes('delete-conversation-dialog'), `typing surfaced delete dialog timeout: ${JSON.stringify(typingStatus)}`, 'A086');
+  assertLayout(typingStatus.promptState.required === false, `prompt should not expose required validation: ${JSON.stringify(typingStatus)}`, 'A087');
+  assertLayout(typingStatus.promptState.minLength === false, `prompt should not expose minlength validation: ${JSON.stringify(typingStatus)}`, 'A088');
+  assertLayout(typingStatus.promptState.invalid === false, `empty prompt should not become visibly invalid: ${JSON.stringify(typingStatus)}`, 'A089');
+
+  const messageCounts = await runSmokeScript('fake generation flow', `
+    (async () => {
+      const prompt = document.getElementById('prompt-input');
+      const send = document.getElementById('send-message');
+      if (!prompt || !send || !send.shadowRoot) throw new Error('Prompt or send control missing.');
+      const dispatchPromptCommand = (value) => {
+        prompt.dispatchEvent(new CustomEvent('xtend-command', {
+          detail: {
+            schema: 'xtend.rmt.command.v1',
+            id: 'layout-smoke:update-prompt:' + Date.now(),
+            source: { kind: 'layout-smoke', id: 'prompt-input', event: 'xtend-command', surfaceId: 'xtend.llm.prompt' },
+            command: 'xtend.llm.updatePrompt',
+            payload: {
+              value,
+              length: value.length,
+              trimmedLength: value.trim().length,
+              empty: value.trim().length === 0
+            },
+            correlationId: 'layout-smoke:' + Date.now(),
+            lane: 'test',
+            timestamp: new Date().toISOString()
+          },
+          bubbles: true,
+          composed: true,
+          cancelable: true
+        }));
+      };
+      const observed = { click: 0, buttonInteraction: 0 };
+      let progressSeen = Boolean(document.getElementById('generation-progress'));
+      send.addEventListener('click', () => {
+        observed.click += 1;
+      });
+      send.addEventListener('button-interaction', () => {
+        observed.buttonInteraction += 1;
+      });
+      prompt.value = 'Hello from layout smoke';
+      dispatchPromptCommand(prompt.value);
+      const enableStarted = Date.now();
+      while (send.hasAttribute('disabled') && Date.now() - enableStarted < 3000) {
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      send.shadowRoot.querySelector('button').click();
+      const started = Date.now();
+      while (Date.now() - started < 8000) {
+        progressSeen = progressSeen || Boolean(document.getElementById('generation-progress'));
+        const status = await window.xtendLlm.status();
+        const messages = status?.conversation?.activeConversation?.messages || [];
+        if (messages.some((message) => message.role === 'assistant' && message.status === 'complete')) {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          progressSeen = progressSeen || Boolean(document.getElementById('generation-progress'));
+          const assistantArticle = document.querySelector('.xtend-llm-message-assistant');
+          const copyButton = assistantArticle?.querySelector('.xtend-llm-message-action-copy') || null;
+          const regenerateButton = assistantArticle?.querySelector('.xtend-llm-message-action-regenerate') || null;
+          const copyIconBefore = copyButton?.querySelector('x-icon')?.getAttribute('name') || '';
+          const regenerateIcon = regenerateButton?.querySelector('x-icon')?.getAttribute('name') || '';
+          if (copyButton) copyButton.click();
+          const copyStarted = Date.now();
+          const currentCopyButton = () => document.querySelector('.xtend-llm-message-assistant .xtend-llm-message-action-copy');
+          while (copyButton && Date.now() - copyStarted < 3000 && currentCopyButton()?.getAttribute('title') !== 'Copied') {
+            await new Promise((resolve) => setTimeout(resolve, 25));
+          }
+          const copiedButton = currentCopyButton();
+          const copyIconAfter = copiedButton?.querySelector('x-icon')?.getAttribute('name') || '';
+          const registry = window.XTendMaraca?.appServices?.registry || null;
+          if (registry && typeof registry.whenIdle === 'function') await registry.whenIdle();
+          const serviceHistory = registry && typeof registry.listHistory === 'function'
+            ? registry.listHistory().map((entry) => ({
+                serviceId: entry.serviceId,
+                kind: entry.kind,
+                target: entry.target,
+                concurrency: entry.concurrency,
+                invocationId: entry.invocationId,
+                correlationId: entry.correlationId,
+                sequence: entry.sequence,
+                status: entry.status
+              }))
+            : [];
+          return {
+            total: messages.length,
+            user: messages.filter((message) => message.role === 'user').length,
+            assistant: messages.filter((message) => message.role === 'assistant').length,
+            actionChrome: {
+              row: Boolean(assistantArticle?.querySelector('.xtend-llm-message-actions')),
+              copy: Boolean(copyButton),
+              regenerate: Boolean(regenerateButton),
+              copyDisabled: copyButton?.hasAttribute('disabled') || false,
+              regenerateDisabled: regenerateButton?.hasAttribute('disabled') || false,
+              copyTitle: copiedButton?.getAttribute('title') || '',
+              regenerateTitle: regenerateButton?.getAttribute('title') || '',
+              copyIconBefore,
+              copyIconAfter,
+              regenerateIcon
+            },
+            observed,
+            progressSeen,
+            sendDisabled: send.hasAttribute('disabled'),
+            sendHidden: send.hasAttribute('hidden'),
+            promptDisabled: prompt.hasAttribute('disabled'),
+            promptInvalid: prompt.hasAttribute('invalid'),
+            settingsOpen: document.getElementById('settings-dialog')?.hasAttribute('open') || false,
+            activeConversationId: status?.conversation?.activeConversationId || '',
+            conversations: status?.conversation?.conversations || [],
+            appServices: {
+              enabled: window.XTendMaraca?.appServices?.enabled === true,
+              serviceCount: registry && typeof registry.listServices === 'function' ? registry.listServices().length : 0,
+              activeCount: registry && typeof registry.listActive === 'function' ? registry.listActive().length : -1,
+              listenerErrorCount: registry && typeof registry.listListenerErrors === 'function' ? registry.listListenerErrors().length : -1,
+              history: serviceHistory
+            },
+            messages: messages.map((message) => ({
+              role: message.role,
+              status: message.status || '',
+              content: message.content || '',
+              conversationId: message.conversationId || '',
+              jobId: message.jobId || ''
+            }))
+          };
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      throw new Error('Timed out waiting for fake generation.');
+    })();
+  `, 'R011');
+  const codeHydration = await runSmokeScript('code hydration flow', `
+    (async () => {
+      const started = Date.now();
+      while (Date.now() - started < 5000) {
+        const block = document.querySelector('x-code.xtend-llm-code-block');
+        if (block && customElements.get('x-code')) {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          const template = block.querySelector('template');
+          return {
+            registered: Boolean(customElements.get('x-code')),
+            bridgePresent: Boolean(document.getElementById('code-bridge')),
+            blockCount: document.querySelectorAll('x-code.xtend-llm-code-block').length,
+            lang: block.getAttribute('lang') || '',
+            hydration: block.dataset.insularHydration || '',
+            templateText: template && template.content ? template.content.textContent : '',
+            shadowText: block.shadowRoot ? block.shadowRoot.textContent : ''
+          };
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      throw new Error('Timed out waiting for x-code hydrated LLM block.');
+    })();
+  `, 'R012');
+  const markdownFormatting = await runSmokeScript('markdown formatting flow', `
+    (() => {
+      const assistant = document.querySelector('.xtend-llm-message-assistant .xtend-llm-message-body');
+      return {
+        strongText: assistant?.querySelector('strong.xtend-llm-strong')?.textContent || '',
+        emphasisText: assistant?.querySelector('em.xtend-llm-emphasis')?.textContent || '',
+        inlineCodeText: assistant?.querySelector('code.xtend-llm-inline-code')?.textContent || '',
+        listItems: Array.from(assistant?.querySelectorAll('.xtend-llm-message-list li') || []).map((node) => node.textContent || '')
+      };
+    })();
+  `, 'R013');
+  assertLayout(messageCounts.user === 1, `one user message is stored per click: ${JSON.stringify(messageCounts)}`, 'A090');
+  assertLayout(messageCounts.assistant === 1, `one assistant message is stored per click: ${JSON.stringify(messageCounts)}`, 'A091');
+  assertLayout(messageCounts.total === 2, `fake smoke conversation stores exactly one exchange: ${JSON.stringify(messageCounts)}`, 'A092');
+  assertLayout(messageCounts.actionChrome.row === true, `assistant message action row did not render: ${JSON.stringify(messageCounts)}`, 'A093');
+  assertLayout(messageCounts.actionChrome.copy === true, `assistant copy action did not render: ${JSON.stringify(messageCounts)}`, 'A094');
+  assertLayout(messageCounts.actionChrome.regenerate === true, `assistant regenerate action did not render: ${JSON.stringify(messageCounts)}`, 'A095');
+  assertLayout(messageCounts.actionChrome.copyDisabled === false, `assistant copy action is unexpectedly disabled: ${JSON.stringify(messageCounts)}`, 'A096');
+  assertLayout(messageCounts.actionChrome.regenerateDisabled === false, `assistant regenerate action is unexpectedly disabled: ${JSON.stringify(messageCounts)}`, 'A097');
+  assertLayout(messageCounts.actionChrome.copyTitle === 'Copied', `assistant copy action did not report copied feedback: ${JSON.stringify(messageCounts)}`, 'A098');
+  assertLayout(messageCounts.actionChrome.copyIconBefore === 'copy', `assistant copy icon is wrong: ${JSON.stringify(messageCounts)}`, 'A099');
+  assertLayout(messageCounts.actionChrome.copyIconAfter === 'check', `assistant copy feedback icon is wrong: ${JSON.stringify(messageCounts)}`, 'A100');
+  assertLayout(messageCounts.actionChrome.regenerateIcon === 'refresh', `assistant regenerate icon is wrong: ${JSON.stringify(messageCounts)}`, 'A101');
+  assertLayout(messageCounts.sendDisabled === true, `send is disabled after prompt reset: ${JSON.stringify(messageCounts)}`, 'A102');
+  assertLayout(messageCounts.sendHidden === false, `send rematerializes after generation completes: ${JSON.stringify(messageCounts)}`, 'A103');
+  assertLayout(messageCounts.promptDisabled === false, `prompt is enabled after generation completes: ${JSON.stringify(messageCounts)}`, 'A104');
+  assertLayout(messageCounts.promptInvalid === false, `prompt reset is not visibly invalid: ${JSON.stringify(messageCounts)}`, 'A105');
+  assertLayout(messageCounts.progressSeen === false, `generation progress bar reappeared during streaming: ${JSON.stringify(messageCounts)}`, 'A106');
+  assertLayout(messageCounts.settingsOpen === false, `settings dialog reopened during streaming: ${JSON.stringify(messageCounts)}`, 'A107');
+  assertLayout(messageCounts.appServices.enabled === true, `public AppServices controller is not active: ${JSON.stringify(messageCounts.appServices)}`, 'A108');
+  assertLayout(messageCounts.appServices.serviceCount === 27, `unexpected AppService registry size: ${JSON.stringify(messageCounts.appServices)}`, 'A109');
+  assertLayout(messageCounts.appServices.activeCount === 0, `AppService invocations remain active after generation: ${JSON.stringify(messageCounts.appServices)}`, 'A110');
+  assertLayout(messageCounts.appServices.listenerErrorCount === 0, `AppService frame listener failed: ${JSON.stringify(messageCounts.appServices)}`, 'A111');
+  assertLayout(messageCounts.appServices.history.some((entry) => entry.serviceId === 'xtend.llm.send' && entry.status === 'fulfilled'), `send did not traverse AppServices: ${JSON.stringify(messageCounts.appServices)}`, 'A112');
+  assertLayout(messageCounts.appServices.history.some((entry) => entry.serviceId === 'xtend.llm.generationStream' && entry.kind === 'stream' && entry.status === 'fulfilled'), `generation stream did not settle through AppServices: ${JSON.stringify(messageCounts.appServices)}`, 'A113');
+  assertLayout(messageCounts.appServices.history.every((entry) => Boolean(entry.invocationId && entry.correlationId)), `AppService history lacks invocation or correlation IDs: ${JSON.stringify(messageCounts.appServices)}`, 'A114');
+  assertLayout(codeHydration.registered === true, `x-code is not registered: ${JSON.stringify(codeHydration)}`, 'A115');
+  assertLayout(codeHydration.bridgePresent === true, `RMT x-code bridge is not present: ${JSON.stringify(codeHydration)}`, 'A116');
+  assertLayout(codeHydration.blockCount >= 1, `LLM code fence did not materialize x-code: ${JSON.stringify(codeHydration)}`, 'A117');
+  assertLayout(codeHydration.lang === 'javascript', `x-code language was not preserved: ${JSON.stringify(codeHydration)}`, 'A118');
+  assertLayout(codeHydration.hydration === 'x-code', `insular hydration marker is missing: ${JSON.stringify(codeHydration)}`, 'A119');
+  assertLayout(/console\.log/u.test(codeHydration.templateText), `x-code template does not contain generated code: ${JSON.stringify(codeHydration)}`, 'A120');
+  assertLayout(markdownFormatting.strongText === 'XTend', `bold Markdown did not render as strong: ${JSON.stringify(markdownFormatting)}`, 'A121');
+  assertLayout(markdownFormatting.emphasisText === 'emphasis', `italic Markdown did not render as emphasis: ${JSON.stringify(markdownFormatting)}`, 'A122');
+  assertLayout(markdownFormatting.inlineCodeText === 'Inline code', `inline code Markdown did not render as code: ${JSON.stringify(markdownFormatting)}`, 'A123');
+  assertLayout(markdownFormatting.listItems.length === 2, `Markdown list items did not render: ${JSON.stringify(markdownFormatting)}`, 'A124');
+
+  const secondPromptState = await runSmokeScript('second prompt flow', `
+    (async () => {
+      const prompt = document.getElementById('prompt-input');
+      const send = document.getElementById('send-message');
+      if (!prompt || !send) throw new Error('Prompt or send control missing.');
+      const value = 'Second turn';
+      prompt.value = 'Second turn';
+      prompt.dispatchEvent(new CustomEvent('xtend-command', {
+        detail: {
+          schema: 'xtend.rmt.command.v1',
+          id: 'layout-smoke:update-prompt:' + Date.now(),
+          source: { kind: 'layout-smoke', id: 'prompt-input', event: 'xtend-command', surfaceId: 'xtend.llm.prompt' },
+          command: 'xtend.llm.updatePrompt',
+          payload: {
+            value,
+            length: value.length,
+            trimmedLength: value.trim().length,
+            empty: false
+          },
+          correlationId: 'layout-smoke:' + Date.now(),
+          lane: 'test',
+          timestamp: new Date().toISOString()
+        },
+        bubbles: true,
+        composed: true,
+        cancelable: true
+      }));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const sendButton = send.shadowRoot?.querySelector('button') || null;
+      const sendLabel = send.shadowRoot?.querySelector('.label') || send.shadowRoot?.querySelector('[part~="label"]') || null;
+      const sendRect = send.getBoundingClientRect();
+      const sendButtonRect = sendButton ? sendButton.getBoundingClientRect() : null;
+      const sendStyle = getComputedStyle(send);
+      const sendButtonStyle = sendButton ? getComputedStyle(sendButton) : null;
+      return {
+        promptDisabled: prompt.hasAttribute('disabled'),
+        sendDisabled: send.hasAttribute('disabled'),
+        sendHidden: send.hasAttribute('hidden'),
+        promptValue: prompt.value,
+        sendVisual: {
+          text: send.textContent.trim(),
+          label: send.getAttribute('label') || '',
+          dataLabel: send.dataset?.label || '',
+          shadowText: sendLabel?.textContent.trim() || '',
+          display: sendStyle.display,
+          visibility: sendStyle.visibility,
+          opacity: sendStyle.opacity,
+          width: sendRect.width,
+          height: sendRect.height,
+          buttonDisplay: sendButtonStyle?.display || '',
+          buttonVisibility: sendButtonStyle?.visibility || '',
+          buttonOpacity: sendButtonStyle?.opacity || '',
+          buttonColor: sendButtonStyle?.color || '',
+          buttonBackground: sendButtonStyle?.backgroundColor || '',
+          buttonWidth: sendButtonRect?.width || 0,
+          buttonHeight: sendButtonRect?.height || 0
+        }
+      };
+    })();
+  `, 'R014');
+  assertLayout(secondPromptState.promptDisabled === false, `prompt stays enabled when typing a follow-up: ${JSON.stringify(secondPromptState)}`, 'A125');
+  assertLayout(secondPromptState.sendHidden === false, `send stays visible when typing a follow-up: ${JSON.stringify(secondPromptState)}`, 'A126');
+  assertLayout(secondPromptState.sendDisabled === false, `send enables for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A127');
+  assertLayout((secondPromptState.sendVisual.shadowText || secondPromptState.sendVisual.text || secondPromptState.sendVisual.label || secondPromptState.sendVisual.dataLabel).includes('Send'), `send label is not rendered for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A128');
+  assertLayout(secondPromptState.sendVisual.display !== 'none' && secondPromptState.sendVisual.visibility !== 'hidden' && Number(secondPromptState.sendVisual.opacity) > 0, `send host is not paintable for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A129');
+  assertLayout(secondPromptState.sendVisual.buttonDisplay !== 'none' && secondPromptState.sendVisual.buttonVisibility !== 'hidden' && Number(secondPromptState.sendVisual.buttonOpacity) > 0, `send shadow button is not paintable for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A130');
+  assertLayout(secondPromptState.sendVisual.buttonWidth >= 44 && secondPromptState.sendVisual.buttonHeight >= 44, `send shadow button collapsed for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A131');
+  assertLayout(secondPromptState.sendVisual.buttonColor !== secondPromptState.sendVisual.buttonBackground, `send text color blends into its background for a follow-up prompt: ${JSON.stringify(secondPromptState)}`, 'A132');
+
+  const deleteFlow = await runSmokeScript('delete conversation flow', `
+    (async () => {
+      const waitFor = async (predicate, label) => {
+        const started = Date.now();
+        while (Date.now() - started < 5000) {
+          const value = await predicate();
+          if (value) return value;
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        throw new Error('Timed out waiting for ' + label);
+      };
+      const row = await waitFor(() => document.querySelector('.xtend-llm-conversation-row'), 'conversation row');
+      const more = row.querySelector('.xtend-llm-conversation-more');
+      if (!more) throw new Error('Conversation actions button missing.');
+      const conversationId = row.dataset.conversationId || more.dataset.conversationId || '';
+      const currentRow = () => (
+        Array.from(document.querySelectorAll('.xtend-llm-conversation-row')).find((node) => (
+          conversationId && node.dataset.conversationId === conversationId
+        )) || document.querySelector('.xtend-llm-conversation-row')
+      );
+      more.click();
+      const menu = await waitFor(() => {
+        const node = currentRow()?.querySelector('.xtend-llm-conversation-menu');
+        return node && !node.hasAttribute('hidden') ? node : null;
+      }, 'conversation context menu');
+      const deleteItem = menu.querySelector('.xtend-llm-conversation-menu-item');
+      if (!deleteItem || deleteItem.textContent.trim() !== 'Delete chat') {
+        throw new Error('Delete chat menu item missing.');
+      }
+      deleteItem.click();
+      const dialog = await waitFor(() => {
+        const node = document.getElementById('delete-conversation-dialog');
+        return node && node.hasAttribute('open') ? node : null;
+      }, 'delete confirmation dialog');
+      const message = document.getElementById('delete-conversation-message')?.textContent || '';
+      const confirm = document.getElementById('delete-conversation-confirm');
+      if (!confirm) throw new Error('Delete confirmation button missing.');
+      confirm.click();
+      const status = await waitFor(async () => {
+        const next = await window.xtendLlm.status();
+        return next?.conversation?.conversations?.length === 0 ? next : null;
+      }, 'deleted conversation patch');
+      return {
+        dialogTag: dialog.tagName.toLowerCase(),
+        message,
+        remaining: status.conversation.conversations.length,
+        activeConversationId: status.conversation.activeConversationId || ''
+      };
+    })();
+  `, 'R015');
+  assertLayout(deleteFlow.dialogTag === 'x-dialog', `delete confirmation uses x-dialog: ${JSON.stringify(deleteFlow)}`, 'A133');
+  assertLayout(/Delete/.test(deleteFlow.message), `delete confirmation copy is present: ${JSON.stringify(deleteFlow)}`, 'A134');
+  assertLayout(deleteFlow.remaining === 0, `conversation is deleted from sidebar: ${JSON.stringify(deleteFlow)}`, 'A135');
+  assertLayout(deleteFlow.activeConversationId === '', `active chat is cleared after deleting final chat: ${JSON.stringify(deleteFlow)}`, 'A136');
+
+  const resultDir = path.join(productRoot, '.xtend-llm-results');
+  smokeFailureId = 'P002';
+  fs.mkdirSync(resultDir, { recursive: true });
+  const screenshotPath = path.join(resultDir, 'layout-smoke.png');
+  smokeFailureId = 'P003';
+  const image = await mainWindow.webContents.capturePage();
+  smokeFailureId = 'P004';
+  const screenshot = image.toPNG();
+  smokeFailureId = 'P005';
+  fs.writeFileSync(screenshotPath, screenshot);
+  const reportPath = path.join(resultDir, 'layout-smoke.json');
+  smokeFailureId = 'P006';
+  fs.writeFileSync(reportPath, `${JSON.stringify({
+    schema: 'xtend-llm.layout-smoke-report.v1',
+    ok: true,
+    status: 'passed',
+    createdAt: new Date().toISOString(),
+    sourceToSea: {
+      event: 'xtend-command',
+      action: 'xtend.llm.send',
+      service: 'xtend.llm.send',
+      streamService: 'xtend.llm.generationStream',
+      state: 'xtend.llm.transcript',
+      renderedMessages: messageCounts.total
+    },
+    appServices: messageCounts.appServices,
+    messageCounts: {
+      total: messageCounts.total,
+      user: messageCounts.user,
+      assistant: messageCounts.assistant
+    },
+    actionChrome: messageCounts.actionChrome,
+    codeHydration,
+    markdownFormatting,
+    secondPromptState,
+    deleteFlow,
+    screenshot: {
+      file: path.basename(screenshotPath),
+      bytes: screenshot.byteLength,
+      sha256: crypto.createHash('sha256').update(screenshot).digest('hex')
+    }
+  }, null, 2)}\n`, 'utf8');
+  smokeFailureId = 'P007';
+  console.log(`layout smoke ok: ${screenshotPath}`);
+  console.log(`layout smoke report: ${reportPath}`);
+}
+
+app.whenReady().then(async () => {
+  launchStage('app-ready');
+  const userData = app.getPath('userData');
+  const installed = readInstalledModelManifest(userData);
+  const installedValidation = validateInstalledModelManifest(installed);
+  runtimeModelId = installedValidation.ok ? installedValidation.modelId : TARGET_MODEL_ID;
+  modelState = createModelState({
+    model: runtimeModelId,
+    status: installedValidation.ok
+      ? `Installed model ${runtimeModelId} is ready to load.`
+      : `Default model ${runtimeModelId} is ready to load.`
+  });
+  const cache = createModelCachePaths(userData, runtimeModelId);
+  settingsStore = new SettingsStore({
+    filePath: path.join(userData, 'settings.json')
+  });
+  const settings = settingsStore.load();
+  store = new ConversationStore({
+    filePath: path.join(userData, 'conversations.json'),
+    customInstructions: settings.customInstructions
+  });
+  store.load();
+  registerIpc();
+  launchStage('server');
+  appServer = createXtendLlmAppServer({
+    userData,
+    cacheRoot: cache.root,
+    dev
+  });
+  serverUrl = await appServer.listen(0);
+  await createWindow();
+  if (layoutSmoke) {
+    try {
+      smokeFailureId = 'P001';
+      await runLayoutSmoke();
+      smokeFailureId = 'P008';
+      app.quit();
+    } catch (error) {
+      emitSmokeFailure(smokeFailureId);
+      console.error(error && error.stack ? error.stack : error);
+      app.exit(1);
+    }
+  }
+}).catch(error=>{emitLaunchStage(actualLaunchStage, 1);console.error(error&&error.stack?error.stack:error);app.exit(1);});
+
+app.on('activate', async () => {
+  if (BrowserWindow.getAllWindows().length === 0 && serverUrl) await createWindow();
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', async () => {
+  await closeXtendMcpClient();
+  if (appServer) await appServer.close();
+});
