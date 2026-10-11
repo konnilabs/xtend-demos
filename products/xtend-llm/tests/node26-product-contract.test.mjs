@@ -32,7 +32,8 @@ const requiredContractCommands = [
   'node tests/node26-product-contract.test.mjs',
   'node tests/electron-launcher.test.mjs',
   'node tests/tiny-onnx-identity.test.mjs',
-  'node --test tests/electron-sandbox-policy.test.mjs'
+  'node --test tests/electron-sandbox-policy.test.mjs',
+  'node --test tests/ui-compute-worker-asset.test.mjs'
 ];
 const requiredContractCommand = requiredContractCommands.join(' && ');
 const verifyContractCommand = command => assert.equal(command, requiredContractCommand);

@@ -33,7 +33,7 @@
     "build:app": "node scripts/build-app.mjs",
     "build": "npm run build:app",
     "test": "node tests/product.test.mjs && npm run test:n26:contracts",
-    "test:n26:contracts": "node tests/node26-product-contract.test.mjs && node tests/electron-launcher.test.mjs && node tests/tiny-onnx-identity.test.mjs && node --test tests/electron-sandbox-policy.test.mjs",
+    "test:n26:contracts": "node tests/node26-product-contract.test.mjs && node tests/electron-launcher.test.mjs && node tests/tiny-onnx-identity.test.mjs && node --test tests/electron-sandbox-policy.test.mjs && node --test tests/ui-compute-worker-asset.test.mjs",
     "test:catfood:check": "node tests/app-services-catfood-gate.mjs",
     "test:catfood": "npm run test:catfood:ci",
     "test:catfood:ci": "node scripts/rmt-build.mjs --profile production --quiet && npm run test:catfood:check",

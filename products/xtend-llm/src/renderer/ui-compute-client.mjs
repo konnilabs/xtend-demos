@@ -67,7 +67,7 @@ export class UiComputeWorkerClient {
     this.worker = null;
 
     if (!this.fake) {
-      this.worker = new Worker(new URL('./ui-compute-worker.mjs', import.meta.url), {
+      this.worker = new Worker(new URL('/src/renderer/ui-compute-worker.mjs', import.meta.url), {
         type: 'module',
         name: options.name || 'XTendLLMUICompute'
       });
