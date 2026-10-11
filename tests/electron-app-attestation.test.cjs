@@ -110,3 +110,27 @@ test('captured actual child launch annotations pass only exact owned grammar and
   const unrelated=[];flow(stderr=>relayLaunchStages(stderr,line=>unrelated.push(line)),execute,'unrelated');assert.deepEqual(unrelated,[]);
  } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
+
+
+test('real consumer rejects Git-byte tampered diagnostic helper before runtime prerequisites',()=>{
+ const os=require('node:os'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
+ const sourceRoot=path.resolve(__dirname,'..'),root=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-consumer-helper-binding-'));
+ const helper='products/xtend-llm/scripts/actual-launch-diagnostics.cjs';
+ const files=[...sourcePaths.map(file=>'products/xtend-llm/'+file),helper,'scripts/verify-electron-app-attestation.cjs','scripts/provision-electron-sandbox.cjs'];
+ const git=(...args)=>execFileSync('git',args,{cwd:root,encoding:'utf8',stdio:['ignore','pipe','pipe']});
+ try {
+  for(const file of files){fs.mkdirSync(path.dirname(path.join(root,file)),{recursive:true});fs.copyFileSync(path.join(sourceRoot,file),path.join(root,file));}
+  git('init','--quiet');git('add','--',...files);git('-c','user.name=Portable Binding Test','-c','user.email=binding-test@example.invalid','commit','--quiet','-m','Controlled immutable consumer source fixture');
+  const demoSha=git('rev-parse','HEAD').trim(),consumer=require(path.join(root,'scripts/verify-electron-app-attestation.cjs'));
+  const options={coreSha:'a'.repeat(40),demoSha,startedAt:new Date().toISOString(),environment:{REQUIRED_CI_ATTESTATION:'1'}};
+  const receipt=path.join(root,'products/xtend-llm/node_modules/electron/xtend-sandbox-receipt.json');
+  // Intact source reaches the deliberately absent runtime prerequisite, NOT a productive proof.
+  assert.throws(()=>consumer.consume(options),error=>error.code==='ENOENT'&&error.path===receipt);
+  const original=fs.readFileSync(path.join(root,helper)),mutated=Buffer.concat([original,Buffer.from('\n// controlled diagnostic-helper tamper\n')]);
+  fs.writeFileSync(path.join(root,helper),mutated);
+  const expected='Dirty/substituted attestation source: '+helper;
+  assert.throws(()=>consumer.consume(options),error=>error.message===expected);
+  console.log(JSON.stringify({proof:'real-consumer-git-byte-negative-only',fixtureDemoSha:demoSha,helperOriginalSha256:crypto.createHash('sha256').update(original).digest('hex'),helperTamperedSha256:crypto.createHash('sha256').update(mutated).digest('hex'),rejection:expected,intactControl:'reaches missing runtime receipt; NOT actual-app proof'}));
+  fs.writeFileSync(path.join(root,helper),original);assert.throws(()=>consumer.consume(options),error=>error.code==='ENOENT'&&error.path===receipt);
+ } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
