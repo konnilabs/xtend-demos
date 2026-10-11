@@ -134,3 +134,35 @@ test('real consumer rejects Git-byte tampered diagnostic helper before runtime p
   fs.writeFileSync(path.join(root,helper),original);assert.throws(()=>consumer.consume(options),error=>error.code==='ENOENT'&&error.path===receipt);
  } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
+
+test('outer runtime command observations preserve real child exits, logs, reports and fixed grammar',()=>{
+ const vm=require('node:vm'),os=require('node:os'),{evaluateResult}=require('../scripts/product-result-evidence.cjs');
+ const source=fs.readFileSync(path.resolve(__dirname,'../scripts/run-product-gates.cjs'),'utf8');
+ const save=source.slice(source.indexOf(' function saveReport'),source.indexOf(' function execute'));
+ const body=source.slice(source.indexOf(' function execute'),source.indexOf("\n execute('migration-runner-contracts'"));
+ const before=body.slice(0,body.indexOf('  function commandAnnotation'))+"  const result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000});\n"+body.slice(body.indexOf("  if(id==='electron-runtime')relayLaunchStages"));
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-runtime-command-review-'));
+ try {
+  const child=[process.execPath,'-e',"process.stdout.write('PRIVATE-OUT');process.stderr.write('PRIVATE\\n::error::INJECTION\\n');process.exit(7);"];
+  function flow(execute,args=child,transportFails=false,spawn=spawnSync,id='electron-runtime') {
+   const commands=[],writes=[],lines=[];
+   const localFs={...fs,writeFileSync:(file,bytes)=>writes.push([file,bytes]),writeSync:(fd,line)=>{assert.equal(fd,2);if(transportFails)throw Object.assign(Error('PRIVATE'),{code:'EPIPE'});lines.push(line);}};
+   const api=vm.runInNewContext(save+execute+';({execute,saveReport})',{root,path,fs:localFs,commands,process:{env:{}},Date,JSON,Buffer,spawnSync:spawn,evaluateResult,relayLaunchStages:()=>{},emitActualAppOutcome});
+   const ok=api.execute(id,args);commands.forEach(api.saveReport);
+   return {ok,commands:JSON.parse(JSON.stringify(commands)),writes,lines};
+  }
+  const actual=flow(body),original=flow(before);
+  assert.deepEqual(actual.lines,['::notice::electron-runtime-command phase=start code=0 reason=attempt\n','::error::electron-runtime-command phase=exit code=1 reason=child-failed\n']);
+  assert.deepEqual({...actual,lines:[]},original);
+  assert.equal(actual.commands[0].exitCode,7);assert.equal(actual.commands[0].status,'failed');
+  assert(!actual.lines.join('').includes('PRIVATE'));assert(!actual.lines.join('').includes('INJECTION'));
+  assert.deepEqual(flow(body,child,true),original);
+  const success=flow(body,[process.execPath,'-e','process.exit(0)']);assert.equal(success.commands[0].exitCode,0);assert.match(success.lines[1],/code=0 reason=completed/);
+  const absent=flow(body,[path.join(root,'missing-executable')]);assert.equal(absent.commands[0].status,'failed');assert.match(absent.lines[1],/code=1 reason=spawn-error/);
+  assert.deepEqual(flow(body,child,false,spawnSync,'unrelated').lines,[]);
+  const thrown=Object.assign(Error('PRIVATE'),{code:'EFAIL'});assert.throws(()=>flow(body,child,true,()=>{throw thrown;}),e=>e===thrown);
+  const helper=body.slice(body.indexOf('  function commandAnnotation'),body.indexOf("  commandAnnotation('start'"));
+  const emit=vm.runInNewContext(helper+';commandAnnotation',{id:'electron-runtime',fs:{writeSync:()=>assert.fail('invalid input reached transport')}});
+  for(const args of [['start',1,'attempt'],['start',0,'attempt\n::error::PRIVATE'],['exit',0,'child-failed'],['exit',1,'completed'],['exit','1','spawn-error'],['foreign',1,'spawn-error']])assert.throws(()=>emit(...args),/Invalid fixed/);
+ } finally {fs.rmSync(root,{recursive:true,force:true});}
+});

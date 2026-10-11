@@ -11,7 +11,17 @@ async function run() {
  function saveReport(record){const target=path.join(root,'.xtend-test-results/suites',record.id+'.json');fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,JSON.stringify({schema:'xtend.product-suite-result.v1',coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA,...record},null,2)+'\n');}
  function execute(id,args,cwd=root,reports=[],env=process.env) {
   const startedAt=Date.now();
-  const result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000});
+  function commandAnnotation(phase,code,reason) {
+   if(id!=='electron-runtime')return;
+   const valid=phase==='start'&&code===0&&reason==='attempt' || phase==='exit'&&(code===0&&reason==='completed' || code===1&&['child-failed','spawn-error','spawn-throw'].includes(reason));
+   if(!valid)throw Error('Invalid fixed runtime-command diagnostic');
+   try { fs.writeSync(2,`::${code?'error':'notice'}::electron-runtime-command phase=${phase} code=${code} reason=${reason}\n`); } catch { /* Transport never changes commands, logs or authoritative reports. */ }
+  }
+  commandAnnotation('start',0,'attempt');
+  let result;
+  try { result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000}); }
+  catch(error){commandAnnotation('exit',1,'spawn-throw');throw error;}
+  commandAnnotation('exit',result.status===0&&!result.error?0:1,result.error?'spawn-error':result.status===0?'completed':'child-failed');
   if(id==='electron-runtime')relayLaunchStages(result.stderr);
   const outcome=evaluateResult({...result,reports,startedAt}),status=outcome.status;
   const log=path.join(root,'.xtend-test-results',id+'.log');fs.mkdirSync(path.dirname(log),{recursive:true});fs.writeFileSync(log,`${args.join(' ')}\n${result.stdout||''}\n${result.stderr||''}\n${result.error?.message||''}`);
