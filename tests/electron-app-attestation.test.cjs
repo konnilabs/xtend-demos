@@ -70,47 +70,33 @@ test('throwing annotation writer leaves actual execute record and saveReport flo
 });
 
 
-test('captured actual child launch annotations pass only exact owned grammar and preserve runner records/reports',()=>{
- const {relayLaunchStages,stages}=require('../products/xtend-llm/scripts/actual-launch-diagnostics.cjs');
+test('captured actual child marker sets reject foreign grammar and preserve reports',()=>{
+ const {stages}=require('../products/xtend-llm/scripts/actual-launch-diagnostics.cjs');
+ const {emitRuntimeSummary}=require('../scripts/electron-runtime-summary.cjs');
  const {evaluateResult}=require('../scripts/product-result-evidence.cjs'),vm=require('node:vm'),os=require('node:os');
  const source=fs.readFileSync(path.resolve(__dirname,'../scripts/run-product-gates.cjs'),'utf8');
  const save=source.slice(source.indexOf(' function saveReport'),source.indexOf(' function execute'));
- const execute=source.slice(source.indexOf(' function execute'),source.indexOf("\n execute('migration-runner-contracts'"));
- assert.ok(execute.includes("if(id==='electron-runtime')for(const captured of [result.stdout,result.stderr])relayLaunchStages(captured);"));
+ const body=source.slice(source.indexOf(' function execute'),source.indexOf("\n execute('migration-runner-contracts'"));
  const valid=stages.flatMap(stage=>[0,1].map(code=>`::${code?'error':'notice'}::electron-actual-launch stage=${stage} code=${code}`));
- const malicious=['PRIVATE-STDERR','::error::electron-actual-launch stage=launch-extra code=1','::error::electron-actual-launch stage=foreign code=1',
-  '::error::electron-actual-launch stage=launch code=1 suffix=PRIVATE','prefix::error::electron-actual-launch stage=launch code=1',
-  '::notice::electron-actual-launch stage=launch code=1','::error::electron-actual-launch stage=launch code=0',
-  '::error::electron-actual-launch stage=launch code=2','::error::electron-actual-launch stage=launch code=01',
-  '::error::electron-actual-launch stage=launch code=1\r', '::error::electron-actual-launch stage=launch\n code=1',
-  '::error::electron-actual-launch stage=launch code=1\r::error::PRIVATE'];
- const childSource='process.stdout.write('+JSON.stringify('::error::electron-actual-launch stage=server code=1\nPRIVATE-STDOUT\n')+');process.stderr.write('+JSON.stringify([...valid,...malicious].join('\n')+'\n')+');process.exit(7);';
- const child=[process.execPath,'-e',childSource];
- const root=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-launch-relay-')),commands=[],writes=new Map();
- try {
-  function flow(relay,body=execute,id='electron-runtime') {
-   commands.length=0;writes.clear();
-   const localFs={...fs,writeFileSync:(file,bytes)=>{writes.set(file,bytes);}};
-   const context={root,path,fs:localFs,commands,process:{env:{XTEND_CORE_SHA:'a'.repeat(40),XTEND_DEMO_SHA:'b'.repeat(40)}},Date,JSON,Buffer,spawnSync,evaluateResult,relayLaunchStages:relay,emitActualAppOutcome};
-   const api=vm.runInNewContext(save+body+';({execute,saveReport})',context);
-   assert.equal(api.execute(id,child),false);for(const record of commands)api.saveReport(record);
-   return {commands:JSON.parse(JSON.stringify(commands)),writes:[...writes]};
+ const malicious=['PRIVATE','::error::electron-actual-launch stage=foreign code=1','::error::electron-actual-launch stage=launch code=1 suffix=PRIVATE','prefix::error::electron-actual-launch stage=launch code=1','::notice::electron-actual-launch stage=launch code=1','::error::electron-actual-launch stage=launch code=0','::error::electron-actual-launch stage=launch code=2','::error::electron-actual-launch stage=launch code=01','::error::electron-actual-launch stage=launch code=1\r','::error::electron-actual-launch stage=launch\n code=1'];
+ const child=[process.execPath,'-e','process.stdout.write("PRIVATE-OUT\\n");process.stderr.write('+JSON.stringify([...valid,...malicious].join('\n')+'\n')+');process.exit(7);'];
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-summary-report-'));
+ try{
+  function flow(enabled=true,broken=false,id='electron-runtime'){
+   const commands=[],writes=[],lines=[];
+   const localFs={...fs,writeFileSync:(file,bytes)=>writes.push([file,bytes])};
+   const api=vm.runInNewContext(save+body+';({execute,saveReport})',{root,path,fs:localFs,commands,process:{env:{}},Date,JSON,Buffer,spawnSync,evaluateResult,emitActualAppOutcome,
+    emitRuntimeSummary:(r,t)=>{if(enabled)emitRuntimeSummary(r,t,line=>{if(broken)throw Error('PRIVATE');lines.push(line);});}});
+   const ok=api.execute(id,child);commands.forEach(api.saveReport);return {ok,commands:JSON.parse(JSON.stringify(commands)),writes,lines};
   }
-  const lines=[],actual=flow(stderr=>relayLaunchStages(stderr,line=>lines.push(line)));
-  assert.deepEqual(lines,['::error::electron-actual-launch stage=server code=1\n',...valid.map(line=>line+'\n')]);
-  const before=flow(()=>{},execute.replace("  if(id==='electron-runtime')for(const captured of [result.stdout,result.stderr])relayLaunchStages(captured);\n",''));
-  assert.deepEqual(actual,before);
+  const actual=flow(),before=flow(false);assert.equal(actual.lines.length,1);
+  assert.match(actual.lines[0],/markers=stderr stdout_entry=0{15} stdout_error=0{15} stderr_entry=1{15} stderr_error=1{15}/);
+  assert.deepEqual({...actual,lines:[]},before);assert.deepEqual(flow(true,true),before);
   assert.equal(actual.commands[0].exitCode,7);assert.equal(actual.commands[0].status,'failed');
-  const retainedLog=actual.writes.find(([file])=>file.endsWith('/electron-runtime.log'))[1];
-  assert.ok(retainedLog.includes('PRIVATE-STDERR'));assert.ok(retainedLog.includes('PRIVATE-STDOUT'));
-  const retainedReport=JSON.parse(actual.writes.find(([file])=>file.endsWith('/suites/electron-runtime.json'))[1]);
-  assert.equal(retainedReport.exitCode,7);assert.equal(retainedReport.status,'failed');
-  const transportFailed=flow(stderr=>relayLaunchStages(stderr,()=>{throw Object.assign(Error('PRIVATE'),{code:'EPIPE'});}));
-  assert.deepEqual(transportFailed,before);
-  const unrelated=[];flow(stderr=>relayLaunchStages(stderr,line=>unrelated.push(line)),execute,'unrelated');assert.deepEqual(unrelated,[]);
- } finally {fs.rmSync(root,{recursive:true,force:true});}
+  assert.ok(actual.writes.find(([file])=>file.endsWith('.log'))[1].includes('PRIVATE'));
+  assert.ok(!actual.lines[0].includes('PRIVATE'));assert.deepEqual(flow(true,false,'unrelated').lines,[]);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
 });
-
 
 test('real consumer rejects Git-byte tampered diagnostic helper before runtime prerequisites',()=>{
  const os=require('node:os'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
@@ -136,34 +122,19 @@ test('real consumer rejects Git-byte tampered diagnostic helper before runtime p
  } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
 
-test('outer runtime command observations preserve real child exits, logs, reports and fixed grammar',()=>{
+test('outer summary replaces redundant command notices and preserves thrown identity',()=>{
  const vm=require('node:vm'),os=require('node:os'),{evaluateResult}=require('../scripts/product-result-evidence.cjs');
+ const {emitRuntimeSummary}=require('../scripts/electron-runtime-summary.cjs');
  const source=fs.readFileSync(path.resolve(__dirname,'../scripts/run-product-gates.cjs'),'utf8');
  const save=source.slice(source.indexOf(' function saveReport'),source.indexOf(' function execute'));
  const body=source.slice(source.indexOf(' function execute'),source.indexOf("\n execute('migration-runner-contracts'"));
- const before=body.slice(0,body.indexOf('  function commandAnnotation'))+"  const result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000});\n"+body.slice(body.indexOf("  if(id==='electron-runtime')for(const captured"));
- const root=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-runtime-command-review-'));
- try {
-  const child=[process.execPath,'-e',"process.stdout.write('PRIVATE-OUT');process.stderr.write('PRIVATE\\n::error::INJECTION\\n');process.exit(7);"];
-  function flow(execute,args=child,transportFails=false,spawn=spawnSync,id='electron-runtime') {
-   const commands=[],writes=[],lines=[];
-   const localFs={...fs,writeFileSync:(file,bytes)=>writes.push([file,bytes]),writeSync:(fd,line)=>{assert.equal(fd,2);if(transportFails)throw Object.assign(Error('PRIVATE'),{code:'EPIPE'});lines.push(line);}};
-   const api=vm.runInNewContext(save+execute+';({execute,saveReport})',{root,path,fs:localFs,commands,process:{env:{}},Date,JSON,Buffer,spawnSync:spawn,evaluateResult,relayLaunchStages:()=>{},emitActualAppOutcome});
-   const ok=api.execute(id,args);commands.forEach(api.saveReport);
-   return {ok,commands:JSON.parse(JSON.stringify(commands)),writes,lines};
-  }
-  const actual=flow(body),original=flow(before);
-  assert.deepEqual(actual.lines,['::notice::electron-runtime-command phase=start code=0 reason=attempt\n','::error::electron-runtime-command phase=exit code=1 reason=child-failed\n']);
-  assert.deepEqual({...actual,lines:[]},original);
-  assert.equal(actual.commands[0].exitCode,7);assert.equal(actual.commands[0].status,'failed');
-  assert(!actual.lines.join('').includes('PRIVATE'));assert(!actual.lines.join('').includes('INJECTION'));
-  assert.deepEqual(flow(body,child,true),original);
-  const success=flow(body,[process.execPath,'-e','process.exit(0)']);assert.equal(success.commands[0].exitCode,0);assert.match(success.lines[1],/code=0 reason=completed/);
-  const absent=flow(body,[path.join(root,'missing-executable')]);assert.equal(absent.commands[0].status,'failed');assert.match(absent.lines[1],/code=1 reason=spawn-error/);
-  assert.deepEqual(flow(body,child,false,spawnSync,'unrelated').lines,[]);
-  const thrown=Object.assign(Error('PRIVATE'),{code:'EFAIL'});assert.throws(()=>flow(body,child,true,()=>{throw thrown;}),e=>e===thrown);
-  const helper=body.slice(body.indexOf('  function commandAnnotation'),body.indexOf("  commandAnnotation('start'"));
-  const emit=vm.runInNewContext(helper+';commandAnnotation',{id:'electron-runtime',fs:{writeSync:()=>assert.fail('invalid input reached transport')}});
-  for(const args of [['start',1,'attempt'],['start',0,'attempt\n::error::PRIVATE'],['exit',0,'child-failed'],['exit',1,'completed'],['exit','1','spawn-error'],['foreign',1,'spawn-error']])assert.throws(()=>emit(...args),/Invalid fixed/);
- } finally {fs.rmSync(root,{recursive:true,force:true});}
+ assert.ok(!body.includes('commandAnnotation'));assert.ok(!body.includes('relayLaunchStages'));
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-summary-command-'));
+ try{
+  const thrown=Object.assign(Error('PRIVATE'),{code:'EFAIL'}),lines=[];
+  const api=vm.runInNewContext(save+body+';({execute,saveReport})',{root,path,fs,commands:[],process:{env:{}},Date,JSON,Buffer,spawnSync:()=>{throw thrown;},evaluateResult,emitActualAppOutcome,
+   emitRuntimeSummary:(r,t)=>emitRuntimeSummary(r,t,line=>{lines.push(line);throw Error('EPIPE');})});
+  assert.throws(()=>api.execute('electron-runtime',['controlled']),e=>e===thrown);
+  assert.equal(lines.length,1);assert.match(lines[0],/command=spawn-throw exit=none signal=none markers=none/);
+ }finally{fs.rmSync(root,{recursive:true,force:true});}
 });

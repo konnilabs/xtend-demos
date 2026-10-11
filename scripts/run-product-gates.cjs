@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {evaluateResult}=require('./product-result-evidence.cjs');
 const {emitActualAppOutcome}=require('./actual-app-outcome-annotation.cjs');
-const {relayLaunchStages}=require('../products/xtend-llm/scripts/actual-launch-diagnostics.cjs');
+const {emitRuntimeSummary}=require('./electron-runtime-summary.cjs');
 const root=path.resolve(__dirname,'..');
 async function run() {
  const commands=[];
@@ -30,18 +30,10 @@ async function run() {
    try{writer(`::error::electron-runtime-startup failure=${label} code=1\n`);}catch{/* Diagnostic transport never alters authoritative result. */}
   }
 
-  function commandAnnotation(phase,code,reason) {
-   if(id!=='electron-runtime')return;
-   const valid=phase==='start'&&code===0&&reason==='attempt' || phase==='exit'&&(code===0&&reason==='completed' || code===1&&['child-failed','spawn-error','spawn-throw'].includes(reason));
-   if(!valid)throw Error('Invalid fixed runtime-command diagnostic');
-   try { fs.writeSync(2,`::${code?'error':'notice'}::electron-runtime-command phase=${phase} code=${code} reason=${reason}\n`); } catch { /* Transport never changes commands, logs or authoritative reports. */ }
-  }
-  commandAnnotation('start',0,'attempt');
   let result;
   try { result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000}); }
-  catch(error){commandAnnotation('exit',1,'spawn-throw');throw error;}
-  commandAnnotation('exit',result.status===0&&!result.error?0:1,result.error?'spawn-error':result.status===0?'completed':'child-failed');
-  if(id==='electron-runtime')for(const captured of [result.stdout,result.stderr])relayLaunchStages(captured);
+  catch(error){if(id==='electron-runtime')emitRuntimeSummary(undefined,true);throw error;}
+  if(id==='electron-runtime')emitRuntimeSummary(result);
   if(id==='electron-runtime') { const label=classifyStartup(result,args[0]);if(label&&label!=='unclassified')emitStartupFailure(label); }
   const outcome=evaluateResult({...result,reports,startedAt}),status=outcome.status;
   const log=path.join(root,'.xtend-test-results',id+'.log');fs.mkdirSync(path.dirname(log),{recursive:true});fs.writeFileSync(log,`${args.join(' ')}\n${result.stdout||''}\n${result.stderr||''}\n${result.error?.message||''}`);
@@ -58,7 +50,7 @@ async function run() {
   if(id==='electron-actual-app-attestation')emitActualAppOutcome({reportPresent:fs.existsSync(path.join(root,'.xtend-test-results/electron-sandbox-attestation.json')),verified:record.status==='passed'});
   commands.push(record);return record.status==='passed';
  }
- execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/runtime-preparation-diagnostics.test.cjs','tests/startup-error-classifier.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/shop-generated-discovery.test.cjs','tests/migration/material-product-runtime.test.cjs']);
+ execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/electron-runtime-summary.test.cjs','tests/runtime-preparation-diagnostics.test.cjs','tests/startup-error-classifier.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/shop-generated-discovery.test.cjs','tests/migration/material-product-runtime.test.cjs']);
  execute('http-security',[process.execPath,'--test','--test-reporter=tap','tests/security/http.test.mjs']);
  const xss=await require('../tests/security/product_xss_suite.cjs').runProductXss({rootDir:root}).catch(error=>({ok:false,failures:[error.message]}));
  commands.push({id:'product-xss',command:['runProductXss'],exitCode:xss.ok?0:1,status:xss.ok?'passed':'failed',skips:xss.skips||[],failures:xss.failures||[]});

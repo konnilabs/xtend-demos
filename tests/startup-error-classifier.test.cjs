@@ -1,8 +1,9 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),{spawnSync}=require('node:child_process');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const {emitRuntimeSummary}=require('../scripts/electron-runtime-summary.cjs');
 const runnerSource=fs.readFileSync(path.join(__dirname,'../scripts/run-product-gates.cjs'),'utf8');
-const definitions=runnerSource.slice(runnerSource.indexOf('  const labels='),runnerSource.indexOf('  function commandAnnotation'));
+const definitions=runnerSource.slice(runnerSource.indexOf('  const labels='),runnerSource.indexOf('  let result;'));
 const {labels,classifyStartup,emitStartupFailure}=vm.runInNewContext(definitions+';({labels,classifyStartup,emitStartupFailure})',{fs});
 test('actual child missing module is classified without emitting module or source',()=>{
  const r=spawnSync(process.execPath,['-e',"require('xtend-controlled-startup-module-missing')"],{encoding:'utf8'});assert.equal(r.status,1);assert.equal(classifyStartup(r,'node'),'module-resolution');
@@ -37,7 +38,7 @@ test('actual outer runner preserves child exit, log and saved report with startu
   const result=spawnSync(process.execPath,['-e',"require('xtend-controlled-startup-module-missing')"],{encoding:'utf8'});assert.equal(result.status,1);
   function flow(code){
    const commands=[],lines=[],localFs=Object.create(fs);localFs.writeSync=(_fd,line)=>{lines.push(line);return line.length;};
-   const api=vm.runInNewContext(save+code+';({execute,saveReport})',{root,path,fs:localFs,commands,process:{env:{}},Date,JSON,Buffer,spawnSync:()=>result,evaluateResult,relayLaunchStages:()=>{},emitActualAppOutcome:()=>{},classifyStartup,emitStartupFailure:label=>emitStartupFailure(label,line=>lines.push(line))});
+   const api=vm.runInNewContext(save+code+';({execute,saveReport})',{root,path,fs:localFs,commands,process:{env:{}},Date,JSON,Buffer,spawnSync:()=>result,evaluateResult,emitRuntimeSummary:(r,t)=>emitRuntimeSummary(r,t,line=>localFs.writeSync(2,line)),emitActualAppOutcome:()=>{},classifyStartup,emitStartupFailure:label=>emitStartupFailure(label,line=>lines.push(line))});
    assert.equal(api.execute('electron-runtime',['xvfb-run','-a','npm','run','test:electron:node24:product']),false);commands.forEach(api.saveReport);
    return {records:JSON.stringify(commands),log:fs.readFileSync(path.join(root,'.xtend-test-results/electron-runtime.log'),'utf8'),report:fs.readFileSync(path.join(root,'.xtend-test-results/suites/electron-runtime.json'),'utf8'),lines};
   }
@@ -80,7 +81,7 @@ test('real redirected and nested npm children preserve streams/records/reports w
    const localFs=Object.create(fs);localFs.writeSync=(_fd,line)=>{if(broken)throw Object.assign(Error('PRIVATE'),{code:'EPIPE'});lines.push(line);return line.length;};
    const api=vm.runInNewContext(save+execute+';({execute,saveReport})',{root,path,fs:localFs,commands,process:{env},Date,JSON,Buffer,
     spawnSync:(...input)=>{result=spawnSync(...input);captured.push({args:input[0],status:result.status,stdoutSha256:sha(result.stdout||''),stderrSha256:sha(result.stderr||'')});return result;},evaluateResult,
-    relayLaunchStages:(output)=>relayLaunchStages(output,line=>localFs.writeSync(2,line)),emitActualAppOutcome:()=>{}});
+    emitRuntimeSummary:(r,t)=>emitRuntimeSummary(r,t,line=>localFs.writeSync(2,line)),emitActualAppOutcome:()=>{}});
    const ok=api.execute('electron-runtime',args,root,[],env);commands.forEach(api.saveReport);
    return {ok,records:JSON.stringify(commands),log:fs.readFileSync(path.join(root,'.xtend-test-results/electron-runtime.log'),'utf8'),report:fs.readFileSync(path.join(root,'.xtend-test-results/suites/electron-runtime.json'),'utf8'),lines,result};
   }
@@ -88,8 +89,8 @@ test('real redirected and nested npm children preserve streams/records/reports w
    const a=flow(before,args),b=flow(body,args);assert.equal(a.result.status,1);assert.equal(b.result.status,1);assert.equal(a.result.stderr,'');assert.equal(b.result.stderr,'');
    for(const key of ['ok','records','log','report'])assert.equal(b[key],a[key]);for(const key of ['stdout','stderr','status','signal'])assert.equal(b.result[key],a.result[key]);
    assert.ok(b.result.stdout.includes('PRIVATE'));assert.ok(b.result.stdout.includes("MODULE_NOT_FOUND"));
-   assert.deepEqual(a.lines,['::notice::electron-runtime-command phase=start code=0 reason=attempt\n','::error::electron-runtime-command phase=exit code=1 reason=child-failed\n']);
-   assert.deepEqual(b.lines,a.lines.concat(valid.split('\n').filter(Boolean).map(x=>x+'\n'),'::error::electron-runtime-startup failure=module-resolution code=1\n'));
+   assert.equal(a.lines.length,1);assert.match(a.lines[0],/electron-runtime-summary .*markers=stdout/);
+   assert.deepEqual(b.lines,a.lines.concat('::error::electron-runtime-startup failure=module-resolution code=1\n'));
    assert.ok(!b.lines.join('').includes('PRIVATE'));assert.ok(!b.lines.join('').includes('SECRET'));
    const broken=flow(body,args,true);for(const key of ['ok','records','log','report'])assert.equal(broken[key],a[key]);assert.deepEqual(broken.lines,[]);
   }
@@ -114,9 +115,9 @@ test('real split fragments never assemble across streams; malicious lines in eit
   const stderr="launch code=1\n code: 'MODULE_NOT_FOUND',\n::notice::electron-actual-launch stage=launch code=0\nPRIVATE-ERR\n::error::electron-actual-launch stage=launch code=1 suffix=SECRET\n";
   const args=[process.execPath,'-e',`const fs=require('node:fs');fs.writeSync(1,${JSON.stringify(stdout)});fs.writeSync(2,${JSON.stringify(stderr)});process.exit(7);`];
   const lines=[],commands=[],localFs=Object.create(fs);localFs.writeSync=(_fd,line)=>{lines.push(line);return line.length;};let result;
-  const api=vm.runInNewContext(save+body+';({execute,saveReport})',{root,path,fs:localFs,commands,process:{env:process.env},Date,JSON,Buffer,spawnSync:(...input)=>{result=spawnSync(...input);return result;},evaluateResult,relayLaunchStages:stream=>relayLaunchStages(stream,line=>lines.push(line)),emitActualAppOutcome:()=>{}});
+  const api=vm.runInNewContext(save+body+';({execute,saveReport})',{root,path,fs:localFs,commands,process:{env:process.env},Date,JSON,Buffer,spawnSync:(...input)=>{result=spawnSync(...input);return result;},evaluateResult,emitRuntimeSummary:(r,t)=>emitRuntimeSummary(r,t,line=>lines.push(line)),emitActualAppOutcome:()=>{}});
   assert.equal(api.execute('electron-runtime',args,root),false);commands.forEach(api.saveReport);assert.equal(result.status,7);assert.equal(result.stdout,stdout);assert.equal(result.stderr,stderr);
-  assert.deepEqual(lines,['::notice::electron-runtime-command phase=start code=0 reason=attempt\n','::error::electron-runtime-command phase=exit code=1 reason=child-failed\n','::notice::electron-actual-launch stage=build code=0\n','::notice::electron-actual-launch stage=launch code=0\n']);
+  assert.equal(lines.length,1);assert.match(lines[0],/markers=both stdout_entry=010000000000000 stdout_error=000000000000000 stderr_entry=000100000000000 stderr_error=000000000000000/);
   const log=fs.readFileSync(path.join(root,'.xtend-test-results/electron-runtime.log'),'utf8');assert.equal(log,`${args.join(' ')}\n${stdout}\n${stderr}\n`);assert.ok(log.includes('PRIVATE-OUT'));assert.ok(log.includes('PRIVATE-ERR'));
   const report=JSON.parse(fs.readFileSync(path.join(root,'.xtend-test-results/suites/electron-runtime.json')));assert.equal(report.exitCode,7);assert.equal(report.status,'failed');
  }finally{fs.rmSync(root,{recursive:true,force:true});}
