@@ -50,17 +50,27 @@ async function runBrowser(options={}){
   await check('missing page artifacts, mismatched runtimes and missing packaged dependencies fail closed',async()=>{
    const manifestFile=path.join(deployment,'bootstrap/xtend/pages.json');const original=fs.readFileSync(manifestFile);
    const runtime=path.join(deployment,'vendor/ccslabs/xtend-laravel/runtime/rmt-php-app-service-adapter.php');
-   for(const scenario of ['artifact','fingerprint','dependency']){
+   const runtimeOriginal=fs.readFileSync(runtime),errorLog=path.join(deployment,'storage/logs/laravel.log');
+   for(const scenario of ['artifact','fingerprint','dependency','dependency-tamper']){
+    const logOffset=fs.existsSync(errorLog)?fs.statSync(errorLog).size:0;
     try{
      if(scenario==='artifact')fs.renameSync(manifestFile,manifestFile+'.test-hidden');
      if(scenario==='fingerprint'){const manifest=JSON.parse(original);manifest.runtimeFingerprints.php['rmt-php-app-service-adapter.php']='0'.repeat(64);fs.writeFileSync(manifestFile,JSON.stringify(manifest));}
      if(scenario==='dependency')fs.renameSync(runtime,runtime+'.test-hidden');
+     if(scenario==='dependency-tamper'){fs.writeFileSync(runtime,Buffer.concat([runtimeOriginal,Buffer.from('\n/* Controlled readable dependency fingerprint mismatch. */\n')]));if(!fs.statSync(runtime).isFile())throw new Error('Tampered dependency is not a present file.');fs.accessSync(runtime,fs.constants.R_OK);}
      const response=await fetch(shopOrigin+'/');if(response.status<500)throw new Error('Invalid deployment was accepted: '+scenario);
+     const body=await response.text();
+     if(scenario==='dependency'&&body!=='')throw new Error('Missing dependency emitted body before failure status.');
+     if(scenario==='dependency-tamper'){const errors=fs.existsSync(errorLog)?fs.readFileSync(errorLog).subarray(logOffset).toString():'';if(!errors.includes('Page build and PHP runtime are incompatible. Rebuild the pages with the deployed package.'))throw new Error('Readable dependency tamper did not reach the actual runtime identity check.');}
     }finally{
      if(fs.existsSync(manifestFile+'.test-hidden'))fs.renameSync(manifestFile+'.test-hidden',manifestFile);
      if(scenario==='fingerprint')fs.writeFileSync(manifestFile,original);
      if(fs.existsSync(runtime+'.test-hidden'))fs.renameSync(runtime+'.test-hidden',runtime);
+     if(scenario==='dependency-tamper')fs.writeFileSync(runtime,runtimeOriginal);
+     if(!fs.readFileSync(runtime).equals(runtimeOriginal)||!fs.readFileSync(manifestFile).equals(original))throw new Error('Deployment negative did not restore exact original bytes: '+scenario);
     }
+    const restored=await fetch(shopOrigin+'/produkt/nova-studio-kopfhoerer');const html=await restored.text();
+    if(restored.status!==200||!html.includes('NOVA Studio Kopfhörer')||!html.includes('application/ld+json')||!html.includes('rel="canonical"')||!html.includes('data-rmt-resume-root="true"'))throw new Error('Restored deployment did not produce genuine signed SSR: '+scenario);
    }
   });
   await check('native search, filtering and persistent cart work with JavaScript disabled',async()=>{
