@@ -85,4 +85,28 @@ class Integrity(unittest.TestCase):
   result=subprocess.run([sys.executable,str(script),'preflight',str(v.DEST),'unused'],env={'GITHUB_ACTIONS':'true'},capture_output=True,text=True)
   self.assertEqual(result.returncode,1);self.assertEqual(result.stdout,'')
   self.assertEqual(result.stderr,'::error::runtime-preparation stage=checksum-preflight reason=epf-runner-context exit=1\nEphemeral GitHub Linux x64 runner required\n')
+ def test_fixed_ancestor_position_and_first_failed_invariant_preserve_guard(self):
+  from types import SimpleNamespace
+  paths=[*reversed(v.DEST.parents),v.DEST]
+  self.assertEqual(len(paths),len(v.ANCESTOR_POSITIONS))
+  for index,position in enumerate(v.ANCESTOR_POSITIONS):
+   for invariant in v.ANCESTOR_INVARIANTS:
+    def info(p):
+     uid=1 if p==paths[index] and invariant=='root-uid' else 0
+     gid=1 if p==paths[index] and invariant=='root-gid' else 0
+     mode=stat.S_IFDIR|(0o775 if p==paths[index] and invariant=='writable-mode' else 0o755)
+     return SimpleNamespace(st_uid=uid,st_gid=gid,st_mode=mode)
+    with patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'lstat',info):
+     with self.assertRaisesRegex(ValueError,'^Destination ancestor not root-owned immutable$') as caught:v.ancestors(v.DEST)
+    self.assertEqual(type(caught.exception),ValueError)
+    out=[];v.emit_preflight_reason(caught.exception,'preflight',{'GITHUB_ACTIONS':'true'},out.append)
+    self.assertEqual(out,['::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode position='+position+' invariant='+invariant+' exit=1'])
+  good=SimpleNamespace(st_uid=0,st_gid=0,st_mode=stat.S_IFDIR|0o755)
+  with patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'lstat',return_value=good):self.assertIsNone(v.ancestors(v.DEST))
+ def test_ancestor_detail_never_emits_foreign_or_raw_data(self):
+  error=ValueError('/SECRET\n::error file=SECRET::LEAK');error._owned_preflight_reason='epf-ancestor-owner-mode'
+  for position,invariant in [('/SECRET','root-uid'),('root','root-uid-foreign'),('root\n::error file=SECRET::LEAK','root-gid')]:
+   error._owned_ancestor_position=position;error._owned_ancestor_invariant=invariant;out=[]
+   v.emit_preflight_reason(error,'preflight',{'GITHUB_ACTIONS':'true'},out.append)
+   self.assertEqual(out,['::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode exit=1'])
 if __name__=='__main__':unittest.main(verbosity=2)

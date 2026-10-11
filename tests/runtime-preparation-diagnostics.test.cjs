@@ -21,3 +21,8 @@ test('relay accepts only owned preflight reasons and rejects injection or foreig
  const {preflightReasons}=require('../scripts/runtime-preparation-diagnostics.cjs');
  for(const reason of preflightReasons){const good='::error::runtime-preparation stage=checksum-preflight reason='+reason+' exit=1',out=[];relay(good,s=>out.push(s));assert.deepEqual(out,[good]);for(const invalid of [good.replace(reason,reason+'-foreign'),good.replace(reason,reason+' extra=SECRET'),good.replace('checksum-preflight','probe'),good+' extra=SECRET',good.replace(reason,reason+'\n::error file=SECRET::LEAK')]){const rejected=[];relay(invalid,s=>rejected.push(s));assert.deepEqual(rejected,[]);}}
 });
+
+test('ancestor detail relay permits only paired fixed position/invariant for owned reason',()=>{
+ const {ancestorPositions,ancestorInvariants}=require('../scripts/runtime-preparation-diagnostics.cjs');
+ for(const position of ancestorPositions)for(const invariant of ancestorInvariants){const line='::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode position='+position+' invariant='+invariant+' exit=1',out=[];relay(line,s=>out.push(s));assert.deepEqual(out,[line]);for(const bad of [line.replace(position,position+'-foreign'),line.replace(invariant,invariant+'-foreign'),line.replace('epf-ancestor-owner-mode','epf-archive-digest'),line.replace('checksum-preflight','probe'),line+' extra=SECRET',line.replace(' position='+position,''),line.replace(' invariant='+invariant,''),line.replace(position,'/SECRET\n::error file=SECRET::LEAK')]){const rejected=[];relay(bad,s=>rejected.push(s));assert.deepEqual(rejected,[]);}}
+});

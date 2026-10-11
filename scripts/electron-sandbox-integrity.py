@@ -7,13 +7,20 @@ DEST=pathlib.Path('/opt/xtend-electron')/VERSION/ZIP_SHA
 
 PREFLIGHT_REASONS={'Ephemeral GitHub Linux x64 runner required': 'epf-runner-context', 'Application must remain non-root Linux x64': 'epf-app-context', 'Unreviewed sandbox/runtime override rejected': 'epf-runtime-override', 'Sandbox-disabling option rejected': 'epf-sandbox-option', 'Missing immutable destination ancestor': 'epf-ancestor-missing', 'Symlink/non-directory destination ancestor': 'epf-ancestor-type', 'Destination ancestor not root-owned immutable': 'epf-ancestor-owner-mode', 'Foreign destination': 'epf-destination-identity', 'Destination must be new': 'epf-destination-existing', 'Official ZIP checksum mismatch': 'epf-archive-digest', 'Unsafe official archive member': 'epf-archive-path', 'Archive links/special members rejected': 'epf-archive-type', 'Archive privileged mode rejected': 'epf-archive-mode', 'Duplicate archive member': 'epf-archive-duplicate', 'Official helper/executable missing': 'epf-archive-required'}
 
+ANCESTOR_POSITIONS=('root','opt','installation-parent','version-parent','destination')
+ANCESTOR_INVARIANTS=('root-uid','root-gid','writable-mode')
+
 def emit_preflight_reason(error,mode,env=None,write=None):
     # Only validator-owned fixed codes; never emit message/path/stdout/stderr.
     try:
         if mode!='preflight' or (os.environ if env is None else env).get('GITHUB_ACTIONS')!='true':return
         reason=getattr(error,'_owned_preflight_reason',None)
         if reason not in PREFLIGHT_REASONS.values():return
-        line='::error::runtime-preparation stage=checksum-preflight reason='+reason+' exit=1'
+        detail=''
+        position=getattr(error,'_owned_ancestor_position',None);invariant=getattr(error,'_owned_ancestor_invariant',None)
+        if reason=='epf-ancestor-owner-mode' and position in ANCESTOR_POSITIONS and invariant in ANCESTOR_INVARIANTS:
+            detail=' position='+position+' invariant='+invariant
+        line='::error::runtime-preparation stage=checksum-preflight reason='+reason+detail+' exit=1'
         (write or (lambda value:print(value,file=sys.stderr)))(line)
     except Exception:pass # Observability cannot replace the original blocking failure.
 
@@ -41,11 +48,18 @@ def archive(zip_path):
 
 def ancestors(destination,require_existing=False):
     p=pathlib.Path(destination)
-    for current in [*reversed(p.parents),p]:
+    for index,current in enumerate([*reversed(p.parents),p]):
         if not current.exists() and not current.is_symlink():
             check(not require_existing,'Missing immutable destination ancestor');continue
         st=current.lstat();check(stat.S_ISDIR(st.st_mode) and not stat.S_ISLNK(st.st_mode),'Symlink/non-directory destination ancestor')
-        check(st.st_uid==0 and st.st_gid==0 and not st.st_mode&0o022,'Destination ancestor not root-owned immutable')
+        try:
+            check(st.st_uid==0 and st.st_gid==0 and not st.st_mode&0o022,'Destination ancestor not root-owned immutable')
+        except ValueError as error:
+            # Positions refer only to the fixed configured destination ancestry.
+            if p==DEST and index<len(ANCESTOR_POSITIONS):
+                error._owned_ancestor_position=ANCESTOR_POSITIONS[index]
+                error._owned_ancestor_invariant='root-uid' if st.st_uid!=0 else ('root-gid' if st.st_gid!=0 else 'writable-mode')
+            raise
 
 def context(env,uid,platform,arch):
     check(env.get('GITHUB_ACTIONS')=='true' and env.get('RUNNER_OS')=='Linux' and env.get('RUNNER_ARCH')=='X64','Ephemeral GitHub Linux x64 runner required')
