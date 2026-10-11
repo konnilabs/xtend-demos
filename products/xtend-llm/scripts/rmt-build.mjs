@@ -1,3 +1,4 @@
+import {emitLaunchStage} from './actual-launch-diagnostics.cjs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -58,9 +59,14 @@ function createBuildInput() {
   };
 }
 
-const result = await buildMaracaBundleAsync({
+emitLaunchStage('build', 0);
+let result;
+try {
+result = await buildMaracaBundleAsync({
   ...createBuildInput()
 }, { rootDir: repoRoot });
+} catch (error) { emitLaunchStage('build', 1); throw error; }
+if (!result.ok) emitLaunchStage('build', 1);
 
 const output = process.argv.includes('--quiet')
   ? {

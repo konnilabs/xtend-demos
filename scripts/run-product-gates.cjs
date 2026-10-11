@@ -3,6 +3,7 @@ const fs=require('node:fs'),path=require('node:path');
 const {spawnSync}=require('node:child_process');
 const {evaluateResult}=require('./product-result-evidence.cjs');
 const {emitActualAppOutcome}=require('./actual-app-outcome-annotation.cjs');
+const {relayLaunchStages}=require('../products/xtend-llm/scripts/actual-launch-diagnostics.cjs');
 const root=path.resolve(__dirname,'..');
 async function run() {
  const commands=[];
@@ -11,6 +12,7 @@ async function run() {
  function execute(id,args,cwd=root,reports=[],env=process.env) {
   const startedAt=Date.now();
   const result=spawnSync(args[0],args.slice(1),{cwd,env,encoding:'utf8',maxBuffer:32*1024*1024,timeout:300000});
+  if(id==='electron-runtime')relayLaunchStages(result.stderr);
   const outcome=evaluateResult({...result,reports,startedAt}),status=outcome.status;
   const log=path.join(root,'.xtend-test-results',id+'.log');fs.mkdirSync(path.dirname(log),{recursive:true});fs.writeFileSync(log,`${args.join(' ')}\n${result.stdout||''}\n${result.stderr||''}\n${result.error?.message||''}`);
   const record={id,command:args,cwd:path.relative(root,cwd)||'.',exitCode:result.status,status,skips:outcome.skips,failures:outcome.failures,sourceReports:outcome.sources,log:path.relative(root,log)};if(id==='electron-actual-app-attestation'&&status==='passed') {

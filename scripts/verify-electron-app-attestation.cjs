@@ -21,7 +21,7 @@ function consume({coreSha,demoSha,startedAt,reportFile=path.join(root,'.xtend-te
  const git=(...args)=>execFileSync('git',args,{cwd:root,maxBuffer:64*1024*1024});
  if(git('rev-parse','HEAD').toString().trim()!==demoSha)throw Error('Current Demo differs from independently expected SHA');
  const sourceHashes={};
- for(const source of [...sourcePaths,'../../scripts/verify-electron-app-attestation.cjs','../../scripts/provision-electron-sandbox.cjs']){
+ for(const source of [...sourcePaths,'scripts/actual-launch-diagnostics.cjs','../../scripts/verify-electron-app-attestation.cjs','../../scripts/provision-electron-sandbox.cjs']){
   const relative=path.posix.normalize(product+source),expected=git('show',demoSha+':'+relative),actual=fs.readFileSync(path.join(root,relative));if(sha(expected)!==sha(actual))throw Error('Dirty/substituted attestation source: '+relative);if(sourcePaths.includes(source))sourceHashes[source]=sha(expected);
  }
  const provisioningFile=path.join(root,product,'node_modules/electron/xtend-sandbox-receipt.json'),provisioning=JSON.parse(fs.readFileSync(provisioningFile));

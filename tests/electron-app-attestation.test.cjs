@@ -68,3 +68,45 @@ test('throwing annotation writer leaves actual execute record and saveReport flo
  assert.ok(result.writes.some(([file,bytes])=>file.endsWith('/suites/electron-actual-app-attestation.json')&&JSON.parse(bytes).status==='failed'));
  let called=false;assert.throws(()=>emitActualAppOutcome({reportPresent:'injected',verified:false},()=>{called=true;throw Error('EPIPE');}),/Invalid fixed actual-app outcome/);assert.equal(called,false);
 });
+
+
+test('captured actual child launch annotations pass only exact owned grammar and preserve runner records/reports',()=>{
+ const {relayLaunchStages,stages}=require('../products/xtend-llm/scripts/actual-launch-diagnostics.cjs');
+ const {evaluateResult}=require('../scripts/product-result-evidence.cjs'),vm=require('node:vm'),os=require('node:os');
+ const source=fs.readFileSync(path.resolve(__dirname,'../scripts/run-product-gates.cjs'),'utf8');
+ const save=source.slice(source.indexOf(' function saveReport'),source.indexOf(' function execute'));
+ const execute=source.slice(source.indexOf(' function execute'),source.indexOf("\n execute('migration-runner-contracts'"));
+ assert.match(execute,/if\(id==='electron-runtime'\)relayLaunchStages\(result.stderr\);/);
+ const valid=stages.flatMap(stage=>[0,1].map(code=>`::${code?'error':'notice'}::electron-actual-launch stage=${stage} code=${code}`));
+ const malicious=['PRIVATE-STDERR','::error::electron-actual-launch stage=launch-extra code=1','::error::electron-actual-launch stage=foreign code=1',
+  '::error::electron-actual-launch stage=launch code=1 suffix=PRIVATE','prefix::error::electron-actual-launch stage=launch code=1',
+  '::notice::electron-actual-launch stage=launch code=1','::error::electron-actual-launch stage=launch code=0',
+  '::error::electron-actual-launch stage=launch code=2','::error::electron-actual-launch stage=launch code=01',
+  '::error::electron-actual-launch stage=launch code=1\r', '::error::electron-actual-launch stage=launch\n code=1',
+  '::error::electron-actual-launch stage=launch code=1\r::error::PRIVATE'];
+ const childSource='process.stdout.write('+JSON.stringify('::error::electron-actual-launch stage=server code=1\nPRIVATE-STDOUT\n')+');process.stderr.write('+JSON.stringify([...valid,...malicious].join('\n')+'\n')+');process.exit(7);';
+ const child=[process.execPath,'-e',childSource];
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-launch-relay-')),commands=[],writes=new Map();
+ try {
+  function flow(relay,body=execute,id='electron-runtime') {
+   commands.length=0;writes.clear();
+   const localFs={...fs,writeFileSync:(file,bytes)=>{writes.set(file,bytes);}};
+   const context={root,path,fs:localFs,commands,process:{env:{XTEND_CORE_SHA:'a'.repeat(40),XTEND_DEMO_SHA:'b'.repeat(40)}},Date,JSON,Buffer,spawnSync,evaluateResult,relayLaunchStages:relay,emitActualAppOutcome};
+   const api=vm.runInNewContext(save+body+';({execute,saveReport})',context);
+   assert.equal(api.execute(id,child),false);for(const record of commands)api.saveReport(record);
+   return {commands:JSON.parse(JSON.stringify(commands)),writes:[...writes]};
+  }
+  const lines=[],actual=flow(stderr=>relayLaunchStages(stderr,line=>lines.push(line)));
+  assert.deepEqual(lines,valid.map(line=>line+'\n'));
+  const before=flow(()=>{},execute.replace("  if(id==='electron-runtime')relayLaunchStages(result.stderr);\n",''));
+  assert.deepEqual(actual,before);
+  assert.equal(actual.commands[0].exitCode,7);assert.equal(actual.commands[0].status,'failed');
+  const retainedLog=actual.writes.find(([file])=>file.endsWith('/electron-runtime.log'))[1];
+  assert.ok(retainedLog.includes('PRIVATE-STDERR'));assert.ok(retainedLog.includes('PRIVATE-STDOUT'));
+  const retainedReport=JSON.parse(actual.writes.find(([file])=>file.endsWith('/suites/electron-runtime.json'))[1]);
+  assert.equal(retainedReport.exitCode,7);assert.equal(retainedReport.status,'failed');
+  const transportFailed=flow(stderr=>relayLaunchStages(stderr,()=>{throw Object.assign(Error('PRIVATE'),{code:'EPIPE'});}));
+  assert.deepEqual(transportFailed,before);
+  const unrelated=[];flow(stderr=>relayLaunchStages(stderr,line=>unrelated.push(line)),execute,'unrelated');assert.deepEqual(unrelated,[]);
+ } finally {fs.rmSync(root,{recursive:true,force:true});}
+});

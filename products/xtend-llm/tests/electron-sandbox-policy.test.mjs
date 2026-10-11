@@ -20,3 +20,34 @@ test('obsolete or foreign helper locations cannot satisfy mandatory app identity
  const dist='/usr/lib/xtend-electron/42.10.0/edcfae0a8cf2a75ceee8a9842a0117521283164708b193495f4cb60ab2d6aa0d/dist',identity={electronVersion:'42.10.0',executable:dist+'/electron',executableSha256:'0636c96f07de2c74a3eaf8692fc1743d81259c0bf66c8ebde7f7179211a8aff9',helper:dist+'/chrome-sandbox',helperSha256:'2015304df43beff0b74409cdc4d858107efcde650d9bc8afb1288041d62cec4b',helperUid:0,helperGid:0,helperMode:0o4755};
  for(const root of ['/opt/xtend-electron','/usr/lib/foreign','/tmp/xtend-electron']){const bad={...identity,executable:identity.executable.replace('/usr/lib/xtend-electron',root),helper:identity.helper.replace('/usr/lib/xtend-electron',root)};assert.throws(()=>assertOfficialRuntimeIdentity(bad));}
 });
+
+const launchDiagnostics = await import('../scripts/actual-launch-diagnostics.cjs');
+test('actual launch diagnostics accept only fixed stages and numeric fixed codes',()=>{
+ const lines=[];
+ for(const stage of launchDiagnostics.stages)for(const code of [0,1])launchDiagnostics.emitLaunchStage(stage,code,line=>lines.push(line));
+ assert.equal(lines.length,30);
+ for(const line of lines)assert.match(line,/^::(?:notice|error)::electron-actual-launch stage=[a-z-]+ code=[01]\n$/);
+ for(const stage of ['launch\n::error::SECRET','launch-extra','foreign','/secret/path'])assert.throws(()=>launchDiagnostics.emitLaunchStage(stage,1,()=>assert.fail('invalid input reached transport')));
+ for(const code of [-1,2,'1',null,{},'1\nSECRET'])assert.throws(()=>launchDiagnostics.emitLaunchStage('launch',code,()=>assert.fail('invalid input reached transport')));
+});
+test('actual launch diagnostics preserve exact thrown error and never annotate raw data',()=>{
+ const secret=new Error('SECRET\n::error::INJECTION');secret.status=37;secret.stderr='PRIVATE';
+ const original=fs.writeSync,lines=[];fs.writeSync=(_fd,line)=>{lines.push(line);return line.length;};
+ try { assert.throws(()=>launchDiagnostics.observeSync('prelaunch-guard',()=>{throw secret;}),error=>error===secret); }
+ finally {fs.writeSync=original;}
+ assert.deepEqual(lines,['::notice::electron-actual-launch stage=prelaunch-guard code=0\n','::error::electron-actual-launch stage=prelaunch-guard code=1\n']);
+});
+test('actual launch diagnostics transport failure preserves return and blocking failure',()=>{
+ const original=fs.writeSync,secret=new Error('ORIGINAL');fs.writeSync=()=>{throw Object.assign(new Error('EPIPE'),{code:'EPIPE'});};
+ try {const value={ok:true};assert.equal(launchDiagnostics.observeSync('launch',()=>value),value);assert.throws(()=>launchDiagnostics.observeSync('launch',()=>{throw secret;}),error=>error===secret);assert.throws(()=>launchDiagnostics.emitLaunchStage('foreign',1),/Invalid fixed/);}
+ finally {fs.writeSync=original;}
+});
+test('actual launch diagnostics custom throwing writer is best effort and source boundaries retained',()=>{
+ assert.doesNotThrow(()=>launchDiagnostics.emitLaunchStage('report-write',1,()=>{throw Error('PRIVATE');}));
+ const main=fs.readFileSync(path.join(root,'src/main/electron-main.mjs'),'utf8');
+ for(const stage of ['app-ready','server','window','load','preload-ipc','renderer-check','runtime-identity','source-identity','report-write'])assert.ok(main.includes("launchStage('"+stage+"')"));
+ assert.ok(main.indexOf("launchStage('report-write')")>main.indexOf('assertOfficialRuntimeIdentity(runtimeIdentity)'));
+ assert.ok(main.includes('if(!isTrustedMainFrame(event,mainWindow.webContents))return;'));
+ assert.ok(main.includes('sandbox: true'));assert.ok(main.includes('disposeAttestation();'));
+ assert.ok(main.includes('emitLaunchStage(actualLaunchStage, 1);console.error'));assert.ok(main.includes('app.exit(1)'));
+});
