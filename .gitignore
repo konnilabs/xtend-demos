@@ -9,3 +9,9 @@ node_modules/
 .candidate-source/
 
 .browser-toolchain/
+
+products/xtend-shop/**/public/build/
+products/xtend-shop/**/bootstrap/cache/*
+products/xtend-shop/**/bootstrap/xtend/
+products/xtend-shop/**/storage/
+products/xtend-shop/**/*.sqlite*
