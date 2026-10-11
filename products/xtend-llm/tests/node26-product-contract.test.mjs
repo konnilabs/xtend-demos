@@ -28,10 +28,26 @@ for (const [name, command] of Object.entries(scripts)) {
 for (const name of ['dev', 'start', 'test:layout', 'test:llm', 'test:llm:qwen3-8b', 'test:llm:fake']) {
   assert.match(scripts[name], /node scripts\/run-electron\.mjs/u, `${name} must use the portable launcher`);
 }
-assert.equal(
-  scripts['test:n26:contracts'],
-  'node tests/node26-product-contract.test.mjs && node tests/electron-launcher.test.mjs && node tests/tiny-onnx-identity.test.mjs'
-);
+const requiredContractCommands = [
+  'node tests/node26-product-contract.test.mjs',
+  'node tests/electron-launcher.test.mjs',
+  'node tests/tiny-onnx-identity.test.mjs',
+  'node --test tests/electron-sandbox-policy.test.mjs'
+];
+const requiredContractCommand = requiredContractCommands.join(' && ');
+const verifyContractCommand = command => assert.equal(command, requiredContractCommand);
+verifyContractCommand(scripts['test:n26:contracts']);
+for (const omitted of requiredContractCommands) {
+  assert.throws(() => verifyContractCommand(requiredContractCommands.filter(command => command !== omitted).join(' && ')), assert.AssertionError);
+}
+for (const mutated of [
+  `${requiredContractCommand} && node tests/foreign.test.mjs`,
+  requiredContractCommand.replace('node --test ', 'node '),
+  requiredContractCommand.replace(' && ', '; '),
+  requiredContractCommand.replace('electron-launcher.test.mjs', 'foreign.test.mjs')
+]) {
+  assert.throws(() => verifyContractCommand(mutated), assert.AssertionError);
+}
 assert.equal(scripts['test:catfood'], 'npm run test:catfood:ci');
 assert.equal(
   scripts['test:catfood:ci'],
