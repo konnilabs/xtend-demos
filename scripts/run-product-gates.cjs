@@ -11,6 +11,23 @@ async function run() {
  function saveReport(record){const target=path.join(root,'.xtend-test-results/suites',record.id+'.json');fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,JSON.stringify({schema:'xtend.product-suite-result.v1',coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA,...record},null,2)+'\n');}
  function execute(id,args,cwd=root,reports=[],env=process.env) {
   const startedAt=Date.now();
+  const labels=Object.freeze(['display-command-missing','npm-command-missing','node-command-missing','module-resolution','sandbox-preflight-rejected','ambiguous','unclassified']);
+  function classifyStartup(result,command) {
+   if(!result||result.status===0&&!result.error)return null;
+   const matches=new Set();
+   if(result.error?.code==='ENOENT'&&command==='xvfb-run'&&result.error.path===command)matches.add('display-command-missing');
+   const stderr=typeof result.stderr==='string'?result.stderr:'';
+   if(/^Error: Cannot find module [^\r\n]+$/m.test(stderr)&&/^\s*code: 'MODULE_NOT_FOUND',?$/m.test(stderr)||/^Error \[ERR_MODULE_NOT_FOUND\]: [^\r\n]+$/m.test(stderr)&&/^\s*code: 'ERR_MODULE_NOT_FOUND',?$/m.test(stderr))matches.add('module-resolution');
+   for(const executable of ['npm','node'])if(new RegExp('^(?:/bin/sh|sh): [0-9]+: '+executable+': not found$','m').test(stderr))matches.add(executable+'-command-missing');
+   const preflights=['XTend Electron requires unprivileged execution; root is rejected','Sandbox-disabling Electron arguments are rejected','Invalid REQUIRED_CI_ATTESTATION mode','Hosted app requires explicit REQUIRED_CI_ATTESTATION=1','Reviewed mandatory CI helper attestation supports Linux only'];
+   if(stderr.split('\n').some(line=>preflights.some(message=>line==='Error: '+message)))matches.add('sandbox-preflight-rejected');
+   return matches.size>1?'ambiguous':matches.size===1?[...matches][0]:'unclassified';
+  }
+  function emitStartupFailure(label,writer=line=>fs.writeSync(2,line)) {
+   if(!labels.includes(label))throw Error('Invalid fixed runtime-startup diagnostic');
+   try{writer(`::error::electron-runtime-startup failure=${label} code=1\n`);}catch{/* Diagnostic transport never alters authoritative result. */}
+  }
+
   function commandAnnotation(phase,code,reason) {
    if(id!=='electron-runtime')return;
    const valid=phase==='start'&&code===0&&reason==='attempt' || phase==='exit'&&(code===0&&reason==='completed' || code===1&&['child-failed','spawn-error','spawn-throw'].includes(reason));
@@ -23,6 +40,7 @@ async function run() {
   catch(error){commandAnnotation('exit',1,'spawn-throw');throw error;}
   commandAnnotation('exit',result.status===0&&!result.error?0:1,result.error?'spawn-error':result.status===0?'completed':'child-failed');
   if(id==='electron-runtime')relayLaunchStages(result.stderr);
+  if(id==='electron-runtime') { const label=classifyStartup(result,args[0]);if(label&&label!=='unclassified')emitStartupFailure(label); }
   const outcome=evaluateResult({...result,reports,startedAt}),status=outcome.status;
   const log=path.join(root,'.xtend-test-results',id+'.log');fs.mkdirSync(path.dirname(log),{recursive:true});fs.writeFileSync(log,`${args.join(' ')}\n${result.stdout||''}\n${result.stderr||''}\n${result.error?.message||''}`);
   const record={id,command:args,cwd:path.relative(root,cwd)||'.',exitCode:result.status,status,skips:outcome.skips,failures:outcome.failures,sourceReports:outcome.sources,log:path.relative(root,log)};if(id==='electron-actual-app-attestation'&&status==='passed') {
@@ -38,7 +56,7 @@ async function run() {
   if(id==='electron-actual-app-attestation')emitActualAppOutcome({reportPresent:fs.existsSync(path.join(root,'.xtend-test-results/electron-sandbox-attestation.json')),verified:record.status==='passed'});
   commands.push(record);return record.status==='passed';
  }
- execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/runtime-preparation-diagnostics.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/shop-generated-discovery.test.cjs','tests/migration/material-product-runtime.test.cjs']);
+ execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/runtime-preparation-diagnostics.test.cjs','tests/startup-error-classifier.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/shop-generated-discovery.test.cjs','tests/migration/material-product-runtime.test.cjs']);
  execute('http-security',[process.execPath,'--test','--test-reporter=tap','tests/security/http.test.mjs']);
  const xss=await require('../tests/security/product_xss_suite.cjs').runProductXss({rootDir:root}).catch(error=>({ok:false,failures:[error.message]}));
  commands.push({id:'product-xss',command:['runProductXss'],exitCode:xss.ok?0:1,status:xss.ok?'passed':'failed',skips:xss.skips||[],failures:xss.failures||[]});
