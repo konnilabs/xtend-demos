@@ -2,7 +2,7 @@
 // Annotations contain only fixed stage enums and numeric failure codes.
 const stages=Object.freeze(['platform','tools','php','identity','live-policy','download','checksum','checksum-preflight','checksum-copied','checksum-unarmed','checksum-armed','validation','extract','helper-install','probe','receipt']);
 const preflightReasons=Object.freeze(["epf-runner-context","epf-app-context","epf-runtime-override","epf-sandbox-option","epf-ancestor-missing","epf-ancestor-type","epf-ancestor-owner-mode","epf-destination-identity","epf-destination-existing","epf-archive-digest","epf-archive-path","epf-archive-type","epf-archive-mode","epf-archive-duplicate","epf-archive-required"]);
-const ancestorPositions=Object.freeze(['root','opt','installation-parent','version-parent','destination']);
+const ancestorPositions=Object.freeze(['root','usr','usr-lib','installation-parent','version-parent','destination']);
 const ancestorInvariants=Object.freeze(['root-uid','root-gid','writable-mode']);
 const reported=new WeakSet();
 function annotate(stage,error,write=line=>console.error(line)) {

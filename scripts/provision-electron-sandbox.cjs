@@ -2,7 +2,7 @@
 // UNAPPLIED reviewed-scope proposal. Only official bytes may become setuid.
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),{execFileSync}=require('node:child_process');
 const version='42.10.0',zipSha='edcfae0a8cf2a75ceee8a9842a0117521283164708b193495f4cb60ab2d6aa0d';
-const destination='/opt/xtend-electron/'+version+'/'+zipSha,dist=destination+'/dist';
+const destination='/usr/lib/xtend-electron/'+version+'/'+zipSha,dist=destination+'/dist';
 const validator=path.join(__dirname,'electron-sandbox-integrity.py');
 const {annotate}=require('./runtime-preparation-diagnostics.cjs');
 const run=(cmd,args)=>execFileSync(cmd,args,{encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:600000});

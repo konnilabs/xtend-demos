@@ -26,3 +26,7 @@ test('ancestor detail relay permits only paired fixed position/invariant for own
  const {ancestorPositions,ancestorInvariants}=require('../scripts/runtime-preparation-diagnostics.cjs');
  for(const position of ancestorPositions)for(const invariant of ancestorInvariants){const line='::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode position='+position+' invariant='+invariant+' exit=1',out=[];relay(line,s=>out.push(s));assert.deepEqual(out,[line]);for(const bad of [line.replace(position,position+'-foreign'),line.replace(invariant,invariant+'-foreign'),line.replace('epf-ancestor-owner-mode','epf-archive-digest'),line.replace('checksum-preflight','probe'),line+' extra=SECRET',line.replace(' position='+position,''),line.replace(' invariant='+invariant,''),line.replace(position,'/SECRET\n::error file=SECRET::LEAK')]){const rejected=[];relay(bad,s=>rejected.push(s));assert.deepEqual(rejected,[]);}}
 });
+
+test('fixed six ancestor positions reject the obsolete opt position',()=>{
+ const {ancestorPositions}=require('../scripts/runtime-preparation-diagnostics.cjs');assert.deepEqual(ancestorPositions,['root','usr','usr-lib','installation-parent','version-parent','destination']);const out=[];relay('::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode position=opt invariant=writable-mode exit=1',s=>out.push(s));assert.deepEqual(out,[]);
+});

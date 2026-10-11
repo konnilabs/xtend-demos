@@ -109,4 +109,44 @@ class Integrity(unittest.TestCase):
    error._owned_ancestor_position=position;error._owned_ancestor_invariant=invariant;out=[]
    v.emit_preflight_reason(error,'preflight',{'GITHUB_ACTIONS':'true'},out.append)
    self.assertEqual(out,['::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode exit=1'])
+ def test_fixed_destination_and_six_position_mapping(self):
+  expected=pathlib.Path('/usr/lib/xtend-electron')/v.VERSION/v.ZIP_SHA
+  self.assertEqual(v.DEST,expected)
+  self.assertEqual([*reversed(v.DEST.parents),v.DEST],[pathlib.Path('/'),pathlib.Path('/usr'),pathlib.Path('/usr/lib'),pathlib.Path('/usr/lib/xtend-electron'),pathlib.Path('/usr/lib/xtend-electron')/v.VERSION,expected])
+  self.assertEqual(v.ANCESTOR_POSITIONS,('root','usr','usr-lib','installation-parent','version-parent','destination'))
+ def test_existing_system_prefix_is_required_and_never_repaired(self):
+  from types import SimpleNamespace
+  prefix=pathlib.Path('/usr/lib');good=SimpleNamespace(st_uid=0,st_gid=0,st_mode=stat.S_IFDIR|0o755)
+  def present(path):return path!=prefix
+  with patch.object(pathlib.Path,'exists',present),patch.object(pathlib.Path,'is_symlink',return_value=False),patch.object(pathlib.Path,'lstat',return_value=good):
+   with self.assertRaisesRegex(ValueError,'Missing immutable destination ancestor'):v.ancestors(prefix,True)
+  source=(pathlib.Path(__file__).parents[1]/'scripts/electron-sandbox-integrity.py').read_text()
+  self.assertIn("ancestors(pathlib.Path('/usr/lib'),True);ancestors(DEST);check(not DEST.exists()",source)
+  self.assertNotIn('os.chown(',source);self.assertNotIn('os.chmod(',source);self.assertNotIn('mkdir(',source)
+ def test_system_prefix_owner_reason_maps_to_fixed_position(self):
+  from types import SimpleNamespace
+  prefix=pathlib.Path('/usr/lib')
+  def info(path):return SimpleNamespace(st_uid=0,st_gid=0,st_mode=stat.S_IFDIR|(0o775 if path==prefix else 0o755))
+  with patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'lstat',info):
+   with self.assertRaisesRegex(ValueError,'Destination ancestor not root-owned immutable') as caught:v.ancestors(prefix,True)
+  out=[];v.emit_preflight_reason(caught.exception,'preflight',{'GITHUB_ACTIONS':'true'},out.append)
+  self.assertEqual(out,['::error::runtime-preparation stage=checksum-preflight reason=epf-ancestor-owner-mode position=usr-lib invariant=writable-mode exit=1'])
+ def test_every_fixed_ancestor_symlink_or_nondirectory_rejects(self):
+  from types import SimpleNamespace
+  paths=[*reversed(v.DEST.parents),v.DEST]
+  for bad in paths:
+   for kind in [stat.S_IFLNK,stat.S_IFREG]:
+    def info(path):return SimpleNamespace(st_uid=0,st_gid=0,st_mode=(kind if path==bad else stat.S_IFDIR)|0o755)
+    with patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'lstat',info):
+     with self.assertRaisesRegex(ValueError,'Symlink/non-directory destination ancestor'):v.ancestors(v.DEST)
+ def test_actual_preflight_foreign_and_existing_destinations_block_before_archive(self):
+  # Controlled context/stat simulation only, never trusted-runner suitability proof.
+  import runpy,sys,io,contextlib,platform
+  from types import SimpleNamespace
+  script=pathlib.Path(__file__).parents[1]/'scripts/electron-sandbox-integrity.py'
+  for destination,message in [(str(v.DEST),'Destination must be new'),(str(v.DEST).replace('/usr/lib/xtend-electron','/opt/xtend-electron'),'Foreign destination')]:
+   error=io.StringIO()
+   with patch.dict(os.environ,{'GITHUB_ACTIONS':'true','RUNNER_OS':'Linux','RUNNER_ARCH':'X64'},clear=True),patch.object(os,'getuid',return_value=1000),patch.object(platform,'machine',return_value='x86_64'),patch.object(sys,'platform','linux'),patch.object(sys,'argv',[str(script),'preflight',destination,'never-open-archive']),patch.object(pathlib.Path,'exists',return_value=True),patch.object(pathlib.Path,'is_symlink',return_value=False),patch.object(pathlib.Path,'lstat',return_value=SimpleNamespace(st_uid=0,st_gid=0,st_mode=stat.S_IFDIR|0o755)),patch.object(zipfile,'ZipFile',side_effect=AssertionError('Must fail before archive')),contextlib.redirect_stderr(error):
+    with self.assertRaises(SystemExit) as caught:runpy.run_path(str(script),run_name='__main__')
+   self.assertEqual(caught.exception.code,1);self.assertIn(message,error.getvalue());self.assertNotIn('never-open-archive',error.getvalue())
 if __name__=='__main__':unittest.main(verbosity=2)

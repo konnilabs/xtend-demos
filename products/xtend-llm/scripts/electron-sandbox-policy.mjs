@@ -17,7 +17,7 @@ export function isTrustedMainFrame(event,webContents) {
  return Boolean(webContents&&event?.sender===webContents&&event.senderFrame===webContents.mainFrame);
 }
 export function assertOfficialRuntimeIdentity(identity) {
- const dist='/opt/xtend-electron/42.10.0/edcfae0a8cf2a75ceee8a9842a0117521283164708b193495f4cb60ab2d6aa0d/dist';
+ const dist='/usr/lib/xtend-electron/42.10.0/edcfae0a8cf2a75ceee8a9842a0117521283164708b193495f4cb60ab2d6aa0d/dist';
  if(identity.electronVersion!=='42.10.0'||identity.executable!==dist+'/electron'||identity.executableSha256!=='0636c96f07de2c74a3eaf8692fc1743d81259c0bf66c8ebde7f7179211a8aff9'||identity.helper!==dist+'/chrome-sandbox'||identity.helperSha256!=='2015304df43beff0b74409cdc4d858107efcde650d9bc8afb1288041d62cec4b'||identity.helperUid!==0||identity.helperGid!==0||identity.helperMode!==0o4755)throw new Error('Actual application official sandbox helper/runtime identity mismatch');
  return true;
 }

@@ -3,11 +3,11 @@
 import hashlib,json,os,pathlib,stat,sys,zipfile
 VERSION='42.10.0'
 ZIP_SHA='edcfae0a8cf2a75ceee8a9842a0117521283164708b193495f4cb60ab2d6aa0d'
-DEST=pathlib.Path('/opt/xtend-electron')/VERSION/ZIP_SHA
+DEST=pathlib.Path('/usr/lib/xtend-electron')/VERSION/ZIP_SHA
 
 PREFLIGHT_REASONS={'Ephemeral GitHub Linux x64 runner required': 'epf-runner-context', 'Application must remain non-root Linux x64': 'epf-app-context', 'Unreviewed sandbox/runtime override rejected': 'epf-runtime-override', 'Sandbox-disabling option rejected': 'epf-sandbox-option', 'Missing immutable destination ancestor': 'epf-ancestor-missing', 'Symlink/non-directory destination ancestor': 'epf-ancestor-type', 'Destination ancestor not root-owned immutable': 'epf-ancestor-owner-mode', 'Foreign destination': 'epf-destination-identity', 'Destination must be new': 'epf-destination-existing', 'Official ZIP checksum mismatch': 'epf-archive-digest', 'Unsafe official archive member': 'epf-archive-path', 'Archive links/special members rejected': 'epf-archive-type', 'Archive privileged mode rejected': 'epf-archive-mode', 'Duplicate archive member': 'epf-archive-duplicate', 'Official helper/executable missing': 'epf-archive-required'}
 
-ANCESTOR_POSITIONS=('root','opt','installation-parent','version-parent','destination')
+ANCESTOR_POSITIONS=('root','usr','usr-lib','installation-parent','version-parent','destination')
 ANCESTOR_INVARIANTS=('root-uid','root-gid','writable-mode')
 
 def emit_preflight_reason(error,mode,env=None,write=None):
@@ -56,7 +56,7 @@ def ancestors(destination,require_existing=False):
             check(st.st_uid==0 and st.st_gid==0 and not st.st_mode&0o022,'Destination ancestor not root-owned immutable')
         except ValueError as error:
             # Positions refer only to the fixed configured destination ancestry.
-            if p==DEST and index<len(ANCESTOR_POSITIONS):
+            if p in (DEST,pathlib.Path('/usr/lib')) and index<len(ANCESTOR_POSITIONS):
                 error._owned_ancestor_position=ANCESTOR_POSITIONS[index]
                 error._owned_ancestor_invariant='root-uid' if st.st_uid!=0 else ('root-gid' if st.st_gid!=0 else 'writable-mode')
             raise
@@ -99,7 +99,7 @@ if __name__=='__main__':
         elif mode=='archive':print(json.dumps(archive(sys.argv[2]),sort_keys=True))
         elif mode=='preflight':
             import platform
-            context(os.environ,os.getuid(),sys.platform,platform.machine());check(pathlib.Path(sys.argv[2])==DEST,'Foreign destination');ancestors(DEST);check(not DEST.exists() and not DEST.is_symlink(),'Destination must be new');archive(sys.argv[3]);print('preflight passed')
+            context(os.environ,os.getuid(),sys.platform,platform.machine());check(pathlib.Path(sys.argv[2])==DEST,'Foreign destination');ancestors(pathlib.Path('/usr/lib'),True);ancestors(DEST);check(not DEST.exists() and not DEST.is_symlink(),'Destination must be new');archive(sys.argv[3]);print('preflight passed')
         elif mode=='copied':
             check(pathlib.Path(sys.argv[2])==DEST/'distribution.zip','Foreign copied ZIP');ancestors(DEST,True);st=pathlib.Path(sys.argv[2]).lstat();check(stat.S_ISREG(st.st_mode) and st.st_uid==0 and st.st_gid==0 and stat.S_IMODE(st.st_mode)==0o444,'Copied ZIP not immutable root-owned');archive(sys.argv[2]);print('immutable copied ZIP passed')
         elif mode in ('installed-unarmed','installed'):print(json.dumps(installed(sys.argv[2],sys.argv[3],mode=='installed'),sort_keys=True))
