@@ -7,7 +7,11 @@ const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 const raw=fs.readFileSync(path.join(__dirname,'fixtures/smoke-failure-mapping.json'),'utf8'),map=JSON.parse(raw);
 // Retain the original frozen mapping fixture. Undo only the reviewed R001 diagnostic
 // additions with exact byte bindings; readiness and every original call remain checked.
-const proposedSource=fs.readFileSync(path.join(__dirname,'..',map.source),'utf8');
+const entryProposedSource=fs.readFileSync(path.join(__dirname,'..',map.source),'utf8');
+const entryImport="import {installEntryObserver} from '../../scripts/entry-load-diagnostics.cjs';\n";
+const entryCall="  installEntryObserver(ipcMain, mainWindow, event => isTrustedMainFrame(event, mainWindow.webContents));\n";
+assert.ok(entryProposedSource.includes(entryImport));assert.ok(entryProposedSource.includes(entryCall));
+const proposedSource=entryProposedSource.replace(entryImport,'').replace(entryCall,'');
 const r001Marker="          try {\n            const transcript = document.querySelector('#chat-transcript') ? '1' : '0';\n            const sidepanel = customElements.get('x-side-panel') ? '1' : '0';\n            const ready = ['loading', 'interactive', 'complete'].includes(document.readyState) ? document.readyState : 'unknown';\n            console.debug('xtend-r001-timeout format=1 transcript=' + transcript + ' sidepanel=' + sidepanel + ' ready=' + ready);\n          } catch {}\n";
 const r001Wrapper="const execute = () => mainWindow.webContents.executeJavaScript(source);\n    const result = await (id === 'R001' ? observeR001(mainWindow.webContents, execute) : execute());";
 assert.ok(proposedSource.includes(r001Marker));assert.ok(proposedSource.includes(r001Wrapper));

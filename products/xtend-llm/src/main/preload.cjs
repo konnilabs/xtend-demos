@@ -1,5 +1,21 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// Diagnostic-only observation of the one declared module entry; no public bridge API.
+try {
+  const observeEntry = (event) => {
+    try {
+      const target = event.target;
+      if (event.isTrusted !== true || target?.tagName !== 'SCRIPT' || target.type !== 'module') return;
+      const asset = new URL(target.src, location.href);
+      if (asset.origin !== location.origin || asset.pathname !== '/build/xtend.maraca.mjs' || asset.search || asset.hash) return;
+      const id = event.type === 'load' ? 'E001' : event.type === 'error' ? 'E002' : null;
+      if (id) ipcRenderer.send('xtend-llm:entry-observation', id);
+    } catch {}
+  };
+  document.addEventListener('load', observeEntry, true);
+  document.addEventListener('error', observeEntry, true);
+} catch {}
+
 const CHANNELS = Object.freeze({
   status: 'xtend-llm:status',
   createConversation: 'xtend-llm:create-conversation',

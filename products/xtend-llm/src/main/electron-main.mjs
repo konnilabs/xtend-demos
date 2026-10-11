@@ -1,3 +1,4 @@
+import {installEntryObserver} from '../../scripts/entry-load-diagnostics.cjs';
 import {observeR001} from '../../scripts/r001-diagnostics.cjs';
 import {emitSmokeFailure} from '../../scripts/smoke-failure-diagnostics.cjs';
 import {emitLaunchStage, observeSync} from '../../scripts/actual-launch-diagnostics.cjs';
@@ -469,6 +470,7 @@ async function createWindow() {
       sandbox: true
     }
   });
+  installEntryObserver(ipcMain, mainWindow, event => isTrustedMainFrame(event, mainWindow.webContents));
   configureExternalNavigation(mainWindow.webContents, {
     appOrigin: serverUrl,
     openExternal: (url) => shell.openExternal(url)
