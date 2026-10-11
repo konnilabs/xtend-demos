@@ -33,10 +33,10 @@ function provision(electronRoot,execute=run){
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'xtend-electron-verified-'));
  try{
   stage='download';const zip=path.join(temp,name);execute('curl',['--fail','--location','--silent','--show-error','https://github.com/electron/electron/releases/download/v'+version+'/'+name,'--output',zip]);
-  stage='checksum';execute('python3',[validator,'preflight',destination,zip]);
+  stage='checksum-preflight';execute('python3',[validator,'preflight',destination,zip]);
   stage='validation';execute(process.execPath,['--test',path.join(__dirname,'../tests/electron-sandbox-provisioning.test.cjs')]);
   execute('env',['XTEND_OFFICIAL_ELECTRON_ZIP='+zip,'PYTHONDONTWRITEBYTECODE=1','python3',path.join(__dirname,'../tests/electron-sandbox-integrity.test.py')]);
-  let receipt;let index=0;for(const [cmd,args] of commands(zip)){stage=['helper-install','helper-install','checksum','extract','extract','checksum','helper-install','checksum'][index++];const output=execute(cmd,args);if(cmd==='python3'&&args[1]==='installed')receipt=JSON.parse(output);}
+  let receipt;let index=0;for(const [cmd,args] of commands(zip)){stage=['helper-install','helper-install','checksum-copied','extract','extract','checksum-unarmed','helper-install','checksum-armed'][index++];const output=execute(cmd,args);if(cmd==='python3'&&args[1]==='installed')receipt=JSON.parse(output);}
   // One immutable installation for require('electron'), CLI and canary children.
   stage='identity';fs.symlinkSync(dist,path.join(electronRoot,'dist'),'dir');fs.writeFileSync(path.join(electronRoot,'path.txt'),'electron');
   if(fs.realpathSync(path.join(electronRoot,'dist'))!==dist)throw Error('Electron module resolution differs from verified runtime');

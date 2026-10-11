@@ -1,6 +1,6 @@
 'use strict';
 // Annotations contain only fixed stage enums and numeric failure codes.
-const stages=Object.freeze(['platform','tools','php','identity','live-policy','download','checksum','validation','extract','helper-install','probe','receipt']);
+const stages=Object.freeze(['platform','tools','php','identity','live-policy','download','checksum','checksum-preflight','checksum-copied','checksum-unarmed','checksum-armed','validation','extract','helper-install','probe','receipt']);
 const reported=new WeakSet();
 function annotate(stage,error,write=line=>console.error(line)) {
  try {
