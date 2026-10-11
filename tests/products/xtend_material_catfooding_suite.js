@@ -13,6 +13,8 @@ const { listenXtendDevServer } = require('@ccslabs/xtend/test-support/dev-server
 const { detectAvailableEngine, runFixture } = require('@ccslabs/xtend/test-support/browser-hypervisor');
 const { createSuiteContext, printSuiteReport } = require('../utils/assertions');
 
+const { measuredTuneContract, productionComparator } = require('./material-tune-contract.cjs');
+
 const REPORT_SCHEMA = 'xtend.material.catfooding-report.v1';
 const PRODUCT_SCHEMA = 'xtend.material.catfooding-product.v1';
 const LOCAL_GATE = 'node scripts/run-product-gates.cjs';
@@ -203,7 +205,7 @@ async function runXtendMaterialCatfoodingSuite(options = {}) {
   context.assert(scaffold.ok && scaffold.scaffoldSchema === 'xtend.scaffold.app-preset.material.v1' && scaffold.files.length === 13, 'XTM-09 Material scaffold lineage including the XTM-14 runtime and test assets is reproducible');
   context.assert(build.ok && report.build.airGapped, 'RMT and Maraca build succeeds through the local air-gapped Tailwind provider');
   context.assert(tune.ok && tune.status === 'checked' && tune.candidateCount === 12 && tune.acceptedCandidateCount === 12 && tune.configMatches, 'committed Maraca tune selection reproduces across all 12 candidates');
-  context.assert(tunedConfig.selected.profile === 'max' && tunedConfig.selected.lazy === 'route' && tunedConfig.selected.css === 'inline', 'tuned config pins the measured max/route/inline selection');
+  context.assert(measuredTuneContract(tune, tunedConfig, config, productionComparator(productRoot)), 'measured tune winner matches committed config with valid metrics, route capability and preserved deferred hydration');
   context.assert((rmt.match(/^  state /gmu) || []).length >= 15 && (rmt.match(/^  surface /gmu) || []).length >= 15, 'pilot exercises a substantial RMT state and surface topology');
   context.assert(classes.length >= 13 && directTailwindClasses.length === 0, 'product authoring uses semantic xtm-* recipes without Tailwind class salad');
   context.assert(browser.ok && browser.screenshots.length === 2, 'Browser Hypervisor captures desktop and mobile product evidence');
