@@ -1,4 +1,5 @@
 'use strict';
+const {observeR001Stream}=require('../products/xtend-llm/scripts/r001-diagnostics.cjs');
 const fs=require('node:fs');
 const {observeSmokeFailures}=require('../products/xtend-llm/scripts/smoke-failure-diagnostics.cjs');
 const {stages,relayLaunchStages}=require('../products/xtend-llm/scripts/actual-launch-diagnostics.cjs');
@@ -24,6 +25,7 @@ function buildRuntimeSummary(result,thrown=false){
  return {command:thrown?'spawn-throw':result?.error?'spawn-error':result?.status===0?'completed':'child-failed',
   exit:Number.isInteger(result?.status)&&result.status>=-2147483648&&result.status<=2147483647?String(result.status):'none',
   signal:result?.signal==null?'none':signals.includes(result.signal)?result.signal:'other',
+  r001Stdout:observeR001Stream(result?.stdout),r001Stderr:observeR001Stream(result?.stderr),
   stdoutFailure,stderrFailure,diagnostic:stdoutFailure.includes('1')||stderrFailure.includes('1')?'observed':'none',
   markers:out&&err?'both':out?'stdout':err?'stderr':'none',stdout,stderr};
 }
@@ -31,7 +33,7 @@ function emitRuntimeSummary(result,thrown=false,writer=line=>fs.writeSync(2,line
  // Entire diagnostic path is best effort; thrown identities and results survive.
  try{
   const s=buildRuntimeSummary(result,thrown);
-  writer(`::${s.command==='completed'?'notice':'error'}::electron-runtime-summary format=1 command=${s.command} exit=${s.exit} signal=${s.signal} markers=${s.markers} stdout_entry=${s.stdout.entry} stdout_error=${s.stdout.error} stderr_entry=${s.stderr.entry} stderr_error=${s.stderr.error} diagnostic_format=1 diagnostic=${s.diagnostic} stdout_failure=${s.stdoutFailure} stderr_failure=${s.stderrFailure}\n`);
+  writer(`::${s.command==='completed'?'notice':'error'}::electron-runtime-summary format=1 command=${s.command} exit=${s.exit} signal=${s.signal} markers=${s.markers} stdout_entry=${s.stdout.entry} stdout_error=${s.stdout.error} stderr_entry=${s.stderr.entry} stderr_error=${s.stderr.error} diagnostic_format=1 diagnostic=${s.diagnostic} stdout_failure=${s.stdoutFailure} stderr_failure=${s.stderrFailure} r001_format=1 r001_stdout=${s.r001Stdout} r001_stderr=${s.r001Stderr}\n`);
  }catch{/* Diagnostic transport/reduction never alters authoritative execution. */}
 }
 module.exports={format1Stages,buildRuntimeSummary,emitRuntimeSummary};

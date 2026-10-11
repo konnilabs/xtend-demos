@@ -1,3 +1,4 @@
+import {observeR001} from '../../scripts/r001-diagnostics.cjs';
 import {emitSmokeFailure} from '../../scripts/smoke-failure-diagnostics.cjs';
 import {emitLaunchStage, observeSync} from '../../scripts/actual-launch-diagnostics.cjs';
 import {registerApplicationPreload,assertApplicationPreload,assertExecutedPreloadProof,assertSandboxExecution,assertRendererAttestation,isTrustedMainFrame,assertOfficialRuntimeIdentity,attestationPolicy} from '../../scripts/electron-sandbox-policy.mjs';
@@ -521,7 +522,8 @@ function assertLayout(condition, message, id) {
 async function runSmokeScript(label, source, id) {
   smokeFailureId = id;
   try {
-    const result = await mainWindow.webContents.executeJavaScript(source);
+    const execute = () => mainWindow.webContents.executeJavaScript(source);
+    const result = await (id === 'R001' ? observeR001(mainWindow.webContents, execute) : execute());
     smokeFailureId = 'P001';
     return result;
   } catch (error) {
@@ -540,6 +542,12 @@ async function runLayoutSmoke() {
           return;
         }
         if (Date.now() - started > 8000) {
+          try {
+            const transcript = document.querySelector('#chat-transcript') ? '1' : '0';
+            const sidepanel = customElements.get('x-side-panel') ? '1' : '0';
+            const ready = ['loading', 'interactive', 'complete'].includes(document.readyState) ? document.readyState : 'unknown';
+            console.debug('xtend-r001-timeout format=1 transcript=' + transcript + ' sidepanel=' + sidepanel + ' ready=' + ready);
+          } catch {}
           reject(new Error('Timed out waiting for XTend LLM shell.'));
           return;
         }

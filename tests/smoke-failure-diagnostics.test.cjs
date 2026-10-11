@@ -5,7 +5,13 @@ const {ids,emitSmokeFailure,observeSmokeFailures}=require('../products/xtend-llm
 const {buildRuntimeSummary,emitRuntimeSummary}=require('../scripts/electron-runtime-summary.cjs');
 const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 const raw=fs.readFileSync(path.join(__dirname,'fixtures/smoke-failure-mapping.json'),'utf8'),map=JSON.parse(raw);
-const source=fs.readFileSync(path.join(__dirname,'..',map.source),'utf8');
+// Retain the original frozen mapping fixture. Undo only the reviewed R001 diagnostic
+// additions with exact byte bindings; readiness and every original call remain checked.
+const proposedSource=fs.readFileSync(path.join(__dirname,'..',map.source),'utf8');
+const r001Marker="          try {\n            const transcript = document.querySelector('#chat-transcript') ? '1' : '0';\n            const sidepanel = customElements.get('x-side-panel') ? '1' : '0';\n            const ready = ['loading', 'interactive', 'complete'].includes(document.readyState) ? document.readyState : 'unknown';\n            console.debug('xtend-r001-timeout format=1 transcript=' + transcript + ' sidepanel=' + sidepanel + ' ready=' + ready);\n          } catch {}\n";
+const r001Wrapper="const execute = () => mainWindow.webContents.executeJavaScript(source);\n    const result = await (id === 'R001' ? observeR001(mainWindow.webContents, execute) : execute());";
+assert.ok(proposedSource.includes(r001Marker));assert.ok(proposedSource.includes(r001Wrapper));
+const source=proposedSource.replace("import {observeR001} from '../../scripts/r001-diagnostics.cjs';\n",'').replace(r001Marker,'').replace(r001Wrapper,'const result = await mainWindow.webContents.executeJavaScript(source);');
 const body=source.slice(source.indexOf('let smokeFailureId'),source.indexOf('async function runLayoutSmoke'));
 function helpers(execute){return vm.runInNewContext(body+';({assertLayout,runSmokeScript,id:()=>smokeFailureId})',{mainWindow:{webContents:{executeJavaScript:execute}},Error});}
 test('frozen exact source mapping: all 136 predicates and 15 renderer scripts unchanged and ordered',()=>{
