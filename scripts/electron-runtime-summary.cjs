@@ -1,5 +1,5 @@
 'use strict';
-const {observeBootStream,observeReasonStream}=require('../products/xtend-llm/scripts/boot-observation.cjs');
+const {observeBootStream,observeReasonStreamV2}=require('../products/xtend-llm/scripts/boot-observation.cjs');
 const {observeEntryStream}=require('../products/xtend-llm/scripts/entry-load-diagnostics.cjs');
 const {observeR001Stream}=require('../products/xtend-llm/scripts/r001-diagnostics.cjs');
 const fs=require('node:fs');
@@ -27,7 +27,7 @@ function buildRuntimeSummary(result,thrown=false){
  return {command:thrown?'spawn-throw':result?.error?'spawn-error':result?.status===0?'completed':'child-failed',
   exit:Number.isInteger(result?.status)&&result.status>=-2147483648&&result.status<=2147483647?String(result.status):'none',
   signal:result?.signal==null?'none':signals.includes(result.signal)?result.signal:'other',
-  reasonStdout:observeReasonStream(result?.stdout),reasonStderr:observeReasonStream(result?.stderr),
+  reasonStdout:observeReasonStreamV2(result?.stdout),reasonStderr:observeReasonStreamV2(result?.stderr),
   bootStdout:observeBootStream(result?.stdout),bootStderr:observeBootStream(result?.stderr),
   entryStdout:observeEntryStream(result?.stdout),entryStderr:observeEntryStream(result?.stderr),
   r001Stdout:observeR001Stream(result?.stdout),r001Stderr:observeR001Stream(result?.stderr),
@@ -38,7 +38,7 @@ function emitRuntimeSummary(result,thrown=false,writer=line=>fs.writeSync(2,line
  // Entire diagnostic path is best effort; thrown identities and results survive.
  try{
   const s=buildRuntimeSummary(result,thrown);
-  writer(`::${s.command==='completed'?'notice':'error'}::electron-runtime-summary format=1 command=${s.command} exit=${s.exit} signal=${s.signal} markers=${s.markers} stdout_entry=${s.stdout.entry} stdout_error=${s.stdout.error} stderr_entry=${s.stderr.entry} stderr_error=${s.stderr.error} diagnostic_format=1 diagnostic=${s.diagnostic} stdout_failure=${s.stdoutFailure} stderr_failure=${s.stderrFailure} r001_format=1 r001_stdout=${s.r001Stdout} r001_stderr=${s.r001Stderr} entry_format=1 entry_stdout=${s.entryStdout} entry_stderr=${s.entryStderr} boot_format=1 boot_stdout=${s.bootStdout} boot_stderr=${s.bootStderr} reason_format=1 reason_stdout=${s.reasonStdout} reason_stderr=${s.reasonStderr}\n`);
+  writer(`::${s.command==='completed'?'notice':'error'}::electron-runtime-summary format=1 command=${s.command} exit=${s.exit} signal=${s.signal} markers=${s.markers} stdout_entry=${s.stdout.entry} stdout_error=${s.stdout.error} stderr_entry=${s.stderr.entry} stderr_error=${s.stderr.error} diagnostic_format=1 diagnostic=${s.diagnostic} stdout_failure=${s.stdoutFailure} stderr_failure=${s.stderrFailure} r001_format=1 r001_stdout=${s.r001Stdout} r001_stderr=${s.r001Stderr} entry_format=1 entry_stdout=${s.entryStdout} entry_stderr=${s.entryStderr} boot_format=1 boot_stdout=${s.bootStdout} boot_stderr=${s.bootStderr} reason_format=2 reason_stdout=${s.reasonStdout} reason_stderr=${s.reasonStderr}\n`);
  }catch{/* Diagnostic transport/reduction never alters authoritative execution. */}
 }
 module.exports={format1Stages,buildRuntimeSummary,emitRuntimeSummary};
