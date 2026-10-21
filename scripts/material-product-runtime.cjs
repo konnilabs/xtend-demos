@@ -6,8 +6,9 @@ function loadMaterialProductRuntime(productRoot){
  for(const name of [maraca,adapter])if(typeof manifest.dependencies?.[name]!=='string')throw Error('Material product must directly declare '+name);
  function local(resolve,name){
   const expected=path.join(root,'node_modules',...name.split('/'));
+  if(!fs.existsSync(expected)||fs.realpathSync(expected)!==expected)throw Error('Material dependency must resolve from exact product-local installation: '+name);
   const file=resolve(name),real=fs.realpathSync(file);
-  if(!fs.existsSync(expected)||fs.realpathSync(expected)!==expected||!real.startsWith(expected+path.sep))throw Error('Material dependency must resolve from exact product-local installation: '+name);
+  if(!real.startsWith(expected+path.sep))throw Error('Material dependency must resolve from exact product-local installation: '+name);
   return file;
  }
  const maracaFile=local(request.resolve,maraca);
