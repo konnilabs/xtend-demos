@@ -1,8 +1,8 @@
 {
   "schema": "xtend.demo-candidate-source.v1",
   "repository": "https://github.com/konnilabs/xtend.git",
-  "coreSha": "388a3a34c646dcd96d33d33d9fbfede36dfbf392",
-  "requiredApi": "public-product-support-candidate-v1-v2-and-private-source-audit",
+  "coreSha": "82b012f2f3109126bf9459c312ee904640641fa8",
+  "requiredApi": "public-product-support-candidate-v1-v2-and-private-current-pair-source-audit",
   "mergeBlockedUntil": "Exact source retention and full paired handoff evidence, followed by the separate user merge decision; no npm publication is implied.",
-  "checkpoint": "Reviewed paired 103-ID enforcement: prior 101 conserved IDs plus two source-bound form-validation lexical variants; 21 residual IDs blocked; no product aggregate pass"
+  "checkpoint": "Current paired 103-ID contract with the exact approved MaracaTuneReport transition; historical ledger retained. Full runtime handoff and current residual disposition are not established by this prerequisite."
 }
