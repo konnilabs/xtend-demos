@@ -8,7 +8,13 @@ test('hosted product lanes provision packaged PHP/FPM and avoid affected Compose
   for(const step of source.split(/\n      - /).filter(step=>step.includes('uses: shivammathur\/setup-php@'))) {
    assert.match(step,/update: true/);assert.match(step,/use_package_cache: false/);assert.match(step,/composer:2\.10\.3/);
   }
-  assert.match(source,/node scripts\/provision-product-fpm\.cjs 8\.[34]/);
+  if(file==='xtend-migration-handoff.yml') {
+   assert.match(source,/name: XTend Demo migration handoff prerequisites/);
+   assert.ok(!source.includes('prepare-product-runtime.cjs'));
+   assert.ok(!source.includes('provision-electron-sandbox.cjs'));
+   assert.ok(!source.includes('prepare-browser-toolchain.cjs'));
+   assert.ok(source.includes('handoffComplete:false'));
+  } else assert.match(source,/node scripts\/provision-product-fpm\.cjs 8\.[34]/);
  }
 });
 test('all seven original Shop PHP/Laravel lanes and explicit required FPM host survive migration',()=>{

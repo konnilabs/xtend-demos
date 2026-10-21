@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto'),zlib=require('node:zlib');
 const {execFileSync}=require('node:child_process'),{createRequire}=require('node:module');
-const root=path.resolve(__dirname,'../..'),api=require('@ccslabs/xtend/schema-inventory'),scanner=api.createScanner({typescript:require('typescript')}),packageRoot=path.dirname(require.resolve('@ccslabs/xtend/package.json'));
+const root=path.resolve(__dirname,'../..'),{api,coreRoot:packageRoot,coreSha:auditCoreSha}=require('../../scripts/load-schema-audit.cjs').loadSchemaAudit(),scanner=api.createScanner({typescript:require('typescript')});
 const rules=fs.readFileSync(path.join(root,'.gitignore'),'utf8');
 const expectedRules=['products/xtend-shop/**/public/build/','products/xtend-shop/**/bootstrap/cache/*','products/xtend-shop/**/bootstrap/xtend/','products/xtend-shop/**/storage/','products/xtend-shop/**/*.sqlite*'];
 const mirrorPaths=['payment-provider/public/build/adapter.mjs','payment-provider/public/build/maraca/runtime/xtend-maraca-plan-runtime.mjs','payment-provider/public/build/maraca/xtend.maraca.mjs','public/build/maraca/chunks/x-button-C0cKlm2v.mjs','public/build/maraca/runtime/xtend-maraca-plan-runtime.mjs','public/build/maraca/xtend.maraca.mjs'].map(p=>'products/xtend-shop/'+p);
@@ -35,15 +35,16 @@ test('genuine new and malicious current declarations outside patterns remain obs
  for(const malicious of [false,true]){const id=['xtend','rmt',malicious?'shop-discovery-malicious':'shop-discovery-new','v1'].join('.'),file='products/xtend-shop/src/'+(malicious?'malicious':'new-contract')+'.mjs';put(dir,file,declaration(id,malicious));assert.ok(list(dir).includes(file));const scan=scanner.scanSchemaInventory({rootDir:dir}),entry=rejectedNew(scan,id,dir);assert.ok(occurrence(entry,file));proof.push({path:file,id,hashes:entry.shapeFingerprints.map(f=>f.hash),specificRejection:'coverage-missing-schema'});}
  console.log('outside-live-proof '+JSON.stringify(proof));
 });
-test('actual installed owner guard rejects a tracked mutation even under restored patterns',t=>{
- const owner=fixture(t),core=fixture(t),file='products/xtend-shop/public/build/tracked-owner.mjs';
- put(core,'README.md','Controlled immutable Core fixture\n');const coreSha=commit(core);
+test('actual source-audit owner guard rejects a tracked mutation even under restored patterns',t=>{
+ const owner=fixture(t),file='products/xtend-shop/public/build/tracked-owner.mjs';
+ const coreSha=auditCoreSha;
  put(owner,overlay.sourcePath,runtimeBytes);put(owner,file,declaration(['xtend','rmt','shop-owner-control','v1'].join('.')));git(owner,['add','-f','--',file]);const demoSha=commit(owner);
- const target=path.join(owner,'node_modules/@ccslabs/xtend');fs.mkdirSync(path.dirname(target),{recursive:true});fs.cpSync(packageRoot,target,{recursive:true});
- const request=createRequire(path.join(owner,'package.json')),installed=request('@ccslabs/xtend/schema-inventory'),directory=path.join(root,'.candidate'),manifest=JSON.parse(fs.readFileSync(path.join(directory,'manifest.json')));
- // Controlled fixture SHAs only; all candidate archive/package bytes remain exact.
- manifest.coreSha=coreSha;manifest.demoSha=demoSha;put(owner,file,fs.readFileSync(path.join(owner,file),'utf8')+'// tracked mutation\n');
+ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'owner-guard-candidate-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));
+ const bytes=Buffer.from('Controlled candidate bytes; not an installation or productive package'),php=Buffer.from('Controlled PHP bytes');
+ put(directory,'core.tgz',bytes);put(directory,'php.tar',php);
+ const manifest={schema:'xtend.product-candidates.v1',coreSha,demoSha,packages:[{name:'@ccslabs/xtend',version:require(path.join(packageRoot,'package.json')).version,file:'core.tgz',sha256:sha(bytes),integrity:'sha512-'+crypto.createHash('sha512').update(bytes).digest('base64')}],php:{file:'php.tar',sha256:sha(php),sources:{controlled:sha(php)}}};
+ put(owner,file,fs.readFileSync(path.join(owner,file),'utf8')+'// tracked mutation\n');
  assert.equal(git(owner,['diff','HEAD','--name-only']).trim(),file);let scans=0;
- assert.throws(()=>installed.verifyPair({scanner:{scanSchemaInventory(){scans++;throw Error('Must reject before scanning');}},coreRoot:core,ownerRoot:owner,manifest,directory,coreSha,demoSha}),/Owner source changed after exact checkout/);assert.equal(scans,0);
- console.log('actual-owner-guard-proof '+JSON.stringify({controlledCoreSha:coreSha,controlledDemoSha:demoSha,trackedPath:file,exception:'Owner source changed after exact checkout',productiveScanCalls:scans,candidatePackageSha256:manifest.packages.find(p=>p.name==='@ccslabs/xtend').sha256,fullInstallationOrOwnershipProof:false}));
+ assert.throws(()=>api.verifyPair({scanner:{scanSchemaInventory(){scans++;throw Error('Must reject before scanning');}},coreRoot:packageRoot,ownerRoot:owner,manifest,directory,coreSha,demoSha}),/Owner source changed after exact checkout/);assert.equal(scans,0);
+ console.log('actual-owner-guard-proof '+JSON.stringify({auditCoreSha:coreSha,controlledDemoSha:demoSha,trackedPath:file,exception:'Owner source changed after exact checkout',productiveScanCalls:scans,candidatePackageSha256:manifest.packages.find(p=>p.name==='@ccslabs/xtend').sha256,fullInstallationOrOwnershipProof:false}));
 });

@@ -2,11 +2,12 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),os=require('node:os');
 const {execFileSync}=require('node:child_process');
 const {createRequire}=require('node:module');
+const {candidateOptions}=require('./candidate-context.cjs');
 const root=path.resolve(__dirname,'..');
 function installCandidates(directory,coreSha,demoSha,{lockOnly=false}={}) {
  const manifest=JSON.parse(fs.readFileSync(path.join(directory,'manifest.json')));
  // Bootstrap only immutable tarballs. The installed public API then verifies the full closure.
- if(!/^[a-f0-9]{40}$/.test(coreSha||'')||!/^([a-f0-9]{40})$/.test(demoSha||'')||manifest.coreSha!==coreSha||manifest.demoSha!==demoSha)throw Error('Candidate SHA identity mismatch');
+ const verification=candidateOptions(manifest,{coreSha,demoSha,directory});
  for(const item of manifest.packages) {
   if(path.basename(item.file)!==item.file||fs.lstatSync(path.join(directory,item.file)).isSymbolicLink())throw Error('Invalid candidate tarball');
   if(crypto.createHash('sha256').update(fs.readFileSync(path.join(directory,item.file))).digest('hex')!==item.sha256)throw Error(`Candidate digest mismatch: ${item.name}`);
@@ -19,7 +20,7 @@ function installCandidates(directory,coreSha,demoSha,{lockOnly=false}={}) {
   const item=manifest.packages.find(item=>item.name==='@ccslabs/xtend');if(!item)throw Error('Missing Root candidate');
   execFileSync('tar',['-xzf',path.join(directory,item.file),'--strip-components=1','-C',bootstrapPackage]);
   const request=createRequire(path.join(bootstrap,'package.json'));api=request('@ccslabs/xtend/candidate-integrity');
-  api.verifyCandidates(manifest,{coreSha,demoSha,directory});
+  api.verifyCandidates(manifest,verification);
  }finally{fs.rmSync(bootstrap,{recursive:true,force:true});}
  const products=fs.readdirSync(path.join(root,'products')).filter(name=>fs.existsSync(path.join(root,'products',name,'package.json')));
  const results=[];
@@ -50,7 +51,7 @@ function installCandidates(directory,coreSha,demoSha,{lockOnly=false}={}) {
   }finally {fs.writeFileSync(filename,JSON.stringify(original,null,2)+'\n');}
   if(!lockOnly) {
    const req=createRequire(filename),api=req('@ccslabs/xtend/candidate-integrity');
-   api.verifyCandidates(manifest,{coreSha,demoSha,directory:candidateDir});
+   api.verifyCandidates(manifest,candidateOptions(manifest,{coreSha,demoSha,directory:candidateDir}));
    api.verifyInstalledClosure(JSON.parse(fs.readFileSync(path.join(target,'package-lock.json'))),manifest);
    api.verifyResolution(req,manifest,path.join(target,'node_modules'));
    // Reproduce installation against restored versioned manifests and the candidate lock.

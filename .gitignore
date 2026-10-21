@@ -15,3 +15,6 @@ products/xtend-shop/**/bootstrap/cache/*
 products/xtend-shop/**/bootstrap/xtend/
 products/xtend-shop/**/storage/
 products/xtend-shop/**/*.sqlite*
+
+# Private migration audit checkout; never part of a product package.
+.schema-audit/

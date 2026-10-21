@@ -1,0 +1,61 @@
+name: XTend Demo migration handoff prerequisites
+# Candidate installation and private audit only; full runtime handoff remains separate.
+on:
+  push:
+    branches: [migration/demo-handoff-20261021]
+permissions:
+  contents: read
+jobs:
+  candidates-and-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['24.18.0', '26.5.0']
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - name: Pin npm 11.17.0
+        working-directory: ${{ runner.temp }}
+        run: npm install --global npm@11.17.0 --ignore-scripts --no-audit --no-fund
+      - name: Candidate context and audit-loader negative regressions
+        id: contracts
+        run: node --test --test-reporter=tap tests/migration/candidate-context.test.cjs tests/migration/schema-audit-loader.test.cjs tests/migration/shop-host-workflow.test.cjs
+      - name: Install exact Core v2 tarballs in all eight consumers and verify independent ownership
+        id: candidates
+        run: node scripts/prepare-ci-candidates.cjs
+      - name: Verify installed package and generated-discovery regressions
+        id: installed
+        run: node --test --test-reporter=tap tests/migration/candidate-closure.test.cjs tests/migration/shop-generated-discovery.test.cjs tests/migration/material-product-runtime.test.cjs
+      - name: Record exact scope and unperformed runtime handoff
+        if: always()
+        env:
+          OUTCOMES: ${{ toJSON(steps) }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),{execFileSync}=require('node:child_process');
+          const outcomes=JSON.parse(process.env.OUTCOMES),sha=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+          if(sha!==process.env.GITHUB_SHA)throw Error('Demo event source mismatch');
+          const result={format:1,purpose:'migration-candidate-audit-prerequisites',coreSha:require('./candidate-source.lock.json').coreSha,demoSha:sha,node:process.versions.node,
+            runId:process.env.GITHUB_RUN_ID,attempt:Number(process.env.GITHUB_RUN_ATTEMPT),outcomes:Object.fromEntries(['contracts','candidates','installed'].map(k=>[k,outcomes[k]?.outcome||'not-provided'])),
+            productRuntime:'not-run',browserRuntime:'not-run',electronRuntime:'not-run',handoffComplete:false,acceptedForMerge:false,acceptedForRelease:false};
+          fs.mkdirSync('.xtend-test-results',{recursive:true});fs.writeFileSync('.xtend-test-results/migration-handoff-checkpoint.json',JSON.stringify(result,null,2)+'\n');
+          NODE
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: demo-migration-prerequisites-node-${{ matrix.node }}
+          include-hidden-files: true
+          path: |
+            .xtend-test-results/
+            .candidate-source/manifest.json
+            package-lock.json
+            products/*/package-lock.json
+          if-no-files-found: error
