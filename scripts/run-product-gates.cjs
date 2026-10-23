@@ -6,8 +6,9 @@ const {emitActualAppOutcome}=require('./actual-app-outcome-annotation.cjs');
 const {emitRuntimeSummary}=require('./electron-runtime-summary.cjs');
 const root=path.resolve(__dirname,'..');
 async function run() {
+ const portable=process.argv.includes('--migration-portable');
  const commands=[];
- if(process.env.GITHUB_ACTIONS==='true'&&process.env.REQUIRED_CI_ATTESTATION!=='1')throw Error('Hosted product gates require explicit REQUIRED_CI_ATTESTATION=1');
+ if(!portable&&process.env.GITHUB_ACTIONS==='true'&&process.env.REQUIRED_CI_ATTESTATION!=='1')throw Error('Hosted product gates require explicit REQUIRED_CI_ATTESTATION=1');
  function saveReport(record){const target=path.join(root,'.xtend-test-results/suites',record.id+'.json');fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,JSON.stringify({schema:'xtend.product-suite-result.v1',coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA,...record},null,2)+'\n');}
  function execute(id,args,cwd=root,reports=[],env=process.env) {
   const startedAt=Date.now();
@@ -50,7 +51,7 @@ async function run() {
   if(id==='electron-actual-app-attestation')emitActualAppOutcome({reportPresent:fs.existsSync(path.join(root,'.xtend-test-results/electron-sandbox-attestation.json')),verified:record.status==='passed'});
   commands.push(record);return record.status==='passed';
  }
- execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/electron-runtime-summary.test.cjs','tests/smoke-failure-diagnostics.test.cjs','tests/r001-diagnostics.test.cjs','tests/entry-load-diagnostics.test.cjs','tests/boot-observation.test.cjs','tests/boot-reason.test.cjs','tests/boot-reason-stage.test.cjs','tests/runtime-preparation-diagnostics.test.cjs','tests/startup-error-classifier.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/candidate-context.test.cjs','tests/migration/schema-audit-loader.test.cjs','tests/migration/shop-generated-discovery.test.cjs','tests/migration/material-product-runtime.test.cjs','tests/migration/kernel-generated-runtime.test.cjs']);
+ execute('migration-runner-contracts',[process.execPath,'--test','--test-reporter=tap','tests/electron-app-attestation.test.cjs','tests/electron-runtime-summary.test.cjs','tests/smoke-failure-diagnostics.test.cjs','tests/r001-diagnostics.test.cjs','tests/entry-load-diagnostics.test.cjs','tests/boot-observation.test.cjs','tests/boot-reason.test.cjs','tests/boot-reason-stage.test.cjs','tests/runtime-preparation-diagnostics.test.cjs','tests/startup-error-classifier.test.cjs','tests/migration/portable-partition.test.cjs','tests/migration/result-evidence.test.cjs','tests/migration/runtime-probes.test.cjs','tests/migration/fpm-runtime.test.cjs','tests/migration/shop-host-workflow.test.cjs','tests/migration/candidate-closure.test.cjs','tests/migration/candidate-context.test.cjs','tests/migration/schema-audit-loader.test.cjs','tests/migration/shop-generated-discovery.test.cjs','tests/migration/material-product-runtime.test.cjs','tests/migration/kernel-generated-runtime.test.cjs']);
  execute('http-security',[process.execPath,'--test','--test-reporter=tap','tests/security/http.test.mjs']);
  const xss=await require('../tests/security/product_xss_suite.cjs').runProductXss({rootDir:root}).catch(error=>({ok:false,failures:[error.message]}));
  commands.push({id:'product-xss',command:['runProductXss'],exitCode:xss.ok?0:1,status:xss.ok?'passed':'failed',skips:xss.skips||[],failures:xss.failures||[]});
@@ -62,12 +63,13 @@ async function run() {
  commands.push({id:'product-builds',command:['all product builds'],status:builds.every(Boolean)?'passed':'failed',exitCode:builds.every(Boolean)?0:1,skips:[]});
  const suites=[['xscaler-testbench','xscaler_testbench_suite.js','runXScalerTestbenchSuite'],['product-node-host','node_host_contract_suite.js','runProductNodeHost'],['product-business-ui-boundary','product_boundary_suite.js','runProductBoundarySuite'],['erp-resumability-catfood','erp_resumability_catfooding_suite.js','runErpResumabilityCatfoodingSuite'],['maraca-app-services-test-bench','maraca_app_services_test_bench_suite.js','runMaracaAppServicesTestBenchSuite'],['xtend-llm-app-services-catfood','xtend_llm_app_services_catfood_suite.js','runXtendLlmAppServicesCatfoodSuite'],['xtend-material-catfooding','xtend_material_catfooding_suite.js','runXtendMaterialCatfoodingSuite']];
  let all=true;
- for(const [id,file,fn] of suites) {
+ for(const [id,file,fn] of suites.filter(row=>!portable||!['erp-resumability-catfood','maraca-app-services-test-bench','xtend-material-catfooding'].includes(row[0]))) {
   let result;try{result=await require('../tests/products/'+file)[fn]({rootDir:root});}catch(error){result={ok:false,failures:[error.message]};}
   const ok=result.ok===true&&!(result.skips?.length);all&&=ok;commands.push({id,command:[fn],exitCode:ok?0:1,status:ok?'passed':'failed',skips:result.skips||[],failures:result.failures||[]});
  }
- commands.push({id:'product-owned-suites',command:['all transferred suite IDs'],exitCode:all?0:1,status:all?'passed':'failed',skips:[]});
- for(const [id,group] of [['shop-php','php'],['shop-browser','browser'],['shop-contracts','contracts']]) {const ok=execute(id,['npm','run','test:'+group],path.join(root,'products/xtend-shop'),[path.join(root,'products/xtend-shop/storage/reports/xtend-store-'+group+'.json')],{...process.env,XTEND_SHOP_FPM_BINARY:''});const original=commands.at(-1);commands.push({...original,id:'xtend-shop-'+group,aliasOf:id});}
+ commands.push({id:portable?'portable-product-owned-suites':'product-owned-suites',command:['all transferred suite IDs'],exitCode:all?0:1,status:all?'passed':'failed',skips:[]});
+ for(const [id,group] of [['shop-php','php'],['shop-browser','browser'],['shop-contracts','contracts']].filter(row=>!portable||row[1]!=='browser')) {const ok=execute(id,['npm','run','test:'+group],path.join(root,'products/xtend-shop'),[path.join(root,'products/xtend-shop/storage/reports/xtend-store-'+group+'.json')],{...process.env,XTEND_SHOP_FPM_BINARY:''});const original=commands.at(-1);commands.push({...original,id:'xtend-shop-'+group,aliasOf:id});}
+ if(!portable) {
  execute('shop-browser-fpm',[process.execPath,'scripts/run-shop-host-gate.cjs','fpm'],root,[path.join(root,'products/xtend-shop/storage/reports/xtend-store-browser-fpm.json')]);
  execute('electron-shell-import-worker',['xvfb-run','-a',process.execPath,'scripts/run-electron.mjs','tests/llm-terminal-runner.mjs','--','--fake'],path.join(root,'products/xtend-llm'),[path.join(root,'products/xtend-llm/.xtend-llm-results/llm-terminal-fake.json')]);
  const lane=process.versions.node.startsWith('26.')?'node26':'node24';
@@ -75,12 +77,13 @@ async function run() {
  const attestationStartedAt=new Date().toISOString();
  execute('electron-runtime',['xvfb-run','-a','npm','run','test:electron:'+lane+':product'],llm,['app-services-catfood.json','layout-smoke.json','electron-runtime-'+laneName+'.json','native-runtime-'+laneName+'.json'].map(file=>path.join(llm,'.xtend-llm-results',file)));
  if(process.env.REQUIRED_CI_ATTESTATION==='1')execute('electron-actual-app-attestation',[process.execPath,'scripts/verify-electron-app-attestation.cjs','--core-sha',process.env.XTEND_CORE_SHA||'','--demo-sha',process.env.XTEND_DEMO_SHA||'','--started-at',attestationStartedAt]);
+ }
  execute('llm-contracts',['npm','test'],path.join(root,'products/xtend-llm'));
  execute('workbench-contracts',['npm','test'],path.join(root,'products/xtend-material-workbench'));
  execute('testbench-contracts',['npm','test'],path.join(root,'products/maraca-app-services-test-bench'));
  for(const record of commands)saveReport(record);
  const ok=commands.every(c=>c.status==='passed'&&!c.skips.length);
- const report={schema:'xtend.product-execution.v1',coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA,ok,status:ok?'passed':'failed',generatedAt:new Date().toISOString(),commands};
+ const report={schema:'xtend.product-execution.v1',scope:portable?'migration-portable':'full',externalRequired:portable?{browserGroups:['erp','material','appservices','shop-cli','shop-fpm'],macosRuntime:{nodes:['24.18.0','26.5.0'],status:'not-run',requiredBeforeMerge:true},linuxElectron:'not-run'}:null,handoffComplete:false,acceptedForMerge:false,acceptedForRelease:false,coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA,ok,status:ok?'passed':'failed',generatedAt:new Date().toISOString(),commands};
  const index=process.argv.indexOf('--report'),output=index<0?path.join(root,'.xtend-test-results/products.json'):process.argv[index+1];fs.mkdirSync(path.dirname(output),{recursive:true});fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));if(!ok)process.exitCode=1;
 }
 if(require.main===module)run().catch(error=>{console.error(error);process.exitCode=1;});

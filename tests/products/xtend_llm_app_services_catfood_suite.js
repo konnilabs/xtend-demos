@@ -47,7 +47,7 @@ function runXtendLlmAppServicesCatfoodSuite(options = {}) {
   const packageManifest = require("../utils/test-catalog").resolveManifestProfiles(readJson('package.json', rootDir));
   const runner = require("../utils/test-catalog").readRunnerCatalog(rootDir);
   const defaultWorkflow = readText('.github/workflows/xtend-default-gates.yml', rootDir);
-  const nightlyWorkflow = readText('.github/workflows/xtend-nightly-build.yml', rootDir);
+  const nightlyWorkflow = readText('.github/workflows/xtend-nightly-build.yml', rootDir).includes('uses: ./.github/workflows/xtend-default-gates.yml') ? defaultWorkflow : readText('.github/workflows/xtend-nightly-build.yml', rootDir);
   const smokeRunner = readText(`${PRODUCT_ROOT}/scripts/run-layout-smoke.mjs`, rootDir);
   const metadata = packageManifest.xtend && packageManifest.xtend.maracaAppServices;
   const gateMatrix = packageManifest.xtend && packageManifest.xtend.ciGateMatrix;
@@ -61,7 +61,7 @@ function runXtendLlmAppServicesCatfoodSuite(options = {}) {
     defaultWorkflow.includes('scripts/prepare-ci-candidates.cjs') && nightlyWorkflow.includes('scripts/prepare-ci-candidates.cjs') && readText('scripts/install-candidates.cjs',rootDir).includes('--ignore-scripts'),
     'default and nightly workflows install product dependencies without embedded-runtime install scripts'
   );
-  context.assert(defaultWorkflow.includes('prepare-product-runtime.cjs') && nightlyWorkflow.includes('prepare-product-runtime.cjs') && readText('scripts/run-product-gates.cjs',rootDir).includes('electron-shell-import-worker'), 'independent product workflows require explicit Electron runtime and shell/import/worker regression evidence');
+  context.assert(defaultWorkflow.includes('--migration-portable') && nightlyWorkflow.includes('--migration-portable') && readJson('migration-acceptance.json',rootDir).externalMacos.requiredBeforeMerge===true && readText('scripts/run-product-gates.cjs',rootDir).includes('electron-shell-import-worker'), 'migration CI separates portable execution from required external macOS runtime and unchanged full Electron gates');
   context.assert(smokeRunner.indexOf("'app-services-catfood.json'") > 0 && smokeRunner.indexOf('fs.rmSync') < smokeRunner.indexOf("require('electron')"), 'local browser catfood removes stale smoke and aggregate evidence before Electron resolution');
 
   fs.rmSync(reportPath, { force: true });

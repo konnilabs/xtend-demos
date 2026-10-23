@@ -18,3 +18,7 @@ products/xtend-shop/**/*.sqlite*
 
 # Private migration audit checkout; never part of a product package.
 .schema-audit/
+
+# Exact private CI controller, separate from installed candidate sources.
+.migration-controller/
+.controller/

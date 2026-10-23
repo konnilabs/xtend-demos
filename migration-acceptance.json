@@ -1,0 +1,49 @@
+{
+  "format": 1,
+  "purpose": "platform-limited-migration-acceptance",
+  "decision": "user-approved-2026-10-23-completion-bundle",
+  "ci": {
+    "nodes": [
+      "24.18.0",
+      "26.5.0"
+    ],
+    "portable": "scripts/run-product-gates.cjs --migration-portable",
+    "browserGroups": [
+      "erp",
+      "material",
+      "appservices",
+      "shop-cli",
+      "shop-fpm"
+    ],
+    "sandboxEnabled": false,
+    "sandboxEvidence": "not-provided",
+    "ownershipAndCleanupRequired": true
+  },
+  "externalMacos": {
+    "requiredBeforeMerge": true,
+    "freshExactSourcePair": true,
+    "nodes": [
+      "24.18.0",
+      "26.5.0"
+    ],
+    "electron": "42.10.0",
+    "sandboxEnabled": true,
+    "stages": [
+      "preparation-protocol",
+      "contracts",
+      "build",
+      "layout",
+      "catfood",
+      "embedded-runtime",
+      "native-runtime",
+      "shell-worker"
+    ],
+    "validator": "scripts/demo-macos-evidence.cjs in exact pinned Core",
+    "worker": "explicitly-simulated",
+    "linuxElectron": "not-run"
+  },
+  "releaseFullCommand": "node scripts/run-product-gates.cjs",
+  "ciAloneCompletesHandoff": false,
+  "acceptedForMerge": false,
+  "acceptedForRelease": false
+}

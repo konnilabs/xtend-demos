@@ -7,6 +7,12 @@ on:
     - cron: '27 4 * * *'
 permissions:
   contents: read
+env:
+  XTEND_CI_FUNCTIONAL_PROFILE: chromium-linux-ci-functions-no-sandbox-v1
+  XTEND_DEMO_EVENT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  XTEND_DEMO_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+  XTEND_DEMO_BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
+  XTEND_DEMO_PR_NUMBER: ${{ github.event.pull_request.number }}
 jobs:
   shop:
     name: Shop Laravel ${{ matrix.laravel }} / PHP ${{ matrix.php }} / ${{ matrix.host }}
@@ -26,7 +32,8 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ env.XTEND_DEMO_EVENT_SHA }}
+          persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 24.18.0
@@ -47,9 +54,20 @@ jobs:
         run: node scripts/provision-product-fpm.cjs 8.3
       - name: Install immutable Chromium and matching WebDriver
         if: matrix.browser
-        run: node scripts/prepare-browser-toolchain.cjs "${{ runner.temp }}/xtend-browser"
+        run: |
+          mkdir -p "$RUNNER_TEMP/browser-provision-home"
+          NODE_BINARY="$(command -v node)"
+          env -i PATH="$(dirname "$NODE_BINARY"):/usr/local/bin:/usr/bin:/bin" HOME="$RUNNER_TEMP/browser-provision-home" TMPDIR="$RUNNER_TEMP/browser-provision-home" LANG=C.UTF-8 "$NODE_BINARY" scripts/prepare-browser-toolchain.cjs "$RUNNER_TEMP/xtend-browser"
       - name: Reproduce pinned Core artifacts and candidate locks
-        run: node scripts/prepare-ci-candidates.cjs
+        run: |
+          node scripts/prepare-ci-candidates.cjs
+          node -e 'const fs=require("node:fs"),p=require("./migration-ci-controller.lock.json");if(!/^[a-f0-9]{40}$/.test(p.sha)||p.repository!=="https://github.com/konnilabs/xtend.git")throw Error("Exact controller required");fs.appendFileSync(process.env.GITHUB_ENV,"XTEND_DEMO_CONTROLLER_SHA="+p.sha+"\n")'
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          repository: konnilabs/xtend
+          ref: ${{ env.XTEND_DEMO_CONTROLLER_SHA }}
+          path: .migration-controller
+          persist-credentials: false
       - name: Prepare the independent Shop compatibility fixture
         run: |
           printf 'XTEND_SHOP_FIXTURE=%s/xtend-shop\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
@@ -57,9 +75,9 @@ jobs:
       - name: Install locked PHP dependencies and assert actual platform
         working-directory: ${{ env.XTEND_SHOP_FIXTURE }}
         run: |
-          composer install --no-interaction --no-progress --prefer-dist --no-scripts
+          composer install --no-interaction --no-progress --prefer-dist --no-scripts --no-plugins
           composer check-platform-reqs
-          composer install --working-dir=payment-provider --no-interaction --no-progress --prefer-dist --no-scripts
+          composer install --working-dir=payment-provider --no-interaction --no-progress --prefer-dist --no-scripts --no-plugins
           composer check-platform-reqs --working-dir=payment-provider
           php scripts/setup.php
           npm run build
@@ -73,7 +91,7 @@ jobs:
           npm run test:php
       - name: Required actual Shop browser host-mode acceptance
         if: matrix.browser
-        run: node scripts/run-shop-host-gate.cjs "${{ matrix.host }}"
+        run: node .migration-controller/scripts/demo-functional-ci.cjs shop "$GITHUB_WORKSPACE" "$RUNNER_TEMP/shop-functional" "$RUNNER_TEMP/xtend-browser" "${XTEND_SHOP_FPM_BINARY:-}" "${{ matrix.host }}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
@@ -82,4 +100,5 @@ jobs:
           path: |
             ${{ env.XTEND_SHOP_FIXTURE }}/storage/reports/
             .candidate-source/manifest.json
+            ${{ runner.temp }}/shop-functional/**/*.json
           if-no-files-found: error

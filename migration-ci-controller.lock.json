@@ -1,0 +1,6 @@
+{
+  "format": 1,
+  "repository": "https://github.com/konnilabs/xtend.git",
+  "sha": "3fb7ac1bf522eae142a3e95b1ebb2a16bf25c3aa",
+  "purpose": "private migration test controller; independent of installed Core candidate identity"
+}
