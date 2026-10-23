@@ -38,13 +38,17 @@ test('genuine new and malicious current declarations outside patterns remain obs
 test('actual source-audit owner guard rejects a tracked mutation even under restored patterns',t=>{
  const owner=fixture(t),file='products/xtend-shop/public/build/tracked-owner.mjs';
  const coreSha=auditCoreSha;
- put(owner,overlay.sourcePath,runtimeBytes);put(owner,file,declaration(['xtend','rmt','shop-owner-control','v1'].join('.')));git(owner,['add','-f','--',file]);const demoSha=commit(owner);
+ const current=require(path.join(packageRoot,'tools/schema-inventory/current-pair-contract.cjs'));
+ for(const [source,expected] of Object.entries(current.generatedMirrors().sourceHashes)){
+  const bytes=fs.readFileSync(path.join(root,source));assert.equal(sha(bytes),expected,'fixture uses exact current reviewed bytes');put(owner,source,bytes);
+ }
+ put(owner,file,declaration(['xtend','rmt','shop-owner-control','v1'].join('.')));git(owner,['add','-f','--',file]);const demoSha=commit(owner);
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'owner-guard-candidate-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}));
  const bytes=Buffer.from('Controlled candidate bytes; not an installation or productive package'),php=Buffer.from('Controlled PHP bytes');
  put(directory,'core.tgz',bytes);put(directory,'php.tar',php);
  const manifest={schema:'xtend.product-candidates.v1',coreSha,demoSha,packages:[{name:'@ccslabs/xtend',version:require(path.join(packageRoot,'package.json')).version,file:'core.tgz',sha256:sha(bytes),integrity:'sha512-'+crypto.createHash('sha512').update(bytes).digest('base64')}],php:{file:'php.tar',sha256:sha(php),sources:{controlled:sha(php)}}};
  put(owner,file,fs.readFileSync(path.join(owner,file),'utf8')+'// tracked mutation\n');
  assert.equal(git(owner,['diff','HEAD','--name-only']).trim(),file);let scans=0;
- assert.throws(()=>api.verifyPair({scanner:{scanSchemaInventory(){scans++;throw Error('Must reject before scanning');}},coreRoot:packageRoot,ownerRoot:owner,manifest,directory,coreSha,demoSha}),/Owner source changed after exact checkout/);assert.equal(scans,0);
+ assert.throws(()=>api.verifyCurrentPair({scanner:{scanSchemaInventory(){scans++;throw Error('Must reject before scanning');}},coreRoot:packageRoot,ownerRoot:owner,manifest,directory,coreSha,demoSha}),/Owner source changed after exact checkout/);assert.equal(scans,0);
  console.log('actual-owner-guard-proof '+JSON.stringify({auditCoreSha:coreSha,controlledDemoSha:demoSha,trackedPath:file,exception:'Owner source changed after exact checkout',productiveScanCalls:scans,candidatePackageSha256:manifest.packages.find(p=>p.name==='@ccslabs/xtend').sha256,fullInstallationOrOwnershipProof:false}));
 });
