@@ -84,6 +84,10 @@ assert.equal(fallbackTarget.exitCode, 143);
 
 const productRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const launcherPath = path.join(productRoot, 'scripts', 'run-electron.mjs');
+// These two children execute Node, not Electron. Explicitly model local launcher
+// semantics; production hosted attestation is separately checked below unchanged.
+const nodeModelEnvironment = Object.fromEntries(['PATH','HOME','TMPDIR','LANG','npm_config_user_agent'].filter(key=>process.env[key]!==undefined).map(key=>[key,process.env[key]]));
+
 const cliExit = spawnSync(process.execPath, [
   launcherPath,
   '--xtend-executable',
@@ -100,7 +104,7 @@ const cliExit = spawnSync(process.execPath, [
   'beta'
 ], {
   cwd: productRoot,
-  env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
+  env: { ...nodeModelEnvironment, ELECTRON_RUN_AS_NODE: '1' },
   encoding: 'utf8'
 });
 assert.equal(cliExit.status, 19, cliExit.stderr);
@@ -114,6 +118,7 @@ if (process.platform !== 'win32') {
     'process.kill(process.pid, "SIGTERM")'
   ], {
     cwd: productRoot,
+    env: nodeModelEnvironment,
     stdio: 'ignore'
   });
   assert.equal(cliSignal.status, null);
@@ -121,3 +126,10 @@ if (process.platform !== 'win32') {
 }
 
 console.log('ok - portable Electron launcher cleans environment and mirrors exit/signal state');
+
+// A hosted production launch must still reject missing attestation before the
+// supplied executable can run. This is a negative Node model, never app evidence.
+const hostedRejected=spawnSync(process.execPath,[launcherPath,'--xtend-executable',process.execPath,'-e',"process.stdout.write('MUST_NOT_RUN')"],{cwd:productRoot,env:{...nodeModelEnvironment,GITHUB_ACTIONS:'true'},encoding:'utf8'});
+assert.equal(hostedRejected.status,1);assert.match(hostedRejected.stderr,/Hosted app requires explicit REQUIRED_CI_ATTESTATION=1/);assert.equal(hostedRejected.stdout,'');
+const identityRejected=spawnSync(process.execPath,[launcherPath,'--xtend-executable',process.execPath,'-e',"process.stdout.write('MUST_NOT_RUN')"],{cwd:productRoot,env:{...nodeModelEnvironment,GITHUB_ACTIONS:'true',REQUIRED_CI_ATTESTATION:'1'},encoding:'utf8'});
+assert.equal(identityRejected.status,1);assert.match(identityRejected.stderr,process.platform==='linux'?/Missing immutable preload owner identity/:/Reviewed mandatory CI helper attestation supports Linux only/);assert.equal(identityRejected.stdout,'');

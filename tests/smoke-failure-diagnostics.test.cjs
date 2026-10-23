@@ -7,7 +7,9 @@ const sha=x=>crypto.createHash('sha256').update(x).digest('hex');
 const raw=fs.readFileSync(path.join(__dirname,'fixtures/smoke-failure-mapping.json'),'utf8'),map=JSON.parse(raw);
 // Retain the original frozen mapping fixture. Undo only the reviewed R001 diagnostic
 // additions with exact byte bindings; readiness and every original call remain checked.
-const entryProposedSource=fs.readFileSync(path.join(__dirname,'..',map.source),'utf8');
+const actualMain=fs.readFileSync(path.join(__dirname,'..',map.source),'utf8');
+const {restoreHistoricalMain}=require('./fixtures/reviewed-llm-main-transition.cjs');
+const entryProposedSource=restoreHistoricalMain(actualMain);
 const entryImport="import {installEntryObserver} from '../../scripts/entry-load-diagnostics.cjs';\n";
 const entryCall="  installEntryObserver(ipcMain, mainWindow, event => isTrustedMainFrame(event, mainWindow.webContents));\n";
 assert.ok(entryProposedSource.includes(entryImport));assert.ok(entryProposedSource.includes(entryCall));
@@ -86,4 +88,11 @@ test('real screenshot/report writer throws retain thrown identity, existing catc
   else{assert.deepEqual(lines,[]);assert.deepEqual(events,['mkdir','capture','png','screenshot','report','console','console','quit']);}
   assert.ok(!events.includes('app-evidence-write')); // The earlier authoritative app receipt is outside this untouched tail.
  }
+});
+
+test('reviewed migration transition rejects foreign, incomplete and weakened current source',()=>{
+ for(const mutation of [actualMain+'\n',actualMain.replace('sandbox: true','sandbox: false'),actualMain.replace('await committed;',''),actualMain.replace('fakeModelLoadDelayMs=-1','fakeModelLoadDelayMs=1200')])assert.throws(()=>restoreHistoricalMain(mutation),/Unreviewed current main bytes/);
+ assert.throws(()=>restoreHistoricalMain(entryProposedSource),/Unreviewed current main bytes/);
+ const helpers=s=>s.slice(s.indexOf('let smokeFailureId'),s.indexOf('async function runLayoutSmoke'));
+ assert.equal(helpers(actualMain),helpers(entryProposedSource),'Diagnostic helpers must remain identical in current source');
 });

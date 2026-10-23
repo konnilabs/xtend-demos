@@ -1,0 +1,51 @@
+{
+  "purpose": "Exact already-reviewed migration transitions; historical diagnostic mapping remains unchanged. Not runtime evidence.",
+  "baselineCommit": "df9689d006d5b3710546d607205a8ca62bb1b5af",
+  "currentSourceCommit": "0465dcf4e5fbf304262a6665cf2a1db36de6232b",
+  "baselineSha256": "3ae724232c937391e2dccd194e76b49016dc99b11a999d0797436c73df6efa05",
+  "currentSha256": "17d1436079a049ed6d8080a3f31c708d1b971825e1b955cfd4a1d81d1a447699",
+  "changes": [
+    "controlled fake preparation checkpoint/release",
+    "readiness through existing x-status message",
+    "injected service read-only lifecycle snapshot",
+    "correlated follow-up Model commit"
+  ],
+  "hunks": [
+    {
+      "before": "  try {\n    launchStage('load');\n    await mainWindow.loadURL(layoutSmoke ? `${serverUrl}?fakeModel=1&fakeModelLoadDelayMs=1200` : serverUrl);\n    launchStage('preload-ipc');\n    const proof=await preloadAttestation,rendererPid=mainWindow.webContents.getOSProcessId();\n",
+      "after": "  try {\n    launchStage('load');\n    await mainWindow.loadURL(layoutSmoke ? `${serverUrl}?fakeModel=1&fakeModelLoadDelayMs=-1` : serverUrl);\n    launchStage('preload-ipc');\n    const proof=await preloadAttestation,rendererPid=mainWindow.webContents.getOSProcessId();\n"
+    },
+    {
+      "before": "      const started = Date.now();\n      const tick = () => {\n        if (document.querySelector('#chat-transcript') && customElements.get('x-side-panel')) {\n          resolve(true);\n          return;\n",
+      "after": "      const started = Date.now();\n      const tick = () => {\n        if (document.querySelector('#chat-transcript') && customElements.get('x-side-panel') && (document.getElementById('model-status')?.getAttribute('message') || document.getElementById('model-status')?.textContent || '').includes('Preparing gated fake model runtime')) {\n          resolve(true);\n          return;\n"
+    },
+    {
+      "before": "      runtimeTab.click();\n      await waitFor(() => tabs.querySelector('x-tab.active')?.getAttribute('label') === 'Runtime', 'runtime tab selected during model prep');\n      await new Promise((resolve) => setTimeout(resolve, 720));\n      const runtimeTabAfterProgress = tabs.querySelector('x-tab.active')?.getAttribute('label') || '';\n      document.getElementById('settings-cancel')?.click();\n",
+      "after": "      runtimeTab.click();\n      await waitFor(() => tabs.querySelector('x-tab.active')?.getAttribute('label') === 'Runtime', 'runtime tab selected during model prep');\n      const preparation = new BroadcastChannel('xtend-llm-layout-preparation');\n      preparation.postMessage('checkpoint');\n      preparation.close();\n      await waitFor(() => (document.getElementById('model-status')?.getAttribute('message') || document.getElementById('model-status')?.textContent || '').includes('Fake preparation checkpoint.'), 'model preparation checkpoint');\n      const runtimeTabAfterProgress = tabs.querySelector('x-tab.active')?.getAttribute('label') || '';\n      document.getElementById('settings-cancel')?.click();\n"
+    },
+    {
+      "before": "  await runSmokeScript('wait for fake model ready', `\n    new Promise((resolve, reject) => {\n      const started = Date.now();\n      const clearSearch = () => {\n",
+      "after": "  await runSmokeScript('wait for fake model ready', `\n    new Promise((resolve, reject) => {\n      const preparation = new BroadcastChannel('xtend-llm-layout-preparation');\n      preparation.postMessage('release');\n      preparation.close();\n      const started = Date.now();\n      const clearSearch = () => {\n"
+    },
+    {
+      "before": "          const copiedButton = currentCopyButton();\n          const copyIconAfter = copiedButton?.querySelector('x-icon')?.getAttribute('name') || '';\n          const registry = window.XTendMaraca?.appServices?.registry || null;\n          if (registry && typeof registry.whenIdle === 'function') await registry.whenIdle();\n          const serviceHistory = registry && typeof registry.listHistory === 'function'\n            ? registry.listHistory().map((entry) => ({\n                serviceId: entry.serviceId,\n                kind: entry.kind,\n",
+      "after": "          const copiedButton = currentCopyButton();\n          const copyIconAfter = copiedButton?.querySelector('x-icon')?.getAttribute('name') || '';\n          const services = window.XTendMaraca?.appServices;\n          const idleStarted = Date.now();\n          while (services?.snapshot?.().activeCount > 0 && Date.now() - idleStarted < 3000) {\n            await new Promise(resolve => setTimeout(resolve, 25));\n          }\n          const serviceSnapshot = services?.snapshot?.();\n          const serviceHistory = Array.isArray(serviceSnapshot?.history)\n            ? serviceSnapshot.history.map((entry) => ({\n                serviceId: entry.serviceId,\n                kind: entry.kind,\n"
+    },
+    {
+      "before": "            conversations: status?.conversation?.conversations || [],\n            appServices: {\n              enabled: window.XTendMaraca?.appServices?.enabled === true,\n              serviceCount: registry && typeof registry.listServices === 'function' ? registry.listServices().length : 0,\n              activeCount: registry && typeof registry.listActive === 'function' ? registry.listActive().length : -1,\n              listenerErrorCount: registry && typeof registry.listListenerErrors === 'function' ? registry.listListenerErrors().length : -1,\n              history: serviceHistory\n            },\n",
+      "after": "            conversations: status?.conversation?.conversations || [],\n            appServices: {\n              enabled: serviceSnapshot?.enabled === true,\n              serviceCount: serviceSnapshot?.serviceCount ?? 0,\n              activeCount: serviceSnapshot?.activeCount ?? -1,\n              listenerErrorCount: serviceSnapshot?.listenerErrorCount ?? -1,\n              history: serviceHistory\n            },\n"
+    },
+    {
+      "before": "      if (!prompt || !send) throw new Error('Prompt or send control missing.');\n      const value = 'Second turn';\n      prompt.value = 'Second turn';\n      prompt.dispatchEvent(new CustomEvent('xtend-command', {\n",
+      "after": "      if (!prompt || !send) throw new Error('Prompt or send control missing.');\n      const value = 'Second turn';\n      const correlationId = 'layout-smoke:follow-up:' + Date.now();\n      const model = window.XTendMaraca?.orchestration?.model;\n      if (!model || typeof model.subscribe !== 'function') throw new Error('Model completion port missing.');\n      const committed = new Promise((resolve, reject) => {\n        const timeout = setTimeout(() => { unsubscribe(); reject(new Error('Follow-up Model commit timed out.')); }, 5000);\n        const unsubscribe = model.subscribe(event => {\n          if (event?.metadata?.correlationId !== correlationId) return;\n          clearTimeout(timeout); unsubscribe(); resolve(event);\n        });\n      });\n      prompt.value = 'Second turn';\n      prompt.dispatchEvent(new CustomEvent('xtend-command', {\n"
+    },
+    {
+      "before": "            empty: false\n          },\n          correlationId: 'layout-smoke:' + Date.now(),\n          lane: 'test',\n          timestamp: new Date().toISOString()\n",
+      "after": "            empty: false\n          },\n          correlationId,\n          lane: 'test',\n          timestamp: new Date().toISOString()\n"
+    },
+    {
+      "before": "        cancelable: true\n      }));\n      await new Promise((resolve) => requestAnimationFrame(resolve));\n      await new Promise((resolve) => requestAnimationFrame(resolve));\n",
+      "after": "        cancelable: true\n      }));\n      await committed;\n      await new Promise((resolve) => requestAnimationFrame(resolve));\n      await new Promise((resolve) => requestAnimationFrame(resolve));\n"
+    }
+  ]
+}
