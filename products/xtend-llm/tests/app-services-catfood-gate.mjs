@@ -208,7 +208,7 @@ try {
     usesUnknownFallback: /\bunknown\b/u.test(declarations),
     containsAny: /\bany\b/u.test(declarations)
   });
-  record('build.browser-bundle', bundle.includes('The public Maraca AppServices registry is unavailable.')
+  record('build.browser-bundle', bundle.includes('The injected RMT HostService stream port is unavailable.')
     && bundle.includes('xtend.llm.generationStream'), {
     bytes: Buffer.byteLength(bundle),
     appServiceBytes: sizeReport.appServices?.clientBytes || 0,

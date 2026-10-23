@@ -985,26 +985,36 @@ function forwardGenerationServiceFrame(frame, target = 'generation.streamText') 
   });
 }
 
-function startGenerationServiceStream(jobId, context = {}, target = 'generation.streamText') {
-  const registry = window.XTendMaraca?.appServices?.registry;
+async function startGenerationServiceStream(jobId, context = {}, target = 'generation.streamText') {
+  const registry = context.hostServiceRegistry;
   if (!registry || typeof registry.stream !== 'function') {
-    throw new Error('The public Maraca AppServices registry is unavailable.');
+    throw new Error('The injected RMT HostService stream port is unavailable.');
   }
   if (activeGenerationStream && typeof activeGenerationStream.cancel === 'function') {
     activeGenerationStream.cancel('Generation superseded by a newer job.');
   }
   const channel = createGenerationFrameChannel(jobId);
   generationFrameChannels.set(jobId, channel);
-  const stream = registry.stream('xtend.llm.generationStream', { jobId }, {
-    onFrame(frame) {
-      forwardGenerationServiceFrame(frame, target);
-    }
-  }, {
-    correlationId: context.correlationId,
-    signal: context.signal
-  });
+  let complete;
+  const done = new Promise(resolve => { complete = resolve; });
+  let stream;
+  try {
+    stream = await registry.stream('xtend.llm.generationStream', { jobId }, {
+      onFrame(frame) {
+        forwardGenerationServiceFrame(frame, target);
+        if (['complete', 'error', 'cancelled'].includes(frame.type)) complete(frame);
+      }
+    }, {
+      correlationId: context.correlationId,
+      signal: context.signal
+    });
+  } catch (error) {
+    channel.wake();
+    if (generationFrameChannels.get(jobId) === channel) generationFrameChannels.delete(jobId);
+    throw error;
+  }
   activeGenerationStream = stream;
-  stream.done.finally(() => {
+  done.finally(() => {
     channel.wake();
     if (generationFrameChannels.get(jobId) === channel) generationFrameChannels.delete(jobId);
     if (activeGenerationStream === stream) activeGenerationStream = null;
@@ -1228,7 +1238,7 @@ async function submitPrompt(payload = {}, context = {}) {
     applyConversationPatch(result);
     if (result.job) {
       state.activeJobId = result.job.jobId;
-      startGenerationServiceStream(state.activeJobId, context);
+      await startGenerationServiceStream(state.activeJobId, context);
       state.promptDraft = '';
       state.submitting = false;
       runToolAwareGeneration(result.job, text, { forcedToolName }).catch(settleGenerationError);
@@ -1284,7 +1294,7 @@ async function regenerateAssistantMessage(payload = {}, context = {}) {
     applyConversationPatch(result);
     if (result.job) {
       state.activeJobId = result.job.jobId;
-      startGenerationServiceStream(state.activeJobId, context, 'generation.regenerate');
+      await startGenerationServiceStream(state.activeJobId, context, 'generation.regenerate');
       state.submitting = false;
       const originalText = result.job.originalPrompt || (result.job.messages || []).filter((entry) => entry.role === 'user').at(-1)?.content || '';
       runToolAwareGeneration(result.job, originalText, { forcedToolName }).catch(settleGenerationError);

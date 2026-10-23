@@ -1175,10 +1175,14 @@ async function runLayoutSmoke() {
           }
           const copiedButton = currentCopyButton();
           const copyIconAfter = copiedButton?.querySelector('x-icon')?.getAttribute('name') || '';
-          const registry = window.XTendMaraca?.appServices?.registry || null;
-          if (registry && typeof registry.whenIdle === 'function') await registry.whenIdle();
-          const serviceHistory = registry && typeof registry.listHistory === 'function'
-            ? registry.listHistory().map((entry) => ({
+          const services = window.XTendMaraca?.appServices;
+          const idleStarted = Date.now();
+          while (services?.snapshot?.().activeCount > 0 && Date.now() - idleStarted < 3000) {
+            await new Promise(resolve => setTimeout(resolve, 25));
+          }
+          const serviceSnapshot = services?.snapshot?.();
+          const serviceHistory = Array.isArray(serviceSnapshot?.history)
+            ? serviceSnapshot.history.map((entry) => ({
                 serviceId: entry.serviceId,
                 kind: entry.kind,
                 target: entry.target,
@@ -1215,10 +1219,10 @@ async function runLayoutSmoke() {
             activeConversationId: status?.conversation?.activeConversationId || '',
             conversations: status?.conversation?.conversations || [],
             appServices: {
-              enabled: window.XTendMaraca?.appServices?.enabled === true,
-              serviceCount: registry && typeof registry.listServices === 'function' ? registry.listServices().length : 0,
-              activeCount: registry && typeof registry.listActive === 'function' ? registry.listActive().length : -1,
-              listenerErrorCount: registry && typeof registry.listListenerErrors === 'function' ? registry.listListenerErrors().length : -1,
+              enabled: serviceSnapshot?.enabled === true,
+              serviceCount: serviceSnapshot?.serviceCount ?? 0,
+              activeCount: serviceSnapshot?.activeCount ?? -1,
+              listenerErrorCount: serviceSnapshot?.listenerErrorCount ?? -1,
               history: serviceHistory
             },
             messages: messages.map((message) => ({
