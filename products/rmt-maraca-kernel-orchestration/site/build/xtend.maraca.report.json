@@ -218,16 +218,16 @@
       "artifactFingerprints": []
     }
   },
-  "entry": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs",
+  "entry": "/tmp/xtend-migration-build-tools-20261023/site/build/xtend.maraca.mjs",
   "entryRelative": "site/build/xtend.maraca.mjs",
-  "entryBytes": 1035203,
-  "bytes": 2932765,
+  "entryBytes": 1034608,
+  "bytes": 2933281,
   "bundleFiles": [
     {
       "type": "chunk",
       "fileName": "xtend.maraca.mjs",
       "path": "site/build/xtend.maraca.mjs",
-      "bytes": 1035203,
+      "bytes": 1034608,
       "isEntry": true,
       "isDynamicEntry": false,
       "imports": [
@@ -235,208 +235,213 @@
         "./runtime/xtendrmt-runtime.esm.mjs",
         "./runtime/xtend-maraca-plan-runtime.mjs",
         "./runtime/xtend-maraca-browser-composition-runtime.mjs",
-        "chunks/x-button-D72oPP1K.mjs"
+        "chunks/x-button-DWIOUNTg.mjs"
       ],
       "dynamicImports": [
-        "chunks/x-button-D72oPP1K.mjs",
-        "chunks/x-input-Ceoq5SOI.mjs",
-        "chunks/x-select-BUhZfI8s.mjs",
-        "chunks/x-status-DLzpWST9.mjs",
-        "chunks/x-textarea-W-u3sgHi.mjs"
+        "chunks/x-button-DWIOUNTg.mjs",
+        "chunks/x-input-DvHYgCZn.mjs",
+        "chunks/x-select-ia4dovR5.mjs",
+        "chunks/x-status-DBerQpQ_.mjs",
+        "chunks/x-textarea-DXzLThrG.mjs"
       ],
       "modules": [
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-surface-transition-runtime.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-surface-transition-runtime.js",
           "renderedLength": 31690,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-surface-resource-graph-runtime.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-surface-resource-graph-runtime.js",
           "renderedLength": 77455,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-state-selector-runtime.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-state-selector-runtime.js",
           "renderedLength": 46825,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-state-host-adapter.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-state-host-adapter.js",
           "renderedLength": 5637,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-state-binding-view-projector.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-state-binding-view-projector.js",
           "renderedLength": 25433,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-resume-protocol.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-resume-protocol.js",
           "renderedLength": 2914,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-resume-capture-adapter.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-resume-capture-adapter.js",
           "renderedLength": 4596,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-resume-host-adapter.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-resume-host-adapter.js",
           "renderedLength": 3420,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-resume-command-adapter.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-resume-command-adapter.js",
           "renderedLength": 4267,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-resume-command-controller.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-resume-command-controller.js",
           "renderedLength": 15680,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-resume-runtime.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-resume-runtime.js",
           "renderedLength": 1260,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-presentation-effect-adapter.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-presentation-effect-adapter.js",
           "renderedLength": 26406,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-maraca-view-projection-adapter.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-maraca-view-projection-adapter.js",
           "renderedLength": 9079,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-form-validation-evaluator.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-form-validation-evaluator.js",
           "renderedLength": 14592,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-form-validation-view-projector.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-form-validation-view-projector.js",
           "renderedLength": 9826,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-form-validation-model-command-adapter.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-form-validation-model-command-adapter.js",
           "renderedLength": 2201,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-form-validation-runtime.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-form-validation-runtime.js",
           "renderedLength": 10496,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-event-routing-runtime.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-event-routing-runtime.js",
           "renderedLength": 51845,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-dom-descriptor-renderer.js",
-          "renderedLength": 150106,
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-dom-descriptor-renderer.js",
+          "renderedLength": 150425,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-app-runtime.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-app-runtime.js",
           "renderedLength": 103134,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-animation-engine-runtime.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-animation-engine-runtime.js",
           "renderedLength": 22261,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/xtendrmt/rmt-action-effect-runtime.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-action-effect-runtime.js",
           "renderedLength": 39170,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/xutils.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/xutils.js",
           "renderedLength": 28846,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/xsurfacemanager-controller.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/xsurfacemanager-controller.js",
           "renderedLength": 44590,
           "appService": false
         },
         {
           "id": "\u0000xtend-maraca-entry",
-          "renderedLength": 1130289,
+          "renderedLength": 1129659,
           "appService": false
         }
       ],
       "appServiceBytes": 0,
-      "frameworkBytes": 1035203
+      "frameworkBytes": 1034608
     },
     {
       "type": "chunk",
-      "fileName": "chunks/x-button-D72oPP1K.mjs",
-      "path": "site/build/chunks/x-button-D72oPP1K.mjs",
-      "bytes": 50512,
+      "fileName": "chunks/x-button-DWIOUNTg.mjs",
+      "path": "site/build/chunks/x-button-DWIOUNTg.mjs",
+      "bytes": 51292,
       "isEntry": false,
       "isDynamicEntry": true,
       "imports": [],
       "dynamicImports": [],
       "modules": [
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/xtend-state.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/xtend-state.js",
           "renderedLength": 15754,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/style-nonce.js",
-          "renderedLength": 479,
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/style-nonce.js",
+          "renderedLength": 904,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/rmt-command.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/icon-dom.js",
+          "renderedLength": 4503,
+          "appService": false
+        },
+        {
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/rmt-command.js",
           "renderedLength": 2876,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/icon-packs/core.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/icon-packs/core.js",
           "renderedLength": 6002,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/icon-packs/lucide.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/icon-packs/lucide.js",
           "renderedLength": 4716,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/xicon.js",
-          "renderedLength": 21069,
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/xicon.js",
+          "renderedLength": 17696,
           "appService": false
         },
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/xbutton.js",
-          "renderedLength": 24387,
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/xbutton.js",
+          "renderedLength": 25041,
           "appService": false
         }
       ],
       "appServiceBytes": 0,
-      "frameworkBytes": 50512
+      "frameworkBytes": 51292
     },
     {
       "type": "chunk",
-      "fileName": "chunks/x-input-Ceoq5SOI.mjs",
-      "path": "site/build/chunks/x-input-Ceoq5SOI.mjs",
+      "fileName": "chunks/x-input-DvHYgCZn.mjs",
+      "path": "site/build/chunks/x-input-DvHYgCZn.mjs",
       "bytes": 14370,
       "isEntry": false,
       "isDynamicEntry": true,
       "imports": [
-        "chunks/x-button-D72oPP1K.mjs"
+        "chunks/x-button-DWIOUNTg.mjs"
       ],
       "dynamicImports": [],
       "modules": [
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/xinput.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/xinput.js",
           "renderedLength": 16888,
           "appService": false
         }
@@ -446,18 +451,18 @@
     },
     {
       "type": "chunk",
-      "fileName": "chunks/x-select-BUhZfI8s.mjs",
-      "path": "site/build/chunks/x-select-BUhZfI8s.mjs",
+      "fileName": "chunks/x-select-ia4dovR5.mjs",
+      "path": "site/build/chunks/x-select-ia4dovR5.mjs",
       "bytes": 16150,
       "isEntry": false,
       "isDynamicEntry": true,
       "imports": [
-        "chunks/x-button-D72oPP1K.mjs"
+        "chunks/x-button-DWIOUNTg.mjs"
       ],
       "dynamicImports": [],
       "modules": [
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/xselect.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/xselect.js",
           "renderedLength": 18610,
           "appService": false
         }
@@ -467,18 +472,18 @@
     },
     {
       "type": "chunk",
-      "fileName": "chunks/x-status-DLzpWST9.mjs",
-      "path": "site/build/chunks/x-status-DLzpWST9.mjs",
+      "fileName": "chunks/x-status-DBerQpQ_.mjs",
+      "path": "site/build/chunks/x-status-DBerQpQ_.mjs",
       "bytes": 9946,
       "isEntry": false,
       "isDynamicEntry": true,
       "imports": [
-        "chunks/x-button-D72oPP1K.mjs"
+        "chunks/x-button-DWIOUNTg.mjs"
       ],
       "dynamicImports": [],
       "modules": [
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/xstatus.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/xstatus.js",
           "renderedLength": 12262,
           "appService": false
         }
@@ -488,18 +493,18 @@
     },
     {
       "type": "chunk",
-      "fileName": "chunks/x-textarea-W-u3sgHi.mjs",
-      "path": "site/build/chunks/x-textarea-W-u3sgHi.mjs",
+      "fileName": "chunks/x-textarea-DXzLThrG.mjs",
+      "path": "site/build/chunks/x-textarea-DXzLThrG.mjs",
       "bytes": 34034,
       "isEntry": false,
       "isDynamicEntry": true,
       "imports": [
-        "chunks/x-button-D72oPP1K.mjs"
+        "chunks/x-button-DWIOUNTg.mjs"
       ],
       "dynamicImports": [],
       "modules": [
         {
-          "id": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/node_modules/@ccslabs/xtend/components/xtextarea.js",
+          "id": "/private/tmp/xtend-core-handoff-c2-20261021/components/xtextarea.js",
           "renderedLength": 40598,
           "appService": false
         }
@@ -537,14 +542,14 @@
       "type": "asset",
       "fileName": "runtime/xtendrmt-runtime.esm.mjs",
       "path": "site/build/runtime/xtendrmt-runtime.esm.mjs",
-      "bytes": 1489256,
+      "bytes": 1489587,
       "isEntry": false,
       "isDynamicEntry": false,
       "imports": [],
       "dynamicImports": [],
       "modules": [],
       "appServiceBytes": 0,
-      "frameworkBytes": 1489256
+      "frameworkBytes": 1489587
     },
     {
       "type": "asset",
@@ -755,32 +760,32 @@
       },
       {
         "tag": "x-button",
-        "source": "node_modules/@ccslabs/xtend/components/xbutton.js",
-        "importPath": "../../node_modules/@ccslabs/xtend/components/xbutton.js",
+        "source": "../../private/tmp/xtend-core-handoff-c2-20261021/components/xbutton.js",
+        "importPath": "../../../../private/tmp/xtend-core-handoff-c2-20261021/components/xbutton.js",
         "native": false
       },
       {
         "tag": "x-input",
-        "source": "node_modules/@ccslabs/xtend/components/xinput.js",
-        "importPath": "../../node_modules/@ccslabs/xtend/components/xinput.js",
+        "source": "../../private/tmp/xtend-core-handoff-c2-20261021/components/xinput.js",
+        "importPath": "../../../../private/tmp/xtend-core-handoff-c2-20261021/components/xinput.js",
         "native": false
       },
       {
         "tag": "x-select",
-        "source": "node_modules/@ccslabs/xtend/components/xselect.js",
-        "importPath": "../../node_modules/@ccslabs/xtend/components/xselect.js",
+        "source": "../../private/tmp/xtend-core-handoff-c2-20261021/components/xselect.js",
+        "importPath": "../../../../private/tmp/xtend-core-handoff-c2-20261021/components/xselect.js",
         "native": false
       },
       {
         "tag": "x-status",
-        "source": "node_modules/@ccslabs/xtend/components/xstatus.js",
-        "importPath": "../../node_modules/@ccslabs/xtend/components/xstatus.js",
+        "source": "../../private/tmp/xtend-core-handoff-c2-20261021/components/xstatus.js",
+        "importPath": "../../../../private/tmp/xtend-core-handoff-c2-20261021/components/xstatus.js",
         "native": false
       },
       {
         "tag": "x-textarea",
-        "source": "node_modules/@ccslabs/xtend/components/xtextarea.js",
-        "importPath": "../../node_modules/@ccslabs/xtend/components/xtextarea.js",
+        "source": "../../private/tmp/xtend-core-handoff-c2-20261021/components/xtextarea.js",
+        "importPath": "../../../../private/tmp/xtend-core-handoff-c2-20261021/components/xtextarea.js",
         "native": false
       }
     ],
@@ -1588,8 +1593,8 @@
       "status": "within_budget",
       "mode": "strict",
       "profile": "production",
-      "baselineBytes": 3028308,
-      "bundleBytes": 2932765,
+      "baselineBytes": 3029729,
+      "bundleBytes": 2933281,
       "runtimeExpectedStatus": "booted"
     },
     "releaseConstraint": {
@@ -1612,7 +1617,7 @@
       "bundle": {
         "fileCount": 23,
         "entry": "xtend.maraca.mjs",
-        "bytes": 2932765
+        "bytes": 2933281
       },
       "runtimeFeatureStatus": [
         {
@@ -2177,8 +2182,8 @@
       "status": "within_budget",
       "mode": "strict",
       "profile": "production",
-      "baselineBytes": 3028308,
-      "bundleBytes": 2932765,
+      "baselineBytes": 3029729,
+      "bundleBytes": 2933281,
       "runtimeExpectedStatus": "booted"
     },
     "releaseConstraint": {
@@ -2201,7 +2206,7 @@
       "bundle": {
         "fileCount": 23,
         "entry": "xtend.maraca.mjs",
-        "bytes": 2932765
+        "bytes": 2933281
       },
       "runtimeFeatureStatus": [
         {
@@ -2455,7 +2460,7 @@
     "templateCount": 1,
     "sourceFingerprint": "sha256:707888ddc576024742b6eb2888c56e0df6f4e28b048a26df100b25d13e83e58c",
     "artifactBundleFingerprint": "fnv1a:6b09a8dd",
-    "bundleFingerprint": "sha256:18a16b5ffd2dbddeb3ed1380354c574fab3e9ab374cd059d2b8d13a22a03fa7a",
+    "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7",
     "runtimeProfileHints": [
       "browser",
       "detached_dom",
@@ -2662,7 +2667,7 @@
         "template:product.kernel.maraca"
       ],
       "bundleFileCount": 23,
-      "bundleFingerprint": "sha256:18a16b5ffd2dbddeb3ed1380354c574fab3e9ab374cd059d2b8d13a22a03fa7a"
+      "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7"
     },
     "diagnostics": []
   },
@@ -3756,7 +3761,7 @@
       "fileArtifactAvailable": true,
       "baselineComparisonAvailable": true,
       "runtimeExpectedStatus": "booted",
-      "bundleFingerprint": "sha256:18a16b5ffd2dbddeb3ed1380354c574fab3e9ab374cd059d2b8d13a22a03fa7a"
+      "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7"
     },
     "diagnostics": [
       {
@@ -3776,7 +3781,7 @@
         ]
       }
     ],
-    "bundleFingerprint": "sha256:18a16b5ffd2dbddeb3ed1380354c574fab3e9ab374cd059d2b8d13a22a03fa7a"
+    "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7"
   },
   "panicRecovery": {
     "schema": "xtend.maraca.kernel-panic-recovery-report.v1",
@@ -5031,7 +5036,7 @@
       "fileArtifactAvailable": true,
       "baselineComparisonAvailable": true,
       "runtimeExpectedStatus": "booted",
-      "bundleFingerprint": "sha256:18a16b5ffd2dbddeb3ed1380354c574fab3e9ab374cd059d2b8d13a22a03fa7a"
+      "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7"
     },
     "summary": {
       "schema": "xtend.rmt.kernel-orchestration.v1",
@@ -5725,8 +5730,8 @@
           "type": "image/png",
           "purpose": "any",
           "manifestIcon": true,
-          "sourcePath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/icons/android-chrome-192x192.png",
-          "outputPath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/icons/android-chrome-192x192.png",
+          "sourcePath": "/tmp/xtend-migration-build-tools-20261023/icons/android-chrome-192x192.png",
+          "outputPath": "/tmp/xtend-migration-build-tools-20261023/site/build/icons/android-chrome-192x192.png",
           "sourceExists": false,
           "fileName": "icons/android-chrome-192x192.png",
           "replacementPath": "icons/android-chrome-192x192.png"
@@ -5739,8 +5744,8 @@
           "type": "image/png",
           "purpose": "any",
           "manifestIcon": true,
-          "sourcePath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/icons/android-chrome-512x512.png",
-          "outputPath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/icons/android-chrome-512x512.png",
+          "sourcePath": "/tmp/xtend-migration-build-tools-20261023/icons/android-chrome-512x512.png",
+          "outputPath": "/tmp/xtend-migration-build-tools-20261023/site/build/icons/android-chrome-512x512.png",
           "sourceExists": false,
           "fileName": "icons/android-chrome-512x512.png",
           "replacementPath": "icons/android-chrome-512x512.png"
@@ -5755,8 +5760,8 @@
             "rel": "apple-touch-icon",
             "sizes": "180x180"
           },
-          "sourcePath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/icons/apple-touch-icon.png",
-          "outputPath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/icons/apple-touch-icon.png",
+          "sourcePath": "/tmp/xtend-migration-build-tools-20261023/icons/apple-touch-icon.png",
+          "outputPath": "/tmp/xtend-migration-build-tools-20261023/site/build/icons/apple-touch-icon.png",
           "sourceExists": false,
           "fileName": "icons/apple-touch-icon.png",
           "replacementPath": "icons/apple-touch-icon.png"
@@ -5772,8 +5777,8 @@
             "sizes": "32x32",
             "type": "image/png"
           },
-          "sourcePath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/icons/favicon-32x32.png",
-          "outputPath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/icons/favicon-32x32.png",
+          "sourcePath": "/tmp/xtend-migration-build-tools-20261023/icons/favicon-32x32.png",
+          "outputPath": "/tmp/xtend-migration-build-tools-20261023/site/build/icons/favicon-32x32.png",
           "sourceExists": false,
           "fileName": "icons/favicon-32x32.png",
           "replacementPath": "icons/favicon-32x32.png"
@@ -5789,8 +5794,8 @@
             "sizes": "16x16",
             "type": "image/png"
           },
-          "sourcePath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/icons/favicon-16x16.png",
-          "outputPath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/icons/favicon-16x16.png",
+          "sourcePath": "/tmp/xtend-migration-build-tools-20261023/icons/favicon-16x16.png",
+          "outputPath": "/tmp/xtend-migration-build-tools-20261023/site/build/icons/favicon-16x16.png",
           "sourceExists": false,
           "fileName": "icons/favicon-16x16.png",
           "replacementPath": "icons/favicon-16x16.png"
@@ -5805,8 +5810,8 @@
             "rel": "icon",
             "type": "image/x-icon"
           },
-          "sourcePath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/icons/favicon.ico",
-          "outputPath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/icons/favicon.ico",
+          "sourcePath": "/tmp/xtend-migration-build-tools-20261023/icons/favicon.ico",
+          "outputPath": "/tmp/xtend-migration-build-tools-20261023/site/build/icons/favicon.ico",
           "sourceExists": false,
           "fileName": "icons/favicon.ico",
           "replacementPath": "icons/favicon.ico"
@@ -5816,8 +5821,8 @@
           "source": "logo.svg",
           "output": "icons/logo.svg",
           "type": "image/svg+xml",
-          "sourcePath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/logo.svg",
-          "outputPath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/icons/logo.svg",
+          "sourcePath": "/tmp/xtend-migration-build-tools-20261023/logo.svg",
+          "outputPath": "/tmp/xtend-migration-build-tools-20261023/site/build/icons/logo.svg",
           "sourceExists": false,
           "fileName": "icons/logo.svg",
           "replacementPath": "icons/logo.svg"
@@ -5828,8 +5833,8 @@
           "output": "icons/XTend-Logo.png",
           "sizes": "1024x1024",
           "type": "image/png",
-          "sourcePath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/XTend-Logo.png",
-          "outputPath": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/icons/XTend-Logo.png",
+          "sourcePath": "/tmp/xtend-migration-build-tools-20261023/XTend-Logo.png",
+          "outputPath": "/tmp/xtend-migration-build-tools-20261023/site/build/icons/XTend-Logo.png",
           "sourceExists": false,
           "fileName": "icons/XTend-Logo.png",
           "replacementPath": "icons/XTend-Logo.png"
@@ -5889,9 +5894,9 @@
         "report": "site/build/xtend.webmanifest.report.json"
       },
       "outputs": {
-        "manifest": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/xtend.webmanifest",
-        "iconDirectory": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/icons",
-        "report": "/workspace/work/xtend-demos/products/rmt-maraca-kernel-orchestration/site/build/xtend.webmanifest.report.json"
+        "manifest": "/tmp/xtend-migration-build-tools-20261023/site/build/xtend.webmanifest",
+        "iconDirectory": "/tmp/xtend-migration-build-tools-20261023/site/build/icons",
+        "report": "/tmp/xtend-migration-build-tools-20261023/site/build/xtend.webmanifest.report.json"
       },
       "diagnostics": [
         {
@@ -6198,35 +6203,35 @@
     "warnings": [
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "node_modules/@ccslabs/xtend/xtendrmt/rmt-state-binding-view-projector.js (579:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-surface-transition-runtime.js (780:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "node_modules/@ccslabs/xtend/xtendrmt/rmt-maraca-view-projection-adapter.js (242:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-state-binding-view-projector.js (579:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "node_modules/@ccslabs/xtend/xtendrmt/rmt-presentation-effect-adapter.js (597:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-maraca-view-projection-adapter.js (242:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "node_modules/@ccslabs/xtend/xtendrmt/rmt-animation-engine-runtime.js (581:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-presentation-effect-adapter.js (597:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "node_modules/@ccslabs/xtend/xtendrmt/rmt-surface-resource-graph-runtime.js (1744:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-animation-engine-runtime.js (581:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "node_modules/@ccslabs/xtend/xtendrmt/rmt-state-host-adapter.js (159:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-state-host-adapter.js (159:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "node_modules/@ccslabs/xtend/xtendrmt/rmt-surface-transition-runtime.js (780:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-surface-resource-graph-runtime.js (1744:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "node_modules/@ccslabs/xtend/xtendrmt/rmt-dom-descriptor-renderer.js (3642:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-dom-descriptor-renderer.js (3645:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       }
     ],
     "nameCache": null
@@ -6240,16 +6245,16 @@
     "baseline": {
       "mode": "legacy-loader-plus-selected-component-modules-plus-stack-modules",
       "loaderBytes": 70038,
-      "selectedComponentBytes": 113584,
-      "stackModuleBytes": 2231272,
+      "selectedComponentBytes": 114355,
+      "stackModuleBytes": 2231922,
       "contractPayloadBytes": 613414,
-      "bytes": 3028308
+      "bytes": 3029729
     },
-    "baselineBytes": 3028308,
-    "bundleBytes": 2932765,
+    "baselineBytes": 3029729,
+    "bundleBytes": 2933281,
     "framework": {
-      "bytes": 2903096,
-      "baselineBytes": 3028308,
+      "bytes": 2903612,
+      "baselineBytes": 3029729,
       "withinBudget": true
     },
     "microkernel": {
@@ -6283,11 +6288,11 @@
         }
       ]
     },
-    "ratio": 0.9586528186696994,
+    "ratio": 0.958373504692994,
     "budgets": {
       "modernEsmEntryMustBeSmallerThanBaseline": true,
       "enforcement": "strict",
-      "frameworkBytes": 3028308,
+      "frameworkBytes": 3029729,
       "clientAppServiceBytes": null,
       "serverAppServiceBytes": null
     }
