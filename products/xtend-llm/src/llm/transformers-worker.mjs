@@ -62,10 +62,26 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
 }
 
+// Only the explicit fake layout fixture uses this bounded rendezvous. The
+// real model path and ordinary fake delays retain their existing behavior.
+function waitForFakePreparationRelease() {
+  return new Promise((resolve, reject) => {
+    const channel = new BroadcastChannel('xtend-llm-layout-preparation');
+    const close = () => { clearTimeout(timer); channel.close(); };
+    const timer = setTimeout(() => { close(); reject(new Error('Fake preparation fixture was not released.')); }, 15000);
+    channel.onmessage = ({data}) => {
+      if (data === 'checkpoint') post('model-progress', {phase:'loading',status:'Fake preparation checkpoint.',progress:0.5,model:currentModel,dtype:currentDtype});
+      if (data === 'release') { close(); resolve(); }
+    };
+    post('model-progress', {phase:'loading',status:'Preparing gated fake model runtime...',progress:0.25,model:currentModel,dtype:currentDtype});
+  });
+}
+
 async function loadFakeModel(model, delayMs = 0) {
   fakeMode = true;
   currentModel = model || TARGET_MODEL_ID;
   currentDtype = 'fake';
+  if (delayMs === -1) await waitForFakePreparationRelease();
   if (delayMs > 0) {
     post('model-progress', {
       phase: 'loading',

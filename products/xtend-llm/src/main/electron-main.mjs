@@ -493,7 +493,7 @@ async function createWindow() {
   }
   try {
     launchStage('load');
-    await mainWindow.loadURL(layoutSmoke ? `${serverUrl}?fakeModel=1&fakeModelLoadDelayMs=1200` : serverUrl);
+    await mainWindow.loadURL(layoutSmoke ? `${serverUrl}?fakeModel=1&fakeModelLoadDelayMs=-1` : serverUrl);
     launchStage('preload-ipc');
     const proof=await preloadAttestation,rendererPid=mainWindow.webContents.getOSProcessId();
     const linuxStatus=process.platform==='linux'?fs.readFileSync('/proc/'+rendererPid+'/status','utf8'):null;
@@ -541,7 +541,7 @@ async function runLayoutSmoke() {
     new Promise((resolve, reject) => {
       const started = Date.now();
       const tick = () => {
-        if (document.querySelector('#chat-transcript') && customElements.get('x-side-panel')) {
+        if (document.querySelector('#chat-transcript') && customElements.get('x-side-panel') && document.getElementById('model-status')?.textContent.includes('Preparing gated fake model runtime')) {
           resolve(true);
           return;
         }
@@ -700,7 +700,10 @@ async function runLayoutSmoke() {
       if (!runtimeTab) throw new Error('Runtime tab missing during model prep.');
       runtimeTab.click();
       await waitFor(() => tabs.querySelector('x-tab.active')?.getAttribute('label') === 'Runtime', 'runtime tab selected during model prep');
-      await new Promise((resolve) => setTimeout(resolve, 720));
+      const preparation = new BroadcastChannel('xtend-llm-layout-preparation');
+      preparation.postMessage('checkpoint');
+      preparation.close();
+      await waitFor(() => document.getElementById('model-status')?.textContent.includes('Fake preparation checkpoint.'), 'model preparation checkpoint');
       const runtimeTabAfterProgress = tabs.querySelector('x-tab.active')?.getAttribute('label') || '';
       document.getElementById('settings-cancel')?.click();
       await waitFor(() => document.getElementById('settings-dialog')?.hasAttribute('open') === false, 'settings close during model prep');
@@ -725,6 +728,9 @@ async function runLayoutSmoke() {
 
   await runSmokeScript('wait for fake model ready', `
     new Promise((resolve, reject) => {
+      const preparation = new BroadcastChannel('xtend-llm-layout-preparation');
+      preparation.postMessage('release');
+      preparation.close();
       const started = Date.now();
       const clearSearch = () => {
         const search = document.getElementById('conversation-search');
