@@ -1,8 +1,8 @@
 {
   "schema": "xtend.demo-candidate-source.v1",
   "repository": "https://github.com/konnilabs/xtend.git",
-  "coreSha": "f3583eccb2ef0aabb2d26a62cb7fae69a622e6c4",
+  "coreSha": "6c5e87960567063c5fc4c54badfda0cd7dac24a7",
   "requiredApi": "public-product-support-candidate-v1-v2-and-private-current-pair-source-audit",
   "mergeBlockedUntil": "Exact source retention and full paired handoff evidence, followed by the separate user merge decision; no npm publication is implied.",
-  "checkpoint": "Current source-pair ownership and full union remain separate from runtime evidence. Exact macOS execution used Core e9669a4d0326111043b3cec6f39639d98acd71d8 and Demo 05315e8c542f581de3fc355e23fdf0444fee9187, both Node lanes passed. Later changes repair audit/preparation tests and synchronize canonical generated Core mirrors. No new Electron execution is implied; Linux Electron and the remaining Demo browser groups are not yet verified. Merge/release remain separate decisions."
+  "checkpoint": "Bounded migration correction: plain repeated page content without visibility declarations no longer requires a previous collection. Actual visibility handoff still rejects missing predecessors. Local renderer and ownership regressions pass on both Nodes. Previous C1 f3583ecc / D1 cd1c2160 runtime evidence is preserved, not relabeled as execution of this pair. Fresh paired CI and macOS execution remain required; Linux Electron and merge/release remain outside this evidence."
 }
