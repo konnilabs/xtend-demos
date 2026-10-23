@@ -83,8 +83,9 @@ async function run() {
  execute('testbench-contracts',['npm','test'],path.join(root,'products/maraca-app-services-test-bench'));
  for(const record of commands)saveReport(record);
  const ok=commands.every(c=>c.status==='passed'&&!c.skips.length);
- const report={schema:'xtend.product-execution.v1',scope:portable?'migration-portable':'full',externalRequired:portable?{browserGroups:['erp','material','appservices','shop-cli','shop-fpm'],macosRuntime:{nodes:['24.18.0','26.5.0'],status:'not-run',requiredBeforeMerge:true},linuxElectron:'not-run'}:null,handoffComplete:false,acceptedForMerge:false,acceptedForRelease:false,coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA,ok,status:ok?'passed':'failed',generatedAt:new Date().toISOString(),commands};
- const index=process.argv.indexOf('--report'),output=index<0?path.join(root,'.xtend-test-results/products.json'):process.argv[index+1];fs.mkdirSync(path.dirname(output),{recursive:true});fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));if(!ok)process.exitCode=1;
+ const report={schema:'xtend.product-execution.v1',coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA,ok,status:ok?'passed':'failed',generatedAt:new Date().toISOString(),commands};
+ const outputReport=portable?{kind:'migration-portable-result',scope:'migration-portable',coreSha:report.coreSha,demoSha:report.demoSha,ok:report.ok,status:report.status,generatedAt:report.generatedAt,commands,externalRequired:{browserGroups:['erp','material','appservices','shop-cli','shop-fpm'],macosRuntime:{nodes:['24.18.0','26.5.0'],status:'not-run',requiredBeforeMerge:true},linuxElectron:'not-run'},handoffComplete:false,acceptedForMerge:false,acceptedForRelease:false}:report;
+ const index=process.argv.indexOf('--report'),output=index<0?path.join(root,'.xtend-test-results/products.json'):process.argv[index+1];fs.mkdirSync(path.dirname(output),{recursive:true});fs.writeFileSync(output,JSON.stringify(outputReport,null,2)+'\n');console.log(JSON.stringify(outputReport));if(!ok)process.exitCode=1;
 }
 if(require.main===module)run().catch(error=>{console.error(error);process.exitCode=1;});
 module.exports={run};
