@@ -1,7 +1,7 @@
 {
   "schema": "xtend.demo-candidate-source.v1",
   "repository": "https://github.com/konnilabs/xtend.git",
-  "coreSha": "67ebc1a8d49f7b04e5ef5982191eaaec692cde46",
+  "coreSha": "1032ddfedf33c3f5ee16632c95dc9a06b5d645ae",
   "requiredApi": "public-product-support-candidate-v1-v2-and-private-current-pair-source-audit",
   "mergeBlockedUntil": "Exact source retention and full paired handoff evidence, followed by the separate user merge decision; no npm publication is implied.",
   "checkpoint": "Current paired ownership with exact regenerated-source bindings; historical ledger unchanged. Full-union source coverage is checked independently. macOS runtime acceptance remains pending and Linux runtime unverified."
