@@ -254,7 +254,12 @@ async function runMaracaAppServicesTestBenchSuite(options = {}) {
   context.assert(runner.hasSuite('maraca-app-services-test-bench'), 'central test runner registers the product gate');
   context.assert(rootPackage.scripts['test:maraca-app-services-test-bench:report'], 'root package exposes the product evidence report command');
   context.assert(!rootPackage.scripts['test:pr'].includes('maraca-app-services-test-bench') && !rootPackage.scripts['test:release:full'].includes('maraca-app-services-test-bench'), 'product E2E remains outside PR and release gates');
-  context.assert(nightlyWorkflow.includes('schedule:') && nightlyWorkflow.includes('npm test') && require('../../scripts/test-runner/catalog.json').ci.requiredSuites.includes('maraca-app-services-test-bench'), 'product E2E retains scheduled Nightly execution and required candidate coverage');
+  const scheduledProductCoverage = nightlyWorkflow.includes('schedule:')
+    && nightlyWorkflow.includes('uses: ./.github/workflows/xtend-default-gates.yml')
+    && defaultWorkflow.includes('scripts/prepare-ci-candidates.cjs')
+    && defaultWorkflow.includes('scripts/demo-functional-ci.cjs run')
+    && require('../../scripts/test-runner/catalog.json').ci.requiredSuites.includes('maraca-app-services-test-bench');
+  context.assert(scheduledProductCoverage, 'product E2E retains scheduled Nightly execution and required candidate coverage');
 
   let evidence = null;
   if (majorNodeVersion() < 24) {

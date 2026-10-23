@@ -31,3 +31,15 @@ test('portable failure remains a failure, not a partial success override',async(
 test('full runner still refuses hosted downgrade before any execution',async()=>{await assert.rejects(model({portable:false,mandatory:null}),/explicit REQUIRED_CI_ATTESTATION/);});
 test('full runner preserves browser and Electron execution requirements',async()=>{const r=await model({portable:false});assert.equal(r.report.schema,'xtend.product-execution.v1');assert.equal(r.report.scope,undefined);for(const id of ['shop-browser','shop-browser-fpm','electron-shell-import-worker','electron-runtime','electron-actual-app-attestation'])assert(r.report.commands.some(c=>c.id===id));assert.equal(r.report.externalRequired,undefined);});
 test('migration contract requires both exact lanes and external runtime, without release promotion',()=>{const c=require('../../migration-acceptance.json');assert.deepEqual(c.ci.nodes,['24.18.0','26.5.0']);assert.deepEqual(c.externalMacos.nodes,c.ci.nodes);assert.equal(c.externalMacos.requiredBeforeMerge,true);assert.equal(c.externalMacos.freshExactSourcePair,true);assert.equal(c.externalMacos.sandboxEnabled,true);assert.equal(c.ci.sandboxEnabled,false);assert.equal(c.ciAloneCompletesHandoff,false);assert.equal(c.acceptedForMerge,false);assert.equal(c.acceptedForRelease,false);});
+
+test('actual AppServices coverage assertion follows the reusable Nightly path and rejects missing links',()=>{
+ const suite=fs.readFileSync(path.join(root,'tests/products/maraca_app_services_test_bench_suite.js'),'utf8');
+ const expression=suite.split('const scheduledProductCoverage = ')[1].split(';')[0];
+ const nightly=fs.readFileSync(path.join(root,'.github/workflows/xtend-nightly-build.yml'),'utf8'),workflow=fs.readFileSync(path.join(root,'.github/workflows/xtend-default-gates.yml'),'utf8');
+ const evaluate=(n,w,required=true)=>vm.runInNewContext(expression,{nightlyWorkflow:n,defaultWorkflow:w,require:()=>({ci:{requiredSuites:required?['maraca-app-services-test-bench']:[]}})});
+ assert.equal(evaluate(nightly,workflow),true);
+ assert.equal(evaluate(nightly.replace('schedule:','removed:'),workflow),false);
+ assert.equal(evaluate(nightly.replace('uses: ./.github/workflows/xtend-default-gates.yml','uses: missing'),workflow),false);
+ for(const command of ['scripts/prepare-ci-candidates.cjs','scripts/demo-functional-ci.cjs run'])assert.equal(evaluate(nightly,workflow.replaceAll(command,'removed')),false);
+ assert.equal(evaluate(nightly,workflow,false),false);
+});
