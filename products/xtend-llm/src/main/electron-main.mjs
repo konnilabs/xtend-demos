@@ -541,7 +541,7 @@ async function runLayoutSmoke() {
     new Promise((resolve, reject) => {
       const started = Date.now();
       const tick = () => {
-        if (document.querySelector('#chat-transcript') && customElements.get('x-side-panel') && document.getElementById('model-status')?.textContent.includes('Preparing gated fake model runtime')) {
+        if (document.querySelector('#chat-transcript') && customElements.get('x-side-panel') && (document.getElementById('model-status')?.getAttribute('message') || document.getElementById('model-status')?.textContent || '').includes('Preparing gated fake model runtime')) {
           resolve(true);
           return;
         }
@@ -703,7 +703,7 @@ async function runLayoutSmoke() {
       const preparation = new BroadcastChannel('xtend-llm-layout-preparation');
       preparation.postMessage('checkpoint');
       preparation.close();
-      await waitFor(() => document.getElementById('model-status')?.textContent.includes('Fake preparation checkpoint.'), 'model preparation checkpoint');
+      await waitFor(() => (document.getElementById('model-status')?.getAttribute('message') || document.getElementById('model-status')?.textContent || '').includes('Fake preparation checkpoint.'), 'model preparation checkpoint');
       const runtimeTabAfterProgress = tabs.querySelector('x-tab.active')?.getAttribute('label') || '';
       document.getElementById('settings-cancel')?.click();
       await waitFor(() => document.getElementById('settings-dialog')?.hasAttribute('open') === false, 'settings close during model prep');
