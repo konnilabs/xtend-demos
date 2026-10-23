@@ -31,3 +31,13 @@ test('superseded stream cleanup cannot remove the replacement channel',async()=>
  records[0].h.onFrame({type:'cancelled'});await Promise.resolve();assert.equal(f.channels.size,1);assert.ok(f.ctx.activeGenerationStream);
  records[1].h.onFrame({type:'complete'});await Promise.resolve();assert.equal(f.channels.size,0);
 });
+const main=fs.readFileSync(new URL('../src/main/electron-main.mjs',import.meta.url),'utf8');
+const checkpoint=main.slice(main.indexOf('      const committed = new Promise('),main.indexOf("      prompt.value = 'Second turn';"));
+test('follow-up waits for its actual Model commit; foreign events do not release the fixture',async()=>{
+ let listener,timeout,unsubscribed=0,cleared=0;const committed=vm.runInNewContext(checkpoint+'\ncommitted',{correlationId:'expected',model:{subscribe(fn){listener=fn;return()=>unsubscribed++;}},setTimeout(fn){timeout=fn;return 1;},clearTimeout(){cleared++;}});let resolved=false;committed.then(()=>resolved=true);
+ listener({metadata:{correlationId:'foreign'}});await Promise.resolve();assert.equal(resolved,false);assert.equal(unsubscribed,0);
+ listener({metadata:{correlationId:'expected'}});await committed;assert.equal(resolved,true);assert.equal(unsubscribed,1);assert.equal(cleared,1);
+});
+test('missing matching Model commit remains a bounded failure and unsubscribes',async()=>{
+ let timeout,unsubscribed=0;const committed=vm.runInNewContext(checkpoint+'\ncommitted',{correlationId:'expected',model:{subscribe(){return()=>unsubscribed++;}},setTimeout(fn){timeout=fn;return 1;},clearTimeout(){}});const rejected=assert.rejects(committed,/Model commit timed out/);timeout();await rejected;assert.equal(unsubscribed,1);
+});

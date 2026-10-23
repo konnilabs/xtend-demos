@@ -1315,6 +1315,16 @@ async function runLayoutSmoke() {
       const send = document.getElementById('send-message');
       if (!prompt || !send) throw new Error('Prompt or send control missing.');
       const value = 'Second turn';
+      const correlationId = 'layout-smoke:follow-up:' + Date.now();
+      const model = window.XTendMaraca?.orchestration?.model;
+      if (!model || typeof model.subscribe !== 'function') throw new Error('Model completion port missing.');
+      const committed = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => { unsubscribe(); reject(new Error('Follow-up Model commit timed out.')); }, 5000);
+        const unsubscribe = model.subscribe(event => {
+          if (event?.metadata?.correlationId !== correlationId) return;
+          clearTimeout(timeout); unsubscribe(); resolve(event);
+        });
+      });
       prompt.value = 'Second turn';
       prompt.dispatchEvent(new CustomEvent('xtend-command', {
         detail: {
@@ -1328,7 +1338,7 @@ async function runLayoutSmoke() {
             trimmedLength: value.trim().length,
             empty: false
           },
-          correlationId: 'layout-smoke:' + Date.now(),
+          correlationId,
           lane: 'test',
           timestamp: new Date().toISOString()
         },
@@ -1336,6 +1346,7 @@ async function runLayoutSmoke() {
         composed: true,
         cancelable: true
       }));
+      await committed;
       await new Promise((resolve) => requestAnimationFrame(resolve));
       await new Promise((resolve) => requestAnimationFrame(resolve));
       const sendButton = send.shadowRoot?.querySelector('button') || null;
