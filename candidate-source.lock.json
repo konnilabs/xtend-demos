@@ -1,8 +1,8 @@
 {
   "schema": "xtend.demo-candidate-source.v1",
   "repository": "https://github.com/konnilabs/xtend.git",
-  "coreSha": "82b012f2f3109126bf9459c312ee904640641fa8",
+  "coreSha": "67ebc1a8d49f7b04e5ef5982191eaaec692cde46",
   "requiredApi": "public-product-support-candidate-v1-v2-and-private-current-pair-source-audit",
   "mergeBlockedUntil": "Exact source retention and full paired handoff evidence, followed by the separate user merge decision; no npm publication is implied.",
-  "checkpoint": "Current paired 103-ID contract with the exact approved MaracaTuneReport transition; historical ledger retained. Full runtime handoff and current residual disposition are not established by this prerequisite."
+  "checkpoint": "Current paired ownership with exact regenerated-source bindings; historical ledger unchanged. Full-union source coverage is checked independently. macOS runtime acceptance remains pending and Linux runtime unverified."
 }

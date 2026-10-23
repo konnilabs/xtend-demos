@@ -130,87 +130,6 @@
       "schemaId": "xtend.a11y.profile.v1",
       "shapeFingerprints": [
         {
-          "hash": "sha256:15878d67cedff78ff488e676c43b3b066cdfad4c72726a923293e0f33ed4807a",
-          "shape": {
-            "fieldCount": 6,
-            "fields": [
-              "accessibleName",
-              "componentRef",
-              "decorativePolicy",
-              "motionContrast",
-              "role",
-              "screenreader"
-            ],
-            "signature": "accessibleName:string|componentRef:string|decorativePolicy:string|motionContrast:{policy:{\"unresolved\":\"Gn.xtendMotionContrastPolicy\"}}|role:string|screenreader:{signalContract:{\"unresolved\":\"Gn.xtendScreenreaderSignals\"}}",
-            "normalized": {
-              "fields": {
-                "accessibleName": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "componentRef": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "decorativePolicy": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "motionContrast": {
-                  "optional": false,
-                  "type": {
-                    "fields": {
-                      "policy": {
-                        "optional": false,
-                        "type": {
-                          "unresolved": "Gn.xtendMotionContrastPolicy"
-                        }
-                      }
-                    }
-                  }
-                },
-                "role": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "screenreader": {
-                  "optional": false,
-                  "type": {
-                    "fields": {
-                      "signalContract": {
-                        "optional": false,
-                        "type": {
-                          "unresolved": "Gn.xtendScreenreaderSignals"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
-          ],
-          "symbols": [
-            "Gn"
-          ],
-          "evidence": [
-            {
-              "type": "generated",
-              "completeness": "partial",
-              "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-              "symbol": "Gn"
-            }
-          ],
-          "evidenceTypes": [
-            "generated"
-          ],
-          "completeness": "partial",
-          "authoritative": false
-        },
-        {
           "hash": "sha256:1f88df72751c8d509bb5fd81e775b16989241c95c6f9eac647f49685f5b64cf1",
           "shape": {
             "fieldCount": 7,
@@ -280,7 +199,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs"
           ],
           "symbols": [
             "ro"
@@ -290,8 +209,179 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": "ro"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:2946fc52e8502caf40400b0a951b2b3e05dded037b9720424c66e70cf67cae7b",
+          "shape": {
+            "fieldCount": 6,
+            "fields": [
+              "accessibleName",
+              "componentRef",
+              "decorativePolicy",
+              "motionContrast",
+              "role",
+              "screenreader"
+            ],
+            "signature": "accessibleName:string|componentRef:string|decorativePolicy:string|motionContrast:{policy:{\"unresolved\":\"ns.xtendMotionContrastPolicy\"}}|role:string|screenreader:{signalContract:{\"unresolved\":\"ns.xtendScreenreaderSignals\"}}",
+            "normalized": {
+              "fields": {
+                "accessibleName": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "componentRef": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "decorativePolicy": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "motionContrast": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "policy": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "ns.xtendMotionContrastPolicy"
+                        }
+                      }
+                    }
+                  }
+                },
+                "role": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "screenreader": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "signalContract": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "ns.xtendScreenreaderSignals"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
+          ],
+          "symbols": [
+            "ns"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+              "symbol": "ns"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:29ac3215506242a4daac3004363439784adc83a4279f85821323d198b32a254e",
+          "shape": {
+            "fieldCount": 7,
+            "fields": [
+              "accessibleName",
+              "componentRef",
+              "focusStrategy",
+              "keyboard",
+              "motionContrast",
+              "role",
+              "screenreader"
+            ],
+            "signature": "accessibleName:string|componentRef:string|focusStrategy:string|keyboard:array<string>|motionContrast:{policy:{\"unresolved\":\"eo.xtendMotionContrastPolicy\"}}|role:string|screenreader:{signalContract:{\"unresolved\":\"eo.xtendScreenreaderSignals\"}}",
+            "normalized": {
+              "fields": {
+                "accessibleName": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "componentRef": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "focusStrategy": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "keyboard": {
+                  "optional": false,
+                  "type": {
+                    "array": [
+                      "string"
+                    ]
+                  }
+                },
+                "motionContrast": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "policy": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "eo.xtendMotionContrastPolicy"
+                        }
+                      }
+                    }
+                  }
+                },
+                "role": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "screenreader": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "signalContract": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "eo.xtendScreenreaderSignals"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs"
+          ],
+          "symbols": [
+            "eo"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+              "symbol": "eo"
             }
           ],
           "evidenceTypes": [
@@ -370,7 +460,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "symbols": [
             "li"
@@ -380,7 +470,7 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": "li"
             }
           ],
@@ -391,97 +481,7 @@
           "authoritative": false
         },
         {
-          "hash": "sha256:2eaedbf4ff7b3149e2d47cb8bc5165772deb697775a6df84b764e49b05bac31a",
-          "shape": {
-            "fieldCount": 7,
-            "fields": [
-              "accessibleName",
-              "componentRef",
-              "focusStrategy",
-              "keyboard",
-              "motionContrast",
-              "role",
-              "screenreader"
-            ],
-            "signature": "accessibleName:string|componentRef:string|focusStrategy:string|keyboard:array<string>|motionContrast:{policy:{\"unresolved\":\"oo.xtendMotionContrastPolicy\"}}|role:string|screenreader:{signalContract:{\"unresolved\":\"oo.xtendScreenreaderSignals\"}}",
-            "normalized": {
-              "fields": {
-                "accessibleName": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "componentRef": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "focusStrategy": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "keyboard": {
-                  "optional": false,
-                  "type": {
-                    "array": [
-                      "string"
-                    ]
-                  }
-                },
-                "motionContrast": {
-                  "optional": false,
-                  "type": {
-                    "fields": {
-                      "policy": {
-                        "optional": false,
-                        "type": {
-                          "unresolved": "oo.xtendMotionContrastPolicy"
-                        }
-                      }
-                    }
-                  }
-                },
-                "role": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "screenreader": {
-                  "optional": false,
-                  "type": {
-                    "fields": {
-                      "signalContract": {
-                        "optional": false,
-                        "type": {
-                          "unresolved": "oo.xtendScreenreaderSignals"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs"
-          ],
-          "symbols": [
-            "oo"
-          ],
-          "evidence": [
-            {
-              "type": "generated",
-              "completeness": "partial",
-              "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-              "symbol": "oo"
-            }
-          ],
-          "evidenceTypes": [
-            "generated"
-          ],
-          "completeness": "partial",
-          "authoritative": false
-        },
-        {
-          "hash": "sha256:7a4cd53c39fb01dc2d0f17132bd08489310e408207c266d32c1961ef317005b6",
+          "hash": "sha256:8f8f72a6ba2e7181e2298b19e717c0d1c3740b1d319da2a65377571b9057296f",
           "shape": {
             "fieldCount": 6,
             "fields": [
@@ -492,7 +492,7 @@
               "role",
               "screenreader"
             ],
-            "signature": "accessibleName:string|componentRef:string|liveRegion:string|motionContrast:{policy:{\"unresolved\":\"ts.xtendMotionContrastPolicy\"}}|role:string|screenreader:{signalContract:{\"unresolved\":\"ts.xtendScreenreaderSignals\"}}",
+            "signature": "accessibleName:string|componentRef:string|liveRegion:string|motionContrast:{policy:{\"unresolved\":\"as.xtendMotionContrastPolicy\"}}|role:string|screenreader:{signalContract:{\"unresolved\":\"as.xtendScreenreaderSignals\"}}",
             "normalized": {
               "fields": {
                 "accessibleName": {
@@ -514,7 +514,7 @@
                       "policy": {
                         "optional": false,
                         "type": {
-                          "unresolved": "ts.xtendMotionContrastPolicy"
+                          "unresolved": "as.xtendMotionContrastPolicy"
                         }
                       }
                     }
@@ -531,7 +531,7 @@
                       "signalContract": {
                         "optional": false,
                         "type": {
-                          "unresolved": "ts.xtendScreenreaderSignals"
+                          "unresolved": "as.xtendScreenreaderSignals"
                         }
                       }
                     }
@@ -541,18 +541,18 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs"
           ],
           "symbols": [
-            "ts"
+            "as"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-              "symbol": "ts"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+              "symbol": "as"
             }
           ],
           "evidenceTypes": [
@@ -732,11 +732,11 @@
       ],
       "shapePolicy": {
         "acceptedFingerprints": [
-          "sha256:15878d67cedff78ff488e676c43b3b066cdfad4c72726a923293e0f33ed4807a",
           "sha256:1f88df72751c8d509bb5fd81e775b16989241c95c6f9eac647f49685f5b64cf1",
+          "sha256:2946fc52e8502caf40400b0a951b2b3e05dded037b9720424c66e70cf67cae7b",
+          "sha256:29ac3215506242a4daac3004363439784adc83a4279f85821323d198b32a254e",
           "sha256:2d3f6440414c5124581a8dedd7bb0bf1d7db2e0ef71dc0afecfc96467b175d1d",
-          "sha256:2eaedbf4ff7b3149e2d47cb8bc5165772deb697775a6df84b764e49b05bac31a",
-          "sha256:7a4cd53c39fb01dc2d0f17132bd08489310e408207c266d32c1961ef317005b6",
+          "sha256:8f8f72a6ba2e7181e2298b19e717c0d1c3740b1d319da2a65377571b9057296f",
           "sha256:b4495da1b3687423698769984908dd4002c3132e8fd2008dc3b34ad8884400ba",
           "sha256:b7e2e23991b4cf8bbc6dd9d5a458e442964223320306330438e12ff008317172"
         ],
@@ -786,36 +786,36 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": null
             }
           ]
@@ -967,18 +967,18 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
-            "Gn"
+            "ns"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-              "symbol": "Gn"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+              "symbol": "ns"
             }
           ],
           "evidenceTypes": [
@@ -1341,7 +1341,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "symbols": [
             "li"
@@ -1351,7 +1351,7 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": "li"
             }
           ],
@@ -1472,18 +1472,18 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
-            "Jn"
+            "ss"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-              "symbol": "Jn"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+              "symbol": "ss"
             }
           ],
           "evidenceTypes": [
@@ -1599,36 +1599,36 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs"
           ],
           "symbols": [
-            "oo",
-            "ro",
-            "ts"
+            "as",
+            "eo",
+            "ro"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+              "symbol": "eo"
+            },
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": "ro"
             },
             {
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-              "symbol": "oo"
-            },
-            {
-              "type": "generated",
-              "completeness": "partial",
-              "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-              "symbol": "ts"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+              "symbol": "as"
             }
           ],
           "evidenceTypes": [
@@ -1674,36 +1674,36 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": null
             }
           ]
@@ -1729,7 +1729,7 @@
       "schemaId": "xtend.component.feedback-status-ux-profile.v1",
       "shapeFingerprints": [
         {
-          "hash": "sha256:43c265cac871ecaf8782b680e19b12aa7e7c353d65934d3d5e09e2deffe3fc4e",
+          "hash": "sha256:7896bec4e75252a26d2ccae8fbe4a45b90a494fb3303a36ecfcb33b48796a47c",
           "shape": {
             "fieldCount": 14,
             "fields": [
@@ -1748,7 +1748,7 @@
               "statusSemantics",
               "timeoutMode"
             ],
-            "signature": "commands:array<string>|componentRef:string|dismissMode:string|events:array<string>|fabric:{a11yLane:string,diagnosticsLane:string,lane:string}|family:string|liveRegion:string|rmt:{\"unresolved\":\"ts.xtendRmtMetadata\"}|role:string|schedule:string|severityModel:string|stateKey:string|statusSemantics:{ariaBusyMirroring:{\"unresolved\":\"!0\"},assertiveForError:{\"unresolved\":\"!0\"},noColorOnlyState:{\"unresolved\":\"!0\"}}|timeoutMode:string",
+            "signature": "commands:array<string>|componentRef:string|dismissMode:string|events:array<string>|fabric:{a11yLane:string,diagnosticsLane:string,lane:string}|family:string|liveRegion:string|rmt:{\"unresolved\":\"as.xtendRmtMetadata\"}|role:string|schedule:string|severityModel:string|stateKey:string|statusSemantics:{ariaBusyMirroring:{\"unresolved\":\"!0\"},assertiveForError:{\"unresolved\":\"!0\"},noColorOnlyState:{\"unresolved\":\"!0\"}}|timeoutMode:string",
             "normalized": {
               "fields": {
                 "commands": {
@@ -1805,7 +1805,7 @@
                 "rmt": {
                   "optional": false,
                   "type": {
-                    "unresolved": "ts.xtendRmtMetadata"
+                    "unresolved": "as.xtendRmtMetadata"
                   }
                 },
                 "role": {
@@ -1857,18 +1857,18 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs"
           ],
           "symbols": [
-            "ts"
+            "as"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-              "symbol": "ts"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+              "symbol": "as"
             }
           ],
           "evidenceTypes": [
@@ -1880,7 +1880,7 @@
       ],
       "shapePolicy": {
         "acceptedFingerprints": [
-          "sha256:43c265cac871ecaf8782b680e19b12aa7e7c353d65934d3d5e09e2deffe3fc4e"
+          "sha256:7896bec4e75252a26d2ccae8fbe4a45b90a494fb3303a36ecfcb33b48796a47c"
         ],
         "authoritativeFingerprints": [],
         "decision": "accepted-initial-audit",
@@ -1895,12 +1895,12 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
               "symbol": null
             }
           ]
@@ -2106,7 +2106,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "symbols": [
             "snapshot"
@@ -2116,7 +2116,7 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": "snapshot"
             }
           ],
@@ -2315,12 +2315,12 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": null
             }
           ]
@@ -2352,184 +2352,6 @@
       "replacedBy": null,
       "schemaId": "xtend.component.form-control-ux-profile.v1",
       "shapeFingerprints": [
-        {
-          "hash": "sha256:2b7d38cfb8665761342cd5730d9571dab92a97302a2e4e41a8e0f67bf59e6578",
-          "shape": {
-            "fieldCount": 16,
-            "fields": [
-              "commands",
-              "componentRef",
-              "densityProfiles",
-              "events",
-              "fabric",
-              "family",
-              "parts",
-              "rmt",
-              "role",
-              "schedule",
-              "signatureDesign",
-              "slots",
-              "stateKey",
-              "states",
-              "validation",
-              "valueMode"
-            ],
-            "signature": "commands:array<string>|componentRef:string|densityProfiles:array<string>|events:array<string>|fabric:{a11yLane:string,lane:string}|family:string|parts:array<string>|rmt:{\"unresolved\":\"oo.xtendRmtMetadata\"}|role:string|schedule:string|signatureDesign:{note:string,themeExpectation:string,tokenStrategy:string}|slots:array<string>|stateKey:string|states:array<string>|validation:{errorRegion:string,validityApi:{\"unresolved\":\"!0\"}}|valueMode:string",
-            "normalized": {
-              "fields": {
-                "commands": {
-                  "optional": false,
-                  "type": {
-                    "array": [
-                      "string"
-                    ]
-                  }
-                },
-                "componentRef": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "densityProfiles": {
-                  "optional": false,
-                  "type": {
-                    "array": [
-                      "string"
-                    ]
-                  }
-                },
-                "events": {
-                  "optional": false,
-                  "type": {
-                    "array": [
-                      "string"
-                    ]
-                  }
-                },
-                "fabric": {
-                  "optional": false,
-                  "type": {
-                    "fields": {
-                      "a11yLane": {
-                        "optional": false,
-                        "type": "string"
-                      },
-                      "lane": {
-                        "optional": false,
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "family": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "parts": {
-                  "optional": false,
-                  "type": {
-                    "array": [
-                      "string"
-                    ]
-                  }
-                },
-                "rmt": {
-                  "optional": false,
-                  "type": {
-                    "unresolved": "oo.xtendRmtMetadata"
-                  }
-                },
-                "role": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "schedule": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "signatureDesign": {
-                  "optional": false,
-                  "type": {
-                    "fields": {
-                      "note": {
-                        "optional": false,
-                        "type": "string"
-                      },
-                      "themeExpectation": {
-                        "optional": false,
-                        "type": "string"
-                      },
-                      "tokenStrategy": {
-                        "optional": false,
-                        "type": "string"
-                      }
-                    }
-                  }
-                },
-                "slots": {
-                  "optional": false,
-                  "type": {
-                    "array": [
-                      "string"
-                    ]
-                  }
-                },
-                "stateKey": {
-                  "optional": false,
-                  "type": "string"
-                },
-                "states": {
-                  "optional": false,
-                  "type": {
-                    "array": [
-                      "string"
-                    ]
-                  }
-                },
-                "validation": {
-                  "optional": false,
-                  "type": {
-                    "fields": {
-                      "errorRegion": {
-                        "optional": false,
-                        "type": "string"
-                      },
-                      "validityApi": {
-                        "optional": false,
-                        "type": {
-                          "unresolved": "!0"
-                        }
-                      }
-                    }
-                  }
-                },
-                "valueMode": {
-                  "optional": false,
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs"
-          ],
-          "symbols": [
-            "oo"
-          ],
-          "evidence": [
-            {
-              "type": "generated",
-              "completeness": "partial",
-              "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-              "symbol": "oo"
-            }
-          ],
-          "evidenceTypes": [
-            "generated"
-          ],
-          "completeness": "partial",
-          "authoritative": false
-        },
         {
           "hash": "sha256:365d23f0c459a996fe2dc854440d6cff1f3750733a5b4f4605318af3bab96a6b",
           "shape": {
@@ -2688,7 +2510,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs"
           ],
           "symbols": [
             "ro"
@@ -2698,7 +2520,7 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": "ro"
             }
           ],
@@ -2909,7 +2731,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "symbols": [
             "li"
@@ -2919,8 +2741,186 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": "li"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
+          "hash": "sha256:77512725b0d498367c4fe95639bab104b83897d25a9476ef8850163321bcb048",
+          "shape": {
+            "fieldCount": 16,
+            "fields": [
+              "commands",
+              "componentRef",
+              "densityProfiles",
+              "events",
+              "fabric",
+              "family",
+              "parts",
+              "rmt",
+              "role",
+              "schedule",
+              "signatureDesign",
+              "slots",
+              "stateKey",
+              "states",
+              "validation",
+              "valueMode"
+            ],
+            "signature": "commands:array<string>|componentRef:string|densityProfiles:array<string>|events:array<string>|fabric:{a11yLane:string,lane:string}|family:string|parts:array<string>|rmt:{\"unresolved\":\"eo.xtendRmtMetadata\"}|role:string|schedule:string|signatureDesign:{note:string,themeExpectation:string,tokenStrategy:string}|slots:array<string>|stateKey:string|states:array<string>|validation:{errorRegion:string,validityApi:{\"unresolved\":\"!0\"}}|valueMode:string",
+            "normalized": {
+              "fields": {
+                "commands": {
+                  "optional": false,
+                  "type": {
+                    "array": [
+                      "string"
+                    ]
+                  }
+                },
+                "componentRef": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "densityProfiles": {
+                  "optional": false,
+                  "type": {
+                    "array": [
+                      "string"
+                    ]
+                  }
+                },
+                "events": {
+                  "optional": false,
+                  "type": {
+                    "array": [
+                      "string"
+                    ]
+                  }
+                },
+                "fabric": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "a11yLane": {
+                        "optional": false,
+                        "type": "string"
+                      },
+                      "lane": {
+                        "optional": false,
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "family": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "parts": {
+                  "optional": false,
+                  "type": {
+                    "array": [
+                      "string"
+                    ]
+                  }
+                },
+                "rmt": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "eo.xtendRmtMetadata"
+                  }
+                },
+                "role": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "schedule": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "signatureDesign": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "note": {
+                        "optional": false,
+                        "type": "string"
+                      },
+                      "themeExpectation": {
+                        "optional": false,
+                        "type": "string"
+                      },
+                      "tokenStrategy": {
+                        "optional": false,
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "slots": {
+                  "optional": false,
+                  "type": {
+                    "array": [
+                      "string"
+                    ]
+                  }
+                },
+                "stateKey": {
+                  "optional": false,
+                  "type": "string"
+                },
+                "states": {
+                  "optional": false,
+                  "type": {
+                    "array": [
+                      "string"
+                    ]
+                  }
+                },
+                "validation": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "errorRegion": {
+                        "optional": false,
+                        "type": "string"
+                      },
+                      "validityApi": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "!0"
+                        }
+                      }
+                    }
+                  }
+                },
+                "valueMode": {
+                  "optional": false,
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs"
+          ],
+          "symbols": [
+            "eo"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+              "symbol": "eo"
             }
           ],
           "evidenceTypes": [
@@ -3151,9 +3151,9 @@
       ],
       "shapePolicy": {
         "acceptedFingerprints": [
-          "sha256:2b7d38cfb8665761342cd5730d9571dab92a97302a2e4e41a8e0f67bf59e6578",
           "sha256:365d23f0c459a996fe2dc854440d6cff1f3750733a5b4f4605318af3bab96a6b",
           "sha256:4339be468cabbd0addeb030c4e3c92f48d1e62712c11dcee04774df63c6d6f4d",
+          "sha256:77512725b0d498367c4fe95639bab104b83897d25a9476ef8850163321bcb048",
           "sha256:e27365e298a4e53307c66ed00d489b42e67cb66f3be3e786f625ac249a255720"
         ],
         "authoritativeFingerprints": [],
@@ -3184,24 +3184,24 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": null
             }
           ]
@@ -3748,7 +3748,7 @@
           "authoritative": false
         },
         {
-          "hash": "sha256:8fa755cd8e44bc5d7de4cc0747c5b7ca54c5602c77cd47d031df5a09a1d863be",
+          "hash": "sha256:9d82d8af044e73cfb58f1f89fefae8ae2d615cbd75a46b471daab313aa5a277e",
           "shape": {
             "fieldCount": 7,
             "fields": [
@@ -3760,7 +3760,7 @@
               "lane",
               "measurements"
             ],
-            "signature": "budgetsMs:unknown|componentRef:string|counters:{}|hydrationPolicy:{\"unresolved\":\"Jn.xtendScaffoldPerformanceProfile.hydrationPolicy\"}|id:{\"unresolved\":\"this.id||null\"}|lane:{\"unresolved\":\"Jn.xtendScaffoldPerformanceProfile.lane\"}|measurements:unknown",
+            "signature": "budgetsMs:unknown|componentRef:string|counters:{}|hydrationPolicy:{\"unresolved\":\"ss.xtendScaffoldPerformanceProfile.hydrationPolicy\"}|id:{\"unresolved\":\"this.id||null\"}|lane:{\"unresolved\":\"ss.xtendScaffoldPerformanceProfile.lane\"}|measurements:unknown",
             "normalized": {
               "fields": {
                 "budgetsMs": {
@@ -3785,7 +3785,7 @@
                 "hydrationPolicy": {
                   "optional": false,
                   "type": {
-                    "unresolved": "Jn.xtendScaffoldPerformanceProfile.hydrationPolicy"
+                    "unresolved": "ss.xtendScaffoldPerformanceProfile.hydrationPolicy"
                   }
                 },
                 "id": {
@@ -3797,7 +3797,7 @@
                 "lane": {
                   "optional": false,
                   "type": {
-                    "unresolved": "Jn.xtendScaffoldPerformanceProfile.lane"
+                    "unresolved": "ss.xtendScaffoldPerformanceProfile.lane"
                   }
                 },
                 "measurements": {
@@ -3808,7 +3808,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
             "snapshotPerformance"
@@ -3818,7 +3818,7 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": "snapshotPerformance"
             }
           ],
@@ -3834,7 +3834,7 @@
           "sha256:115c0614a1f029b19a69593008f21b4099994ce8219979ce6ae51de601decdd4",
           "sha256:6f7b26f33acd75590f25bf0cb8df714a77fee5a16e8d3c3d3f97f770c5a239df",
           "sha256:7fa4f03595e0b4b754756ad043a64ca657ac0d85677d5d340ea3577445e80fef",
-          "sha256:8fa755cd8e44bc5d7de4cc0747c5b7ca54c5602c77cd47d031df5a09a1d863be"
+          "sha256:9d82d8af044e73cfb58f1f89fefae8ae2d615cbd75a46b471daab313aa5a277e"
         ],
         "authoritativeFingerprints": [
           "sha256:6f7b26f33acd75590f25bf0cb8df714a77fee5a16e8d3c3d3f97f770c5a239df"
@@ -3895,12 +3895,12 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": null
             }
           ]
@@ -3933,7 +3933,7 @@
       "schemaId": "xtend.component.x-button.interaction.v1",
       "shapeFingerprints": [
         {
-          "hash": "sha256:0c746d324d9652cdd72fb2c69e80d015f66a54e8382da1809221170f9a25cbba",
+          "hash": "sha256:212f626598cec67f2c6be11fcb55059f1cca74f0b87f897f1cc65ba1d0684931",
           "shape": {
             "fieldCount": 6,
             "fields": [
@@ -3944,7 +3944,7 @@
               "measurement",
               "type"
             ],
-            "signature": "busy:unknown|disabled:unknown|id:{\"unresolved\":\"this.id\"}|lane:{\"unresolved\":\"Jn.xtendScaffoldPerformanceProfile.lane\"}|measurement:unknown|type:unknown",
+            "signature": "busy:unknown|disabled:unknown|id:{\"unresolved\":\"this.id\"}|lane:{\"unresolved\":\"ss.xtendScaffoldPerformanceProfile.lane\"}|measurement:unknown|type:{decorative:{\"unresolved\":\"!0\"},document:{\"unresolved\":\"this.ownerDocument\"},preserveRootAttributes:{\"unresolved\":\"!0\"}}",
             "normalized": {
               "fields": {
                 "busy": {
@@ -3964,7 +3964,7 @@
                 "lane": {
                   "optional": false,
                   "type": {
-                    "unresolved": "Jn.xtendScaffoldPerformanceProfile.lane"
+                    "unresolved": "ss.xtendScaffoldPerformanceProfile.lane"
                   }
                 },
                 "measurement": {
@@ -3973,7 +3973,28 @@
                 },
                 "type": {
                   "optional": false,
-                  "type": "unknown"
+                  "type": {
+                    "fields": {
+                      "decorative": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "!0"
+                        }
+                      },
+                      "document": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "this.ownerDocument"
+                        }
+                      },
+                      "preserveRootAttributes": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "!0"
+                        }
+                      }
+                    }
+                  }
                 }
               },
               "unresolvedSpreads": [
@@ -3982,7 +4003,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
             "_createInteractionDetail"
@@ -3992,7 +4013,7 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": "_createInteractionDetail"
             }
           ],
@@ -4147,7 +4168,7 @@
       ],
       "shapePolicy": {
         "acceptedFingerprints": [
-          "sha256:0c746d324d9652cdd72fb2c69e80d015f66a54e8382da1809221170f9a25cbba",
+          "sha256:212f626598cec67f2c6be11fcb55059f1cca74f0b87f897f1cc65ba1d0684931",
           "sha256:72662cab0bd945500d7674ef79daa0ceaa3a8312cef58ee49795356f5eb30a77"
         ],
         "authoritativeFingerprints": [],
@@ -4193,12 +4214,12 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": null
             }
           ]
@@ -4354,7 +4375,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
             "_createStateDetail"
@@ -4364,7 +4385,7 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": "_createStateDetail"
             }
           ],
@@ -4425,12 +4446,12 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": null
             }
           ]
@@ -22658,17 +22679,17 @@
           },
           "sourcePaths": [
             "imports/core/{CORE_SHA}/src/components/x-textarea/x-textarea.ts",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "symbols": [
             "XTextarea",
+            "as",
+            "eo",
             "li",
-            "oo",
-            "ro",
-            "ts"
+            "ro"
           ],
           "evidence": [
             {
@@ -22682,28 +22703,28 @@
               "type": "generated",
               "completeness": "complete",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+              "symbol": "eo"
+            },
+            {
+              "type": "generated",
+              "completeness": "complete",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": "ro"
             },
             {
               "type": "generated",
               "completeness": "complete",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-              "symbol": "oo"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+              "symbol": "as"
             },
             {
               "type": "generated",
               "completeness": "complete",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-              "symbol": "ts"
-            },
-            {
-              "type": "generated",
-              "completeness": "complete",
-              "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": "li"
             }
           ],
@@ -23195,18 +23216,18 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
-            "Jn"
+            "ss"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-              "symbol": "Jn"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+              "symbol": "ss"
             }
           ],
           "evidenceTypes": [
@@ -23344,18 +23365,18 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
-            "Gn"
+            "ns"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "complete",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-              "symbol": "Gn"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+              "symbol": "ns"
             }
           ],
           "evidenceTypes": [
@@ -23737,36 +23758,36 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": null
             }
           ]
@@ -23900,7 +23921,7 @@
           "authoritative": false
         },
         {
-          "hash": "sha256:623f3dd47dbed985b6d73c465fe979f408a78204408b3a00bf3b1262b821619a",
+          "hash": "sha256:5dec5855afd9f93aff85488d3c95ea0f3bae5bf738fc184b5fddecdee0f75283",
           "shape": {
             "fieldCount": 9,
             "fields": [
@@ -23914,7 +23935,7 @@
               "name",
               "withinBudget"
             ],
-            "signature": "budgetKey:unknown|budgetMs:unknown|componentRef:string|detail:unknown|durationMs:unknown|id:{\"unresolved\":\"this.id||null\"}|lane:{\"unresolved\":\"Jn.xtendScaffoldPerformanceProfile.lane\"}|name:unknown|withinBudget:{\"unresolved\":\"\\\"number\\\"!=typeof s||i<=s\"}",
+            "signature": "budgetKey:unknown|budgetMs:unknown|componentRef:string|detail:unknown|durationMs:unknown|id:{\"unresolved\":\"this.id||null\"}|lane:{\"unresolved\":\"ss.xtendScaffoldPerformanceProfile.lane\"}|name:{decorative:{\"unresolved\":\"!0\"},document:{\"unresolved\":\"this.ownerDocument\"},preserveRootAttributes:{\"unresolved\":\"!0\"}}|withinBudget:{\"unresolved\":\"\\\"number\\\"!=typeof i||o<=i\"}",
             "normalized": {
               "fields": {
                 "budgetKey": {
@@ -23946,24 +23967,45 @@
                 "lane": {
                   "optional": false,
                   "type": {
-                    "unresolved": "Jn.xtendScaffoldPerformanceProfile.lane"
+                    "unresolved": "ss.xtendScaffoldPerformanceProfile.lane"
                   }
                 },
                 "name": {
                   "optional": false,
-                  "type": "unknown"
+                  "type": {
+                    "fields": {
+                      "decorative": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "!0"
+                        }
+                      },
+                      "document": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "this.ownerDocument"
+                        }
+                      },
+                      "preserveRootAttributes": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "!0"
+                        }
+                      }
+                    }
+                  }
                 },
                 "withinBudget": {
                   "optional": false,
                   "type": {
-                    "unresolved": "\"number\"!=typeof s||i<=s"
+                    "unresolved": "\"number\"!=typeof i||o<=i"
                   }
                 }
               }
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
             "a"
@@ -23973,7 +24015,7 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": "a"
             }
           ],
@@ -24471,7 +24513,7 @@
       "shapePolicy": {
         "acceptedFingerprints": [
           "sha256:46e51ec345a445180e5485f9861bcd3a06647495d8b0236d7b69f6f1300ee7ac",
-          "sha256:623f3dd47dbed985b6d73c465fe979f408a78204408b3a00bf3b1262b821619a",
+          "sha256:5dec5855afd9f93aff85488d3c95ea0f3bae5bf738fc184b5fddecdee0f75283",
           "sha256:b5e4e2bb8ab40d37b995c3b08c7b6b89f99cf38575512d107baf4e10663f201b",
           "sha256:c0ba90b37693448998ad233ff74713654e0dc065d1ce1efffa9acfdf0c4b2ef5",
           "sha256:c16e2303d27fe6d57ca333b0b1477a30c7b973d18a1d42f432c9816fd6a7db0e",
@@ -24564,12 +24606,12 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": null
             }
           ]
@@ -31845,6 +31887,124 @@
           "authoritative": false
         },
         {
+          "hash": "sha256:3ca12feadc63642d2c81b48e73fd883390c984d5e8cec1355c4659e03c16956c",
+          "shape": {
+            "fieldCount": 9,
+            "fields": [
+              "command",
+              "correlationId",
+              "id",
+              "lane",
+              "payload",
+              "runId",
+              "source",
+              "target",
+              "timestamp"
+            ],
+            "signature": "command:unknown|correlationId:{\"unresolved\":\"s.correlationId||`rmt.correlation:${o}:${a}`\"}|id:{\"unresolved\":\"s.id||`rmt.command:${o}:${t}:${a}`\"}|lane:{\"unresolved\":\"s.lane||s.defaultLane||\\\"user-blocking\\\"\"}|payload:unknown|runId:{\"unresolved\":\"s.runId||\\\"\\\"\"}|source:{event:unknown,id:unknown,kind:{\"unresolved\":\"s.sourceKind||\\\"component\\\"\"},surfaceId:{\"unresolved\":\"s.surfaceId||Sn(e,\\\"surfaceId\\\")||Ln(e,\\\"surface-id\\\")||\\\"\\\"\"}}|target:union<{\"unresolved\":\"s.target\"}|null>|timestamp:{\"unresolved\":\"s.timestamp||new Date(a).toISOString()\"}",
+            "normalized": {
+              "fields": {
+                "command": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "correlationId": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "s.correlationId||`rmt.correlation:${o}:${a}`"
+                  }
+                },
+                "id": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "s.id||`rmt.command:${o}:${t}:${a}`"
+                  }
+                },
+                "lane": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "s.lane||s.defaultLane||\"user-blocking\""
+                  }
+                },
+                "payload": {
+                  "optional": false,
+                  "type": "unknown"
+                },
+                "runId": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "s.runId||\"\""
+                  }
+                },
+                "source": {
+                  "optional": false,
+                  "type": {
+                    "fields": {
+                      "event": {
+                        "optional": false,
+                        "type": "unknown"
+                      },
+                      "id": {
+                        "optional": false,
+                        "type": "unknown"
+                      },
+                      "kind": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "s.sourceKind||\"component\""
+                        }
+                      },
+                      "surfaceId": {
+                        "optional": false,
+                        "type": {
+                          "unresolved": "s.surfaceId||Sn(e,\"surfaceId\")||Ln(e,\"surface-id\")||\"\""
+                        }
+                      }
+                    }
+                  }
+                },
+                "target": {
+                  "optional": false,
+                  "type": {
+                    "union": [
+                      {
+                        "unresolved": "s.target"
+                      },
+                      "null"
+                    ]
+                  }
+                },
+                "timestamp": {
+                  "optional": false,
+                  "type": {
+                    "unresolved": "s.timestamp||new Date(a).toISOString()"
+                  }
+                }
+              }
+            }
+          },
+          "sourcePaths": [
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
+          ],
+          "symbols": [
+            "Bn"
+          ],
+          "evidence": [
+            {
+              "type": "generated",
+              "completeness": "partial",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+              "symbol": "Bn"
+            }
+          ],
+          "evidenceTypes": [
+            "generated"
+          ],
+          "completeness": "partial",
+          "authoritative": false
+        },
+        {
           "hash": "sha256:4d893229587f1cd1fc87f8f3812b1ab89bf5076a5da801eeec0ba6f624877726",
           "shape": {
             "fieldCount": 2,
@@ -31891,124 +32051,6 @@
               "authoritative": false,
               "path": "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
               "symbol": "refresh"
-            }
-          ],
-          "evidenceTypes": [
-            "generated"
-          ],
-          "completeness": "partial",
-          "authoritative": false
-        },
-        {
-          "hash": "sha256:643ffe5451cd812d23370c986e9512b3297d80fd814064f1f374faebfb70e8c4",
-          "shape": {
-            "fieldCount": 9,
-            "fields": [
-              "command",
-              "correlationId",
-              "id",
-              "lane",
-              "payload",
-              "runId",
-              "source",
-              "target",
-              "timestamp"
-            ],
-            "signature": "command:unknown|correlationId:{\"unresolved\":\"o.correlationId||`rmt.correlation:${i}:${a}`\"}|id:{\"unresolved\":\"o.id||`rmt.command:${i}:${t}:${a}`\"}|lane:{\"unresolved\":\"o.lane||o.defaultLane||\\\"user-blocking\\\"\"}|payload:unknown|runId:{\"unresolved\":\"o.runId||\\\"\\\"\"}|source:{event:unknown,id:unknown,kind:{\"unresolved\":\"o.sourceKind||\\\"component\\\"\"},surfaceId:{\"unresolved\":\"o.surfaceId||bn(e,\\\"surfaceId\\\")||mn(e,\\\"surface-id\\\")||\\\"\\\"\"}}|target:union<{\"unresolved\":\"o.target\"}|null>|timestamp:{\"unresolved\":\"o.timestamp||new Date(a).toISOString()\"}",
-            "normalized": {
-              "fields": {
-                "command": {
-                  "optional": false,
-                  "type": "unknown"
-                },
-                "correlationId": {
-                  "optional": false,
-                  "type": {
-                    "unresolved": "o.correlationId||`rmt.correlation:${i}:${a}`"
-                  }
-                },
-                "id": {
-                  "optional": false,
-                  "type": {
-                    "unresolved": "o.id||`rmt.command:${i}:${t}:${a}`"
-                  }
-                },
-                "lane": {
-                  "optional": false,
-                  "type": {
-                    "unresolved": "o.lane||o.defaultLane||\"user-blocking\""
-                  }
-                },
-                "payload": {
-                  "optional": false,
-                  "type": "unknown"
-                },
-                "runId": {
-                  "optional": false,
-                  "type": {
-                    "unresolved": "o.runId||\"\""
-                  }
-                },
-                "source": {
-                  "optional": false,
-                  "type": {
-                    "fields": {
-                      "event": {
-                        "optional": false,
-                        "type": "unknown"
-                      },
-                      "id": {
-                        "optional": false,
-                        "type": "unknown"
-                      },
-                      "kind": {
-                        "optional": false,
-                        "type": {
-                          "unresolved": "o.sourceKind||\"component\""
-                        }
-                      },
-                      "surfaceId": {
-                        "optional": false,
-                        "type": {
-                          "unresolved": "o.surfaceId||bn(e,\"surfaceId\")||mn(e,\"surface-id\")||\"\""
-                        }
-                      }
-                    }
-                  }
-                },
-                "target": {
-                  "optional": false,
-                  "type": {
-                    "union": [
-                      {
-                        "unresolved": "o.target"
-                      },
-                      "null"
-                    ]
-                  }
-                },
-                "timestamp": {
-                  "optional": false,
-                  "type": {
-                    "unresolved": "o.timestamp||new Date(a).toISOString()"
-                  }
-                }
-              }
-            }
-          },
-          "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
-          ],
-          "symbols": [
-            "gn"
-          ],
-          "evidence": [
-            {
-              "type": "generated",
-              "completeness": "partial",
-              "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-              "symbol": "gn"
             }
           ],
           "evidenceTypes": [
@@ -32187,8 +32229,8 @@
         "acceptedFingerprints": [
           "sha256:0f5bd9a5c6234ca5ead0fb9c2952a31e936be186557ae3c9a539753936e7a1ac",
           "sha256:1b96c0a662c9d7699f28ee0623b1642a6170fe04611fe25ec7ecf0db58294361",
+          "sha256:3ca12feadc63642d2c81b48e73fd883390c984d5e8cec1355c4659e03c16956c",
           "sha256:4d893229587f1cd1fc87f8f3812b1ab89bf5076a5da801eeec0ba6f624877726",
-          "sha256:643ffe5451cd812d23370c986e9512b3297d80fd814064f1f374faebfb70e8c4",
           "sha256:aac0d71f93f3828fe10fb7fb0c2c39898ec1582c7a18a44d2d289e767f6d177b",
           "sha256:f4da7039cf545c5de21a0ff9916a861b122b70668c67421d6879dc472496742b"
         ],
@@ -32283,14 +32325,14 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
             "products/rmt-maraca-kernel-orchestration/site/build/runtime/xtend-maraca-plan-runtime.mjs",
             "products/rmt-maraca-kernel-orchestration/site/build/xtend.maraca.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": null
             },
             {
@@ -32417,7 +32459,7 @@
           "authoritative": true
         },
         {
-          "hash": "sha256:14daa31b05776e22d1408e139d74e228ce15ac5262136d57a4fe54c7735a7b44",
+          "hash": "sha256:27240a31634884bf35929609062346f1c2d286808d4743500c64240796848491",
           "shape": {
             "fieldCount": 10,
             "fields": [
@@ -32432,7 +32474,7 @@
               "tag",
               "templateMode"
             ],
-            "signature": "adapter:string|componentRecordKind:string|eventBindingMode:string|hydration:{lane:string,policy:string}|kernelBoundary:string|performance:{coalesceKey:string,profile:{\"unresolved\":\"Jn.xtendScaffoldPerformanceProfile\"}}|schedules:array<string>|shellAuthoring:{attributes:array<string>,events:array<string>,host:string}|tag:string|templateMode:string",
+            "signature": "adapter:string|componentRecordKind:string|eventBindingMode:string|hydration:{lane:string,policy:string}|kernelBoundary:string|performance:{coalesceKey:string,profile:{\"unresolved\":\"ss.xtendScaffoldPerformanceProfile\"}}|schedules:array<string>|shellAuthoring:{attributes:array<string>,events:array<string>,host:string}|tag:string|templateMode:string",
             "normalized": {
               "fields": {
                 "adapter": {
@@ -32477,7 +32519,7 @@
                       "profile": {
                         "optional": false,
                         "type": {
-                          "unresolved": "Jn.xtendScaffoldPerformanceProfile"
+                          "unresolved": "ss.xtendScaffoldPerformanceProfile"
                         }
                       }
                     }
@@ -32530,18 +32572,18 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
-            "Jn"
+            "ss"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-              "symbol": "Jn"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+              "symbol": "ss"
             }
           ],
           "evidenceTypes": [
@@ -32875,7 +32917,7 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "symbols": [
             "li"
@@ -32885,7 +32927,7 @@
               "type": "generated",
               "completeness": "partial",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": "li"
             }
           ],
@@ -32995,18 +33037,18 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs"
           ],
           "symbols": [
-            "Gn"
+            "ns"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "complete",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-              "symbol": "Gn"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+              "symbol": "ns"
             }
           ],
           "evidenceTypes": [
@@ -33068,36 +33110,36 @@
             }
           },
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs"
           ],
           "symbols": [
-            "oo",
-            "ro",
-            "ts"
+            "as",
+            "eo",
+            "ro"
           ],
           "evidence": [
             {
               "type": "generated",
               "completeness": "complete",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+              "symbol": "eo"
+            },
+            {
+              "type": "generated",
+              "completeness": "complete",
+              "authoritative": false,
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": "ro"
             },
             {
               "type": "generated",
               "completeness": "complete",
               "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-              "symbol": "oo"
-            },
-            {
-              "type": "generated",
-              "completeness": "complete",
-              "authoritative": false,
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-              "symbol": "ts"
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+              "symbol": "as"
             }
           ],
           "evidenceTypes": [
@@ -33110,7 +33152,7 @@
       "shapePolicy": {
         "acceptedFingerprints": [
           "sha256:11305329030048910f912554fd067bfefd63838c1dcc808881c4469d99725788",
-          "sha256:14daa31b05776e22d1408e139d74e228ce15ac5262136d57a4fe54c7735a7b44",
+          "sha256:27240a31634884bf35929609062346f1c2d286808d4743500c64240796848491",
           "sha256:a20ab6c913174b293891db9d1801a5cdfb61639fd2828b8088f0f17ecb0ad021",
           "sha256:b1399faf11ddcc4c49745a5f5db51e79672681cb9dccaf67973f9ee70773cd6e",
           "sha256:bdc0fce01101d697b450bdb646e1ef0724e09b1659b5a8413316a870ee3df924",
@@ -33171,36 +33213,36 @@
           "role": "generated-mirror",
           "visibility": "generated",
           "sourcePaths": [
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
-            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs"
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
+            "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs"
           ],
           "interfaceReferences": [
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-BCPaXyug.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-button-DWIOUNTg.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-ISOSeS67.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-input-DvHYgCZn.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-XD-vkGDR.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-select-ia4dovR5.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-C3Cy091u.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-status-DBerQpQ_.mjs",
               "symbol": null
             },
             {
               "type": "repo-symbol",
-              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-Bfrx5FUC.mjs",
+              "path": "products/rmt-maraca-kernel-orchestration/site/build/chunks/x-textarea-DXzLThrG.mjs",
               "symbol": null
             }
           ]
@@ -36347,7 +36389,7 @@
       "schemaId": "xtend.rmt.form-validation-view-project-report.v1",
       "shapeFingerprints": [
         {
-          "hash": "sha256:ba4d7c2a562705f752b27d52edcb9b0391d11eaa103570aa44de4f675bb09647",
+          "hash": "sha256:917396ceacea8a243330916295e6be81d14808a4fec29b06c35be524a66e9060",
           "shape": {
             "fieldCount": 7,
             "fields": [
@@ -36359,7 +36401,7 @@
               "projectionCount",
               "valid"
             ],
-            "signature": "applied:array<>|appliedCount:{\"unresolved\":\"y.length\"}|finalization:array<>|missing:collection|missingCount:{\"unresolved\":\"k.length\"}|projectionCount:{\"unresolved\":\"h.projectionCount\"}|valid:{\"unresolved\":\"!1!==h.valid\"}",
+            "signature": "applied:array<>|appliedCount:{\"unresolved\":\"y.length\"}|finalization:array<>|missing:collection|missingCount:{\"unresolved\":\"g.length\"}|projectionCount:{\"unresolved\":\"h.projectionCount\"}|valid:{\"unresolved\":\"!1!==h.valid\"}",
             "normalized": {
               "fields": {
                 "applied": {
@@ -36387,7 +36429,7 @@
                 "missingCount": {
                   "optional": false,
                   "type": {
-                    "unresolved": "k.length"
+                    "unresolved": "g.length"
                   }
                 },
                 "projectionCount": {
@@ -36429,7 +36471,7 @@
       ],
       "shapePolicy": {
         "acceptedFingerprints": [
-          "sha256:ba4d7c2a562705f752b27d52edcb9b0391d11eaa103570aa44de4f675bb09647"
+          "sha256:917396ceacea8a243330916295e6be81d14808a4fec29b06c35be524a66e9060"
         ],
         "authoritativeFingerprints": [],
         "decision": "accepted-initial-audit",
