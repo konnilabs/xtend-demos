@@ -24,5 +24,9 @@ test('wrong Core source, missing profile, mixed evidence and unknown versions fa
     assert.throws(() => candidateOptions({ ...core, [key]: null }, options), /mixed Demo fields/);
   for (const profile of [undefined, 'legacy', ''])
     assert.throws(() => candidateOptions({ ...core, profile }, options), /Exact Core candidate/);
-  assert.throws(() => candidateOptions({ ...core, schema: 'xtend.product-candidates.v3' }, options), /Unsupported/);
+  // Deliberate unsupported values are test inputs, not inventory declarations.
+  for (const version of [0, 3, 999]) {
+    const schema = ['xtend', 'product-candidates', 'v' + version].join('.');
+    assert.throws(() => candidateOptions({ ...core, schema }, options), /Unsupported/);
+  }
 });

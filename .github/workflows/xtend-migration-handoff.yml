@@ -27,7 +27,7 @@ jobs:
         run: npm install --global npm@11.17.0 --ignore-scripts --no-audit --no-fund
       - name: Candidate context and audit-loader negative regressions
         id: contracts
-        run: node --test --test-reporter=tap tests/migration/candidate-context.test.cjs tests/migration/schema-audit-loader.test.cjs tests/migration/shop-host-workflow.test.cjs
+        run: node --test --test-reporter=tap tests/migration/candidate-context.test.cjs tests/migration/schema-audit-loader.test.cjs tests/migration/shop-host-workflow.test.cjs products/xtend-llm/tests/electron-sandbox-policy.test.mjs
       - name: Install exact Core v2 tarballs in all eight consumers and verify independent ownership
         id: candidates
         run: node scripts/prepare-ci-candidates.cjs
