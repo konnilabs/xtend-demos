@@ -33,7 +33,7 @@ jobs:
         run: node scripts/prepare-ci-candidates.cjs
       - name: Verify installed package and generated-discovery regressions
         id: installed
-        run: node --test --test-reporter=tap tests/migration/candidate-closure.test.cjs tests/migration/shop-generated-discovery.test.cjs tests/migration/material-product-runtime.test.cjs tests/migration/kernel-generated-runtime.test.cjs
+        run: node --test --test-reporter=tap tests/migration/candidate-closure.test.cjs tests/migration/shop-generated-discovery.test.cjs tests/migration/material-product-runtime.test.cjs tests/migration/kernel-generated-runtime.test.cjs products/xtend-llm/tests/snapshot-transition.test.mjs
       - name: Record exact scope and unperformed runtime handoff
         if: always()
         env:
