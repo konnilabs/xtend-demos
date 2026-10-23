@@ -220,14 +220,14 @@
   },
   "entry": "/tmp/xtend-migration-build-tools-20261023/site/build/xtend.maraca.mjs",
   "entryRelative": "site/build/xtend.maraca.mjs",
-  "entryBytes": 1034608,
-  "bytes": 2933281,
+  "entryBytes": 1037059,
+  "bytes": 2944391,
   "bundleFiles": [
     {
       "type": "chunk",
       "fileName": "xtend.maraca.mjs",
       "path": "site/build/xtend.maraca.mjs",
-      "bytes": 1034608,
+      "bytes": 1037059,
       "isEntry": true,
       "isDynamicEntry": false,
       "imports": [
@@ -337,7 +337,7 @@
         },
         {
           "id": "/private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-dom-descriptor-renderer.js",
-          "renderedLength": 150425,
+          "renderedLength": 155327,
           "appService": false
         },
         {
@@ -372,7 +372,7 @@
         }
       ],
       "appServiceBytes": 0,
-      "frameworkBytes": 1034608
+      "frameworkBytes": 1037059
     },
     {
       "type": "chunk",
@@ -542,14 +542,14 @@
       "type": "asset",
       "fileName": "runtime/xtendrmt-runtime.esm.mjs",
       "path": "site/build/runtime/xtendrmt-runtime.esm.mjs",
-      "bytes": 1489587,
+      "bytes": 1494806,
       "isEntry": false,
       "isDynamicEntry": false,
       "imports": [],
       "dynamicImports": [],
       "modules": [],
       "appServiceBytes": 0,
-      "frameworkBytes": 1489587
+      "frameworkBytes": 1494806
     },
     {
       "type": "asset",
@@ -633,7 +633,7 @@
       "type": "asset",
       "fileName": "runtime/xtend-maraca-plan-runtime.mjs",
       "path": "site/build/runtime/xtend-maraca-plan-runtime.mjs",
-      "bytes": 112166,
+      "bytes": 115260,
       "isEntry": false,
       "isDynamicEntry": false,
       "imports": [
@@ -644,7 +644,7 @@
       "dynamicImports": [],
       "modules": [],
       "appServiceBytes": 0,
-      "frameworkBytes": 112166
+      "frameworkBytes": 115260
     },
     {
       "type": "asset",
@@ -702,14 +702,14 @@
       "type": "asset",
       "fileName": "runtime/xtend-maraca-browser-composition-runtime.mjs",
       "path": "site/build/runtime/xtend-maraca-browser-composition-runtime.mjs",
-      "bytes": 28032,
+      "bytes": 28378,
       "isEntry": false,
       "isDynamicEntry": false,
       "imports": [],
       "dynamicImports": [],
       "modules": [],
       "appServiceBytes": 0,
-      "frameworkBytes": 28032
+      "frameworkBytes": 28378
     },
     {
       "type": "asset",
@@ -1593,8 +1593,8 @@
       "status": "within_budget",
       "mode": "strict",
       "profile": "production",
-      "baselineBytes": 3029729,
-      "bundleBytes": 2933281,
+      "baselineBytes": 3039863,
+      "bundleBytes": 2944391,
       "runtimeExpectedStatus": "booted"
     },
     "releaseConstraint": {
@@ -1617,7 +1617,7 @@
       "bundle": {
         "fileCount": 23,
         "entry": "xtend.maraca.mjs",
-        "bytes": 2933281
+        "bytes": 2944391
       },
       "runtimeFeatureStatus": [
         {
@@ -2182,8 +2182,8 @@
       "status": "within_budget",
       "mode": "strict",
       "profile": "production",
-      "baselineBytes": 3029729,
-      "bundleBytes": 2933281,
+      "baselineBytes": 3039863,
+      "bundleBytes": 2944391,
       "runtimeExpectedStatus": "booted"
     },
     "releaseConstraint": {
@@ -2206,7 +2206,7 @@
       "bundle": {
         "fileCount": 23,
         "entry": "xtend.maraca.mjs",
-        "bytes": 2933281
+        "bytes": 2944391
       },
       "runtimeFeatureStatus": [
         {
@@ -2460,7 +2460,7 @@
     "templateCount": 1,
     "sourceFingerprint": "sha256:707888ddc576024742b6eb2888c56e0df6f4e28b048a26df100b25d13e83e58c",
     "artifactBundleFingerprint": "fnv1a:6b09a8dd",
-    "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7",
+    "bundleFingerprint": "sha256:4038bce95011e0c4a93ee335feec56260c0c064f45a06de41d58ed63823eaec0",
     "runtimeProfileHints": [
       "browser",
       "detached_dom",
@@ -2667,7 +2667,7 @@
         "template:product.kernel.maraca"
       ],
       "bundleFileCount": 23,
-      "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7"
+      "bundleFingerprint": "sha256:4038bce95011e0c4a93ee335feec56260c0c064f45a06de41d58ed63823eaec0"
     },
     "diagnostics": []
   },
@@ -3761,7 +3761,7 @@
       "fileArtifactAvailable": true,
       "baselineComparisonAvailable": true,
       "runtimeExpectedStatus": "booted",
-      "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7"
+      "bundleFingerprint": "sha256:4038bce95011e0c4a93ee335feec56260c0c064f45a06de41d58ed63823eaec0"
     },
     "diagnostics": [
       {
@@ -3781,7 +3781,7 @@
         ]
       }
     ],
-    "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7"
+    "bundleFingerprint": "sha256:4038bce95011e0c4a93ee335feec56260c0c064f45a06de41d58ed63823eaec0"
   },
   "panicRecovery": {
     "schema": "xtend.maraca.kernel-panic-recovery-report.v1",
@@ -5036,7 +5036,7 @@
       "fileArtifactAvailable": true,
       "baselineComparisonAvailable": true,
       "runtimeExpectedStatus": "booted",
-      "bundleFingerprint": "sha256:ebb5994a33a34822260c5d4fcc532019e894c54c1b7ac94acc4f77964ba424d7"
+      "bundleFingerprint": "sha256:4038bce95011e0c4a93ee335feec56260c0c064f45a06de41d58ed63823eaec0"
     },
     "summary": {
       "schema": "xtend.rmt.kernel-orchestration.v1",
@@ -6207,10 +6207,6 @@
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-state-binding-view-projector.js (579:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
-      },
-      {
-        "code": "THIS_IS_UNDEFINED",
         "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-maraca-view-projection-adapter.js (242:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
@@ -6219,11 +6215,11 @@
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-animation-engine-runtime.js (581:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-state-binding-view-projector.js (579:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-state-host-adapter.js (159:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-animation-engine-runtime.js (581:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       },
       {
         "code": "THIS_IS_UNDEFINED",
@@ -6231,7 +6227,11 @@
       },
       {
         "code": "THIS_IS_UNDEFINED",
-        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-dom-descriptor-renderer.js (3645:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-state-host-adapter.js (159:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
+      },
+      {
+        "code": "THIS_IS_UNDEFINED",
+        "message": "../../../../../../private/tmp/xtend-core-handoff-c2-20261021/xtendrmt/rmt-dom-descriptor-renderer.js (3724:94): The 'this' keyword is equivalent to 'undefined' at the top level of an ES module, and has been rewritten"
       }
     ],
     "nameCache": null
@@ -6246,15 +6246,15 @@
       "mode": "legacy-loader-plus-selected-component-modules-plus-stack-modules",
       "loaderBytes": 70038,
       "selectedComponentBytes": 114355,
-      "stackModuleBytes": 2231922,
+      "stackModuleBytes": 2242056,
       "contractPayloadBytes": 613414,
-      "bytes": 3029729
+      "bytes": 3039863
     },
-    "baselineBytes": 3029729,
-    "bundleBytes": 2933281,
+    "baselineBytes": 3039863,
+    "bundleBytes": 2944391,
     "framework": {
-      "bytes": 2903612,
-      "baselineBytes": 3029729,
+      "bytes": 2914722,
+      "baselineBytes": 3039863,
       "withinBudget": true
     },
     "microkernel": {
@@ -6288,11 +6288,11 @@
         }
       ]
     },
-    "ratio": 0.958373504692994,
+    "ratio": 0.9588333421604855,
     "budgets": {
       "modernEsmEntryMustBeSmallerThanBaseline": true,
       "enforcement": "strict",
-      "frameworkBytes": 3029729,
+      "frameworkBytes": 3039863,
       "clientAppServiceBytes": null,
       "serverAppServiceBytes": null
     }
