@@ -30,3 +30,28 @@ test('wrong Core source, missing profile, mixed evidence and unknown versions fa
     assert.throws(() => candidateOptions({ ...core, schema }, options), /Unsupported/);
   }
 });
+
+// Controlled producer wiring model; actual candidate bytes are checked separately
+// by the installed Shop preparation command.
+test('Shop PHP preparation uses the same v1/v2 identity adapter before any write', () => {
+ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+ const filename=path.resolve(__dirname,'../../products/xtend-shop/scripts/prepare-packages.cjs');
+ for (const manifest of [legacy,core]) {
+  let calls=0;
+  const stop=Error('verified-before-write');
+  const context={module:{exports:{}},exports:{},__dirname:path.dirname(filename),process};
+  const fakeFs={readFileSync:()=>JSON.stringify(manifest),mkdirSync:()=>assert.fail('unexpected write')};
+  context.require=name=>name==='node:fs'?fakeFs:name==='@ccslabs/xtend/candidate-integrity'?{verifyCandidates:(actual,opts)=>{calls++;assert.deepEqual(JSON.parse(JSON.stringify(opts)),candidateOptions(manifest,options));throw stop;}}:name.endsWith('/candidate-context.cjs')?{candidateOptions}:require(name);
+  vm.runInNewContext(fs.readFileSync(filename,'utf8'),context,{filename});
+  assert.throws(()=>context.module.exports.preparePackages(directory,options),error=>error===stop);assert.equal(calls,1);
+  for (const bad of [{...options,coreSha:'3'.repeat(40)},{...options,demoSha:'main'}]) {
+   assert.throws(()=>context.module.exports.preparePackages(directory,bad),/SHA identity/);assert.equal(calls,1);
+  }
+ }
+});
+test('standalone Shop fixture verifies candidates with adapted identity and prepares its own output',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const source=fs.readFileSync(path.resolve(__dirname,'../../products/xtend-shop/scripts/prepare-fixture.cjs'),'utf8');
+ assert.match(source,/api\.verifyCandidates\(manifest,candidateOptions\(manifest,\{\.\.\.expected,directory:candidateDirectory\}\)\)/);
+ assert.match(source,/preparePackages\(candidateDirectory, expected, output\)/);
+});

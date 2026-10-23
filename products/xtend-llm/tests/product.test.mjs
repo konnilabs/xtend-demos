@@ -1194,7 +1194,7 @@ await run('LLM renderer controller has no product-owned DOM wiring beyond public
   assert.match(controllerSource, /window\.addEventListener\('pagehide'/u);
 });
 
-await run('LLM controller is wired through the public Maraca AppServices registry', () => {
+await run('LLM controller uses the injected public Maraca AppServices stream port', () => {
   const controllerSource = fs.readFileSync(path.join(productRoot, 'src', 'renderer', 'app-controller.mjs'), 'utf8');
   const servicesSource = fs.readFileSync(path.join(productRoot, 'src', 'services.ts'), 'utf8');
   const shellSource = fs.readFileSync(path.join(productRoot, 'site', 'index.html'), 'utf8');
@@ -1205,7 +1205,9 @@ await run('LLM controller is wired through the public Maraca AppServices registr
   assert.doesNotMatch(controllerSource, /\bhostDataSourceAdapter\b|\bdataSourceAdapters\b|\bhostServiceAdapters\b|\bbootXtendMaraca\b/u);
   assert.doesNotMatch(controllerSource, /window\.__XTend|\bactiveRunId\b/u);
   assert.match(controllerSource, /addEventListener\('xtend-maraca:boot'/u);
-  assert.match(controllerSource, /window\.XTendMaraca\?\.appServices\?\.registry/u);
+  assert.match(controllerSource, /const registry = context\.hostServiceRegistry;/u);
+  assert.match(controllerSource, /await registry\.stream\(/u);
+  assert.doesNotMatch(controllerSource, /window\.XTendMaraca\??\.appServices\??\.registry/u);
   assert.doesNotMatch(shellSource, /app-controller\.mjs/u);
   assert.match(shellSource, /build\/xtend\.maraca\.mjs/u);
   assert.doesNotMatch(appServerSource, /src\/renderer\/app-controller\.mjs/u);

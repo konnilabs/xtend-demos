@@ -1,8 +1,8 @@
 {
   "schema": "xtend.demo-candidate-source.v1",
   "repository": "https://github.com/konnilabs/xtend.git",
-  "coreSha": "71fc2e8a05d7c2895d415b895e66c064db5600db",
+  "coreSha": "f3583eccb2ef0aabb2d26a62cb7fae69a622e6c4",
   "requiredApi": "public-product-support-candidate-v1-v2-and-private-current-pair-source-audit",
   "mergeBlockedUntil": "Exact source retention and full paired handoff evidence, followed by the separate user merge decision; no npm publication is implied.",
-  "checkpoint": "Current paired ownership and full-union source coverage are separate from runtime evidence. Both macOS Node lanes passed the complete LLM layout, Catfood, embedded/native Electron and simulated worker stages on identical runtime bytes (Core8fade18d, Demo f0897d16); source registration and generated mirror bindings follow here. Linux Electron runtime remains unverified; merge/release remain separate decisions."
+  "checkpoint": "Current source-pair ownership and full union remain separate from runtime evidence. Exact macOS execution used Core e9669a4d0326111043b3cec6f39639d98acd71d8 and Demo 05315e8c542f581de3fc355e23fdf0444fee9187, both Node lanes passed. Later changes repair audit/preparation tests and synchronize canonical generated Core mirrors. No new Electron execution is implied; Linux Electron and the remaining Demo browser groups are not yet verified. Merge/release remain separate decisions."
 }

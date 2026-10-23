@@ -2,10 +2,12 @@
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const {execFileSync}=require('node:child_process');
 const {verifyCandidates}=require('@ccslabs/xtend/candidate-integrity');
+const {candidateOptions}=require('../../../scripts/candidate-context.cjs');
 const root=path.resolve(__dirname,'..');
-function preparePackages(candidateDirectory=path.join(root,'.candidate'),expected={coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA}) {
+function preparePackages(candidateDirectory=path.join(root,'.candidate'),expected={coreSha:process.env.XTEND_CORE_SHA,demoSha:process.env.XTEND_DEMO_SHA},outputRoot=root) {
  const manifest=JSON.parse(fs.readFileSync(path.join(candidateDirectory,'manifest.json')));
- verifyCandidates(manifest,{...expected,directory:candidateDirectory});
+ verifyCandidates(manifest,candidateOptions(manifest,{...expected,directory:candidateDirectory}));
+ const root=path.resolve(outputRoot);
  const output=path.join(root,'.packages');fs.mkdirSync(output,{recursive:true});
  const packages=['@ccslabs/xtend','@xtend-material/core'].map(name=>{
   const item=manifest.packages.find(item=>item.name===name);if(!item)throw Error('Missing required Shop candidate: '+name);

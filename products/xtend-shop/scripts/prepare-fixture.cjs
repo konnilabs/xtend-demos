@@ -2,6 +2,7 @@
 const fs = require('node:fs'), path = require('node:path');
 const {execFileSync}=require('node:child_process');
 const {createRequire}=require('node:module');
+const {candidateOptions}=require('../../../scripts/candidate-context.cjs');
 function prepareFixture({output, version = '13', candidateDirectory = path.resolve(__dirname, '../.candidate'), expected = {coreSha: process.env.XTEND_CORE_SHA, demoSha: process.env.XTEND_DEMO_SHA}} = {}) {
   if (!output || fs.existsSync(output)) throw new Error('XTend.store requires a fresh fixture directory.');
   if (!['12', '13'].includes(String(version))) throw new Error('Unsupported Laravel major.');
@@ -22,10 +23,10 @@ function prepareFixture({output, version = '13', candidateDirectory = path.resol
   const request=createRequire(path.join(path.resolve(output),'package.json'));
   const api=request('@ccslabs/xtend/candidate-integrity');
   const manifest=JSON.parse(fs.readFileSync(path.join(candidateDirectory,'manifest.json')));
-  api.verifyCandidates(manifest,{...expected,directory:candidateDirectory});
+  api.verifyCandidates(manifest,candidateOptions(manifest,{...expected,directory:candidateDirectory}));
   api.verifyInstalledClosure(JSON.parse(fs.readFileSync(path.join(output,'package-lock.json'))),manifest);
   api.verifyResolution(request,manifest,path.join(path.resolve(output),'node_modules'));
-  const prepared = require(path.join(path.resolve(output), 'scripts/prepare-packages.cjs')).preparePackages(candidateDirectory, expected);
+  const prepared = require('./prepare-packages.cjs').preparePackages(candidateDirectory, expected, output);
   return {output: path.resolve(output), version, ...prepared};
 }
 if (require.main === module) console.log(JSON.stringify(prepareFixture({output: process.argv[2], version: process.argv[3], candidateDirectory: process.argv[4]}), null, 2));
