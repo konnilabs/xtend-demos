@@ -31,6 +31,15 @@ function record(id, ok, evidence = {}) {
   checks.push({ id, ok: Boolean(ok), evidence });
 }
 
+function lifecycleSourceEvidence(controller) {
+  return {
+    publicBootEvent: /addEventListener\('xtend-maraca:boot'/u.test(controller),
+    injectedStreamPort: /const registry = context\.hostServiceRegistry;/u.test(controller)
+      && /await registry\.stream\(/u.test(controller),
+    globalRegistryAbsent: !/window\.XTendMaraca\??\.appServices\??\.registry/u.test(controller)
+  };
+}
+
 function sorted(values) {
   return Array.from(values).sort((left, right) => left.localeCompare(right));
 }
@@ -90,11 +99,8 @@ try {
     manualCorrelationFactory: /(?:correlationId|invocationId)\s*:\s*[^,\n]*(?:Date\.now|Math\.random|activeJobId)/u.test(controller)
   };
   record('source.public-boundary', Object.values(forbiddenBoundaries).every((value) => value === false), forbiddenBoundaries);
-  record('source.public-lifecycle', /addEventListener\('xtend-maraca:boot'/u.test(controller)
-    && /window\.XTendMaraca\?\.appServices\?\.registry/u.test(controller), {
-    publicBootEvent: /addEventListener\('xtend-maraca:boot'/u.test(controller),
-    publicRegistry: /window\.XTendMaraca\?\.appServices\?\.registry/u.test(controller)
-  });
+  const lifecycle = lifecycleSourceEvidence(controller);
+  record('source.public-lifecycle', Object.values(lifecycle).every(Boolean), lifecycle);
   record('source.worker-job-gate', /generationDelta[\s\S]{0,300}!isActiveJob\(jobId\)/u.test(controller)
     && /generationComplete[\s\S]{0,200}!isActiveJob\(complete\s*&&\s*complete\.jobId\)/u.test(controller)
     && /generationError[\s\S]{0,200}!isActiveJob\(error\.jobId\)/u.test(controller), {

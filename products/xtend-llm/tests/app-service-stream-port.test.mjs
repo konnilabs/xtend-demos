@@ -41,3 +41,16 @@ test('follow-up waits for its actual Model commit; foreign events do not release
 test('missing matching Model commit remains a bounded failure and unsubscribes',async()=>{
  let timeout,unsubscribed=0;const committed=vm.runInNewContext(checkpoint+'\ncommitted',{correlationId:'expected',model:{subscribe(){return()=>unsubscribed++;}},setTimeout(fn){timeout=fn;return 1;},clearTimeout(){}});const rejected=assert.rejects(committed,/Model commit timed out/);timeout();await rejected;assert.equal(unsubscribed,1);
 });
+const gate=fs.readFileSync(new URL('./app-services-catfood-gate.mjs',import.meta.url),'utf8');
+const lifecycle=vm.runInNewContext(gate.slice(gate.indexOf('function lifecycleSourceEvidence('),gate.indexOf('\nfunction sorted('))+'\nlifecycleSourceEvidence');
+test('Catfood requires the injected public stream port and boot event',()=>{
+ assert.equal(Object.values(lifecycle(source)).every(Boolean),true);
+ for(const removed of ['const registry = context.hostServiceRegistry;','await registry.stream(',"addEventListener('xtend-maraca:boot'"]){
+  assert.equal(Object.values(lifecycle(source.replace(removed,''))).every(Boolean),false,removed);
+ }
+});
+test('Catfood rejects the obsolete global registry even alongside an injected port',()=>{
+ for(const access of ['window.XTendMaraca?.appServices?.registry','window.XTendMaraca.appServices.registry']){
+  assert.equal(lifecycle(source+'\n'+access).globalRegistryAbsent,false);
+ }
+});
