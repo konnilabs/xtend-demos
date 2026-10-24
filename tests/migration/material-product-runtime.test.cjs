@@ -25,3 +25,47 @@ test('live LLM source retains the Observatory WASM backend symbol',()=>{
  const source=fs.readFileSync(path.resolve(__dirname,'../../products/xtend-llm/src/llm/transformers-worker.mjs'),'utf8');
  assert.ok(source.includes('env.backends.onnx.wasm'),'live LLM source contains the original Observatory repoSymbol');
 });
+
+const vm=require('node:vm');
+function visualHelpers(){return require('../products/xtend_material_catfooding_suite.js');}
+function projectionState(dataset){return {document:{getElementById:()=>({dataset})}};}
+test('Material capture waits for the scheduled navigation measurement rather than visual status alone',()=>{
+ const {projectionReadyExpression}=visualHelpers();
+ const dataset={xtmVisualReady:'true'},frames=[];
+ const root={dataset,querySelectorAll:()=>[],querySelector:()=>({getBoundingClientRect:()=>({})})};
+ const context=vm.createContext({document:{getElementById:()=>root},location:{hash:''},innerWidth:500,innerHeight:844,getComputedStyle:()=>({display:'none'}),requestAnimationFrame:fn=>frames.push(fn),addEventListener:()=>{}});
+ const navigation=fs.readFileSync(path.resolve(__dirname,'../../products/xtend-material-workbench/src/workbench-navigation.mjs'),'utf8');
+ vm.runInContext(navigation.replace(/^export /gm,''),context);
+ // Reproduces the premature old capture before the real module's first frame.
+ assert.equal(vm.runInContext("document.getElementById('xtend-material-workbench').dataset.xtmVisualReady === 'true'",context),true);
+ assert.equal(vm.runInContext(projectionReadyExpression(),context),false);
+ assert.equal(frames.length,1);frames.shift()();
+ assert.equal(vm.runInContext(projectionReadyExpression(),context),true);
+ assert.equal(vm.runInContext(projectionReadyExpression('evidence'),context),true);
+ assert.equal(vm.runInContext(projectionReadyExpression('settings'),context),false);
+});
+test('Material capture reports completed failed measurements immediately, never waits until green',()=>{
+ const {projectionReadyExpression,visualSnapshotContract}=visualHelpers();
+ assert.equal(vm.runInNewContext(projectionReadyExpression(),projectionState({xtmVisualReady:'false',xtmNavigationVisible:'false'})),true);
+ const checks=visualSnapshotContract('<main data-xtm-visual-ready="false" data-xtm-navigation-visible="false">Visual gate failed; viewport=500; overflow=12</main>',500);
+ assert.equal(checks.visualReady,false);assert.equal(checks.navigationVisible,false);assert.equal(checks.statusPassed,false);assert.equal(checks.noOverflow,false);
+});
+test('Material capture rejects missing or malformed completion markers',()=>{
+ const {projectionReadyExpression}=visualHelpers();
+ for(const dataset of [{},{xtmVisualReady:'true'},{xtmNavigationVisible:'true'},{xtmVisualReady:'pending',xtmNavigationVisible:'true'},{xtmVisualReady:'true',xtmNavigationVisible:'unknown'}])assert.equal(vm.runInNewContext(projectionReadyExpression(),projectionState(dataset)),false);
+ assert.equal(vm.runInNewContext(projectionReadyExpression(),{document:{getElementById:()=>null}}),false);
+});
+test('Material visual snapshot retains every blocking assertion and names each failure',()=>{
+ const {visualSnapshotContract}=visualHelpers();
+ const html='<main data-xtm-visual-ready="true" data-xtm-navigation-visible="true" data-xtm-dev-api-boundary="projection-uninstrumented">Visual gate passed; viewport=500; overflow=0</main><dialog></dialog>';
+ assert.ok(Object.values(visualSnapshotContract(html,500)).every(Boolean));
+ for(const [key,before,after] of [
+  ['visualReady','data-xtm-visual-ready="true"','data-xtm-visual-ready="false"'],
+  ['navigationVisible','data-xtm-navigation-visible="true"','data-xtm-navigation-visible="false"'],
+  ['devApiBoundary','projection-uninstrumented','invalid-projection-api'],
+  ['statusPassed','Visual gate passed','Visual gate failed'],
+  ['viewportMatches','viewport=500','viewport=1280'],
+  ['noOverflow','overflow=0','overflow=12'],
+  ['dialogClosed','<dialog>','<dialog open>']
+ ]){const checks=visualSnapshotContract(html.replace(before,after),500);assert.equal(checks[key],false,key);assert.equal(Object.values(checks).filter(v=>!v).length,1,key);}
+});

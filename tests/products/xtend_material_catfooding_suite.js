@@ -77,6 +77,25 @@ function semanticClasses(...sources) {
   return Array.from(values).sort();
 }
 
+// The visual module measures synchronously; navigation measures on its first
+// animation frame. Observe completion of both, including failed measurements.
+// Never wait for a failed measurement to turn green.
+function projectionReadyExpression(route) {
+  return `(() => { const state = document.getElementById('xtend-material-workbench')?.dataset; return Boolean(state && ['true', 'false'].includes(state.xtmVisualReady) && ['true', 'false'].includes(state.xtmNavigationVisible)${route === undefined ? '' : ` && state.xtmRoute === ${JSON.stringify(route)}`}); })()`;
+}
+
+function visualSnapshotContract(dom, width) {
+  return {
+    visualReady: /data-xtm-visual-ready="true"/u.test(dom),
+    navigationVisible: /data-xtm-navigation-visible="true"/u.test(dom),
+    devApiBoundary: /data-xtm-dev-api-boundary="projection-uninstrumented"/u.test(dom),
+    statusPassed: /Visual gate passed/u.test(dom),
+    viewportMatches: dom.includes(`viewport=${width}`),
+    noOverflow: /overflow=0/u.test(dom),
+    dialogClosed: !/<dialog\b[^>]*\bopen\b/u.test(dom)
+  };
+}
+
 async function captureBrowserEvidence(rootDir) {
   const engine = detectAvailableEngine({ engine: process.env.XTEND_BROWSER_HYPERVISOR_ENGINE || 'chromium' });
   if (!engine) return { ok: false, browser: null, failures: ['required Browser Hypervisor provider is unavailable'], screenshots: [] };
@@ -90,18 +109,13 @@ async function captureBrowserEvidence(rootDir) {
     // instead of producing a misleading 390 px crop of a wider layout.
     for (const viewport of [{ id: 'desktop', width: 1440, height: 1000 }, { id: 'compact', width: 500, height: 844 }]) {
       const screenshotPath = path.join(artifactRoot, `${viewport.id}.png`);
-      const result = await captureDocument({ id: viewport.id, rootDir, engine, url: `${handle.origin}/${PRODUCT_PATH}/site/index.html`, width: viewport.width, height: viewport.height, screenshotPath, readyExpression: "document.getElementById('xtend-material-workbench')?.dataset.xtmVisualReady === 'true'" });
+      const result = await captureDocument({ id: viewport.id, rootDir, engine, url: `${handle.origin}/${PRODUCT_PATH}/site/index.html`, width: viewport.width, height: viewport.height, screenshotPath, readyExpression: projectionReadyExpression() });
       const dom = result.html;
       const semanticsPresent = /<main\b/u.test(dom) && /<nav\b/u.test(dom) && /role="status"/u.test(dom) && /aria-labelledby="review-title"/u.test(dom);
-      const visualContractPresent = /data-xtm-visual-ready="true"/u.test(dom)
-        && /data-xtm-navigation-visible="true"/u.test(dom)
-        && /data-xtm-dev-api-boundary="projection-uninstrumented"/u.test(dom)
-        && /Visual gate passed/u.test(dom)
-        && dom.includes(`viewport=${viewport.width}`)
-        && /overflow=0/u.test(dom)
-        && !/<dialog\b[^>]*\bopen\b/u.test(dom);
+      const visualChecks = visualSnapshotContract(dom, viewport.width);
+      const visualContractPresent = Object.values(visualChecks).every(Boolean);
       const screenshotBytes = fs.existsSync(screenshotPath) ? fs.statSync(screenshotPath).size : 0;
-      if (!semanticsPresent || !visualContractPresent || screenshotBytes === 0) failures.push(`${viewport.id}: semantics=${semanticsPresent}, visualContract=${visualContractPresent}, screenshotBytes=${screenshotBytes}`);
+      if (!semanticsPresent || !visualContractPresent || screenshotBytes === 0) failures.push(`${viewport.id}: semantics=${semanticsPresent}, visualContract=${visualContractPresent}, checks=${JSON.stringify(visualChecks)}, screenshotBytes=${screenshotBytes}`);
       else screenshots.push({ viewport: viewport.id, path: path.relative(rootDir, screenshotPath), bytes: screenshotBytes });
     }
     const runtimeResult = await captureDocument({ id: 'runtime', rootDir, engine, url: `${handle.origin}/${PRODUCT_PATH}/site/runtime.html`, readyExpression: "document.documentElement.dataset.maracaRuntimeReady === 'true'" });
@@ -116,7 +130,7 @@ async function captureBrowserEvidence(rootDir) {
       && ['evidence', 'lessons', 'settings'].every((route) => runtimeDom.includes(`data-route="${route}"`));
     if (!runtimeReady) failures.push(`runtime: maracaBoot=${runtimeReady}`);
     for (const route of ['evidence', 'lessons', 'settings']) {
-      const routeResult = await captureDocument({ id: `route-${route}`, rootDir, engine, url: `${handle.origin}/${PRODUCT_PATH}/site/index.html#${route}`, readyExpression: `document.getElementById('xtend-material-workbench')?.dataset.xtmRoute === ${JSON.stringify(route)}` });
+      const routeResult = await captureDocument({ id: `route-${route}`, rootDir, engine, url: `${handle.origin}/${PRODUCT_PATH}/site/index.html#${route}`, readyExpression: projectionReadyExpression(route) });
       const routeDom = routeResult.html;
       const navigationLinks = Array.from(routeDom.matchAll(/<a\b[^>]*class="[^"]*xtm-nav-link[^"]*"[^>]*>/gu)).map((match) => match[0]);
       const routeLink = navigationLinks.find((link) => link.includes(`data-route="${route}"`));
@@ -227,4 +241,4 @@ function printXtendMaterialCatfoodingReport(result) {
   printSuiteReport(result, { successTitle: 'XTM-12 XTend Material Catfooding erfolgreich.', failureTitle: 'XTM-12 XTend Material Catfooding fehlgeschlagen:' });
 }
 
-module.exports = { printXtendMaterialCatfoodingReport, runXtendMaterialCatfoodingSuite };
+module.exports = { printXtendMaterialCatfoodingReport, runXtendMaterialCatfoodingSuite, projectionReadyExpression, visualSnapshotContract };
