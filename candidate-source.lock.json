@@ -1,0 +1,8 @@
+{
+  "schema": "xtend.demo-candidate-source.v1",
+  "repository": "https://github.com/konnilabs/xtend.git",
+  "coreSha": "6c5e87960567063c5fc4c54badfda0cd7dac24a7",
+  "requiredApi": "public-product-support-candidate-v1-v2-and-private-current-pair-source-audit",
+  "mergeBlockedUntil": "Exact source retention and full paired handoff evidence, followed by the separate user merge decision; no npm publication is implied.",
+  "checkpoint": "Bounded migration correction: plain repeated page content without visibility declarations no longer requires a previous collection. Actual visibility handoff still rejects missing predecessors. Local renderer and ownership regressions pass on both Nodes. Previous C1 f3583ecc / D1 cd1c2160 runtime evidence is preserved, not relabeled as execution of this pair. Fresh paired CI and macOS execution remain required; Linux Electron and merge/release remain outside this evidence."
+}

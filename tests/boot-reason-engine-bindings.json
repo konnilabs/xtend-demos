@@ -1,0 +1,16 @@
+{
+  "electronTag": "v42.10.0",
+  "chromiumTag": "148.0.7778.280",
+  "v8Commit": "ba595dc892d82059793fe9e9af5d6bf6be43f8ca",
+  "v8MessageTemplateSha256": "c4e8d5a49b7eb62167643229f8f9ab2b236f4fd9feba1e4065a23947bee76524",
+  "templateLines": {
+    "185": "  T(NonObjectPropertyLoad, \"Cannot read properties of %\")                      \\",
+    "186": "  T(NonObjectPropertyLoadWithProperty,                                         \\",
+    "187": "    \"Cannot read properties of % (reading '%')\")                               \\",
+    "188": "  T(NonObjectPropertyStore, \"Cannot set properties of %\")                      \\",
+    "189": "  T(NonObjectPropertyStoreWithProperty,                                        \\",
+    "190": "    \"Cannot set properties of % (setting '%')\")                                \\",
+    "396": "  T(NotDefined, \"% is not defined\")                                            \\"
+  },
+  "meaning": "exact pinned primary source binding; NOT actual browser/native runtime proof"
+}

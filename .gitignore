@@ -1,0 +1,24 @@
+node_modules/
+.candidate/
+.xtend-test-results/
+**/dist/
+**/.xtend-llm-results/
+**/.packages/
+**/vendor/
+**/.env
+.candidate-source/
+
+.browser-toolchain/
+
+products/xtend-shop/**/public/build/
+products/xtend-shop/**/bootstrap/cache/*
+products/xtend-shop/**/bootstrap/xtend/
+products/xtend-shop/**/storage/
+products/xtend-shop/**/*.sqlite*
+
+# Private migration audit checkout; never part of a product package.
+.schema-audit/
+
+# Exact private CI controller, separate from installed candidate sources.
+.migration-controller/
+.controller/

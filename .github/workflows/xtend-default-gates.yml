@@ -1,0 +1,154 @@
+name: XTend independent migration checks (external macOS required)
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+env:
+  XTEND_CI_FUNCTIONAL_PROFILE: chromium-linux-ci-functions-no-sandbox-v1
+  XTEND_DEMO_EVENT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  XTEND_DEMO_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+  XTEND_DEMO_BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
+  XTEND_DEMO_PR_NUMBER: ${{ github.event.pull_request.number }}
+jobs:
+  functions:
+    if: github.repository == 'konnilabs/xtend-demos'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['24.18.0', '26.5.0']
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          ref: ${{ env.XTEND_DEMO_EVENT_SHA }}
+          persist-credentials: false
+      - name: Bind candidate controller and exact Demo event
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),cp=require('node:child_process'),pin=require('./migration-ci-controller.lock.json');
+          if(!/^[a-f0-9]{40}$/.test(pin.sha)||pin.repository!=='https://github.com/konnilabs/xtend.git')throw Error('Exact Core source required');
+          if(cp.execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()!==process.env.XTEND_DEMO_EVENT_SHA)throw Error('Demo event checkout mismatch');
+          fs.appendFileSync(process.env.GITHUB_ENV,'XTEND_DEMO_CONTROLLER_SHA='+pin.sha+'\nXTEND_CORE_SHA='+require('./candidate-source.lock.json').coreSha+'\n');
+          NODE
+          mkdir -p "$RUNNER_TEMP/demo-evidence"
+          printf 'DEMO_EVIDENCE=%s/demo-evidence\nDEMO_TOOLCHAIN=%s/demo-browser\n' "$RUNNER_TEMP" "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - name: Pin npm
+        working-directory: ${{ runner.temp }}
+        run: npm install --global npm@11.17.0 --ignore-scripts --no-audit --no-fund
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        env:
+          update: true
+          use_package_cache: false
+        with:
+          php-version: '8.4'
+          extensions: mbstring, dom, xml, xmlwriter, pdo_sqlite, curl, zip
+          tools: composer:2.10.3
+      - name: Prepare immutable Core candidates and all consumers
+        id: candidates
+        run: node scripts/prepare-ci-candidates.cjs
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          repository: konnilabs/xtend
+          ref: ${{ env.XTEND_DEMO_CONTROLLER_SHA }}
+          path: .migration-controller
+          persist-credentials: false
+      - name: Isolation and aggregation negative tests
+        id: isolation
+        run: node --test .migration-controller/tests/browser/neutral-prototype/demo-functional-ci.test.cjs
+      - name: Bind clean committed source before fixture builds
+        run: node .migration-controller/scripts/demo-functional-ci.cjs bind "$GITHUB_WORKSPACE" "$DEMO_EVIDENCE/source.json"
+      - name: Prepare only required fixtures and unprivileged FPM
+        id: fixtures
+        run: |
+          node scripts/provision-product-fpm.cjs 8.4
+          mkdir -p "$RUNNER_TEMP/browser-provision-home"
+          NODE_BINARY="$(command -v node)"
+          env -i PATH="$(dirname "$NODE_BINARY"):/usr/local/bin:/usr/bin:/bin" HOME="$RUNNER_TEMP/browser-provision-home" TMPDIR="$RUNNER_TEMP/browser-provision-home" LANG=C.UTF-8 "$NODE_BINARY" scripts/prepare-browser-toolchain.cjs "$DEMO_TOOLCHAIN"
+          npm run build --prefix products/xtend-material-workbench
+          node products/xtend-shop/scripts/prepare-packages.cjs
+          composer install --working-dir=products/xtend-shop --no-interaction --no-progress --prefer-dist --no-scripts --no-plugins
+          composer install --working-dir=products/xtend-shop/payment-provider --no-interaction --no-progress --prefer-dist --no-scripts --no-plugins
+          composer check-platform-reqs --working-dir=products/xtend-shop
+          php products/xtend-shop/scripts/setup.php
+      - name: Required portable product contracts and all builds
+        id: portable
+        run: node scripts/run-product-gates.cjs --migration-portable --report "$DEMO_EVIDENCE/portable.json"
+      - name: Execute the five existing groups in isolated owned subprocesses
+        id: browser
+        run: node .migration-controller/scripts/demo-functional-ci.cjs run "$GITHUB_WORKSPACE" "$DEMO_EVIDENCE" "$DEMO_TOOLCHAIN" "$XTEND_SHOP_FPM_BINARY"
+      - name: Record setup or execution outcomes
+        if: always()
+        env:
+          OUTCOMES: ${{ toJSON(steps) }}
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),p=require('node:path'),o=JSON.parse(process.env.OUTCOMES);
+          fs.mkdirSync(process.env.DEMO_EVIDENCE,{recursive:true});
+          fs.writeFileSync(p.join(process.env.DEMO_EVIDENCE,'job-terminal.json'),JSON.stringify({node:process.versions.node,controllerSha:process.env.XTEND_DEMO_CONTROLLER_SHA,demoSha:process.env.XTEND_DEMO_EVENT_SHA,externalMacos:'not-run-required-before-merge',handoffComplete:false,runId:process.env.GITHUB_RUN_ID,attempt:Number(process.env.GITHUB_RUN_ATTEMPT),outcomes:Object.fromEntries(['isolation','candidates','fixtures','portable','browser'].map(k=>[k,o[k]?.outcome||'not-run'])),sandboxEnabled:false,sandboxEvidence:'not-provided',acceptedForMerge:false,acceptedForRelease:false},null,2)+'\n');
+          NODE
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: demo-functions-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.node }}
+          path: |
+            ${{ runner.temp }}/demo-evidence/*.json
+            ${{ runner.temp }}/demo-evidence/*/*.json
+            ${{ runner.temp }}/demo-evidence/*/screenshots/*.png
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: demo-portable-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.node }}
+          path: |
+            .xtend-test-results/
+            .candidate-source/manifest.json
+          include-hidden-files: true
+          if-no-files-found: error
+  aggregate:
+    needs: functions
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          ref: ${{ env.XTEND_DEMO_EVENT_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24.18.0'
+          package-manager-cache: false
+      - name: Fetch exact immutable controller without installing runtimes
+        run: |
+          node - <<'NODE'
+          const fs=require('node:fs'),cp=require('node:child_process'),pin=require('./migration-ci-controller.lock.json');
+          if(!/^[a-f0-9]{40}$/.test(pin.sha)||pin.repository!=='https://github.com/konnilabs/xtend.git')throw Error('Exact Core pin required');
+          const git=(...args)=>cp.execFileSync('git',args,{stdio:'pipe'});
+          git('init','.controller');git('-C','.controller','fetch','--depth=1',pin.repository,pin.sha);git('-C','.controller','checkout','--detach',pin.sha);
+          fs.appendFileSync(process.env.GITHUB_ENV,'XTEND_DEMO_CONTROLLER_SHA='+pin.sha+'\nXTEND_CORE_SHA='+require('./candidate-source.lock.json').coreSha+'\n');
+          NODE
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: demo-functions-${{ github.run_id }}-${{ github.run_attempt }}-*
+          path: ${{ runner.temp }}/demo-functions
+      - name: Require both complete same-source lanes
+        run: node .controller/scripts/demo-functional-ci.cjs aggregate "$RUNNER_TEMP/demo-functions" "$RUNNER_TEMP/demo-functions-result.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: demo-functions-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/demo-functions-result.json
+          if-no-files-found: error

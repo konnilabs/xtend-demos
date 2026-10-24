@@ -1,0 +1,10 @@
+name: XTend independent product nightly
+on:
+  schedule:
+    - cron: '47 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  migration-checks:
+    uses: ./.github/workflows/xtend-default-gates.yml

@@ -1,0 +1,63 @@
+{
+  "plan-runtime.mjs": {
+    "sha256": "79f8163164a204469691c7a067ac5a90333dbc7b4c740e9465f0eda764bfdda1",
+    "lines": {
+      "496": "      const error = new Error('The Maraca View Projection Port does not implement the complete host projection contract.');",
+      "513": "      const error = new Error('Maraca requires an injected Runtime Module Loader port or explicit ESM module APIs.');",
+      "525": "      const error = new Error('Maraca requires an injected kernel scheduler authority.');",
+      "2336": "    if (phase === 'disposed') throw new Error('Disposed Maraca plan runtimes cannot be booted again.');",
+      "2346": "        const error = new Error('Strict Maraca requires an injected Maraca View Projection Port.');",
+      "2362": "          const error = new Error('Maraca compatibility mode could not construct the canonical View Projection Port.');",
+      "2399": "        const error = new Error('Strict Maraca requires batchUpdate() for atomic Model projection.');",
+      "2404": "        const error = new Error('Strict Maraca forbids a Surface-owned State projection; RMT Model is the sole application-state authority.');",
+      "2409": "        throw new Error('The plan requires the official RMT state and DOM descriptor runtimes.');",
+      "2431": "        const error = new Error('Strict Maraca requires createRmtDomDescriptorRenderer().commit() and dispose().');",
+      "2467": "        const error = new Error('Strict Maraca requires the complete read-only Model and Model command ports.');",
+      "2554": "        const error = new Error('Strict Maraca validation requires separate evaluator and View projector ports.');",
+      "2587": "        const error = new Error('Strict Maraca validation requires the evaluator and View projector ports.');",
+      "2647": "        const error = new Error('Strict Maraca requires the Surface Controller lifecycle port.');",
+      "2742": "        const error = new TypeError('The injected PresentationEffectPort must expose invoke(effect, context).');",
+      "2762": "        const error = new Error('Strict Maraca plans with actions require the Action command port.');",
+      "2767": "        const error = new Error('Strict Maraca plans with actions require the Application Controller port.');",
+      "2776": "        const error = new Error('Strict Maraca plans with application events require the Event Router port.');",
+      "2787": "        const error = new Error('Strict Maraca plans with surfaces require the complete Surface Controller lifecycle port.');",
+      "2796": "        const error = new Error('Strict Maraca plans with surfaces require the Surface projection port.');",
+      "2801": "        const error = new Error('Strict Maraca transition plans require the Animation adapter port.');",
+      "2810": "        const error = new Error('Strict Maraca transition plans require the Transition Controller port.');",
+      "2751": "          {},",
+      "2750": "          'The Maraca composition root could not construct a PresentationEffectPort.',"
+    }
+  },
+  "rmt-dom-descriptor-renderer.js": {
+    "sha256": "5bae5314262f2c63cccf067766166bb35d2aed9ff42b858a7dea52960bbb6e37",
+    "lines": {
+      "1983": "      throw createRendererError('rmt.dom.descriptor.invalid', 'DOM Descriptor muss strukturiert sein.', {}, context);",
+      "1967": "      throw createRendererError('rmt.dom.descriptor.depth-exceeded', 'DOM Descriptor ueberschreitet die maximal erlaubte Verschachtelung.', {}, context);",
+      "813": "      throw createRendererError('rmt.dom.style.invalid', 'Style darf nur als strukturiertes Objekt gesetzt werden.', descriptor, context);",
+      "1853": "          throw createRendererError('rmt.dom.style.invalid', 'Style darf nur als strukturiertes Objekt gesetzt werden.', descriptor, context);",
+      "1751": "      throw createRendererError('rmt.dom.trusted-boundary.missing', 'Trusted HTML benoetigt die explizite Trusted-DOM-Boundary.', descriptor, context);",
+      "1755": "      throw createRendererError('rmt.dom.trusted-policy.missing', 'Trusted HTML benoetigt eine explizite policyRef.', descriptor, context);",
+      "1761": "      throw createRendererError('rmt.dom.trusted-renderer.missing', 'Trusted HTML benoetigt einen expliziten trustedDomRenderer ausserhalb des Standard-Renderers.', descriptor, context);",
+      "1798": "      throw createRendererError('rmt.dom.trusted-renderer.invalid', 'trustedDomRenderer muss Node oder Node[] liefern.', descriptor, context);",
+      "1677": "          'Slot-Inhalt darf nicht gleichzeitig markup und html deklarieren.',",
+      "1723": "      'Strukturierter Slot-Inhalt benoetigt descriptor, template oder einen expliziten DOM Descriptor.',",
+      "2065": "    throw createRendererError('rmt.dom.node-type.unsupported', `Nicht unterstuetzter DOM Descriptor Type ${nodeType}`, descriptor, context);",
+      "2591": "        throw createRendererError('rmt.dom.node-type.unsupported', `Nicht unterstuetzter DOM Descriptor Type ${nodeType}`, descriptor, context);",
+      "1830": "      throw createRendererError('rmt.dom.tag.unsafe', `Unsicherer oder ungueltiger Tag ${tag}`, descriptor, context);",
+      "2080": "      throw createRendererError('rmt.dom.tag.unsafe', `Unsicherer oder ungueltiger Tag ${tag}`, descriptor, context);",
+      "643": "      throw createRendererError('rmt.dom.property.unsafe', `Unsichere Property ${normalizedName}`, descriptor, context);",
+      "653": "        throw createRendererError('rmt.dom.property.not-allowed', `Nicht freigegebene Property ${normalizedName}`, descriptor, context);",
+      "658": "      throw createRendererError('rmt.dom.property.not-allowed', `Nicht freigegebene Property ${normalizedName}`, descriptor, context);",
+      "758": "      throw createRendererError('rmt.dom.attribute.unsafe', `Unsicheres Attribut ${normalizedName}`, descriptor, context);",
+      "1868": "        throw createRendererError('rmt.dom.attribute.unsafe', `Unsicheres Attribut ${normalizedName}`, descriptor, context);",
+      "764": "      throw createRendererError('rmt.dom.attribute.url-unsafe', `Unsichere URL fuer Attribut ${normalizedName}`, descriptor, context);",
+      "1873": "        throw createRendererError('rmt.dom.attribute.url-unsafe', `Unsichere URL fuer Attribut ${normalizedName}`, descriptor, context);",
+      "1098": "      throw createRendererError('rmt.dom.event.unsafe', `Unsicherer Event-Name ${event}`, descriptor, context);",
+      "1920": "        throw createRendererError('rmt.dom.event.unsafe', `Unsicherer Event-Name ${normalizedEvent}`, descriptor, context);",
+      "1948": "          throw createRendererError('rmt.dom.event.unsafe', `Unsicherer Event-Name ${spec.event}`, descriptor, context);",
+      "3063": "        throw createRendererError('rmt.dom.key.duplicate', `Doppelter DOM-Reconcile-Key ${key}`, entry.descriptor, entry.context);",
+      "3387": "              throw createRendererError('rmt.dom.key.duplicate', `Doppelter DOM-Reconcile-Key ${key}`, entry.descriptor, entry.context);",
+      "1788": "          ? `trustedDomRenderer ist fehlgeschlagen: ${error.message}`"
+    }
+  }
+}

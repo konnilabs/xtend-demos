@@ -1,0 +1,61 @@
+{
+  "schema": "xtend.maraca.size-budget-report.v1",
+  "ok": true,
+  "status": "within_budget",
+  "profile": "production",
+  "mode": "strict",
+  "baseline": {
+    "mode": "legacy-loader-plus-selected-component-modules-plus-stack-modules",
+    "loaderBytes": 70038,
+    "selectedComponentBytes": 114355,
+    "stackModuleBytes": 2242056,
+    "contractPayloadBytes": 613414,
+    "bytes": 3039863
+  },
+  "baselineBytes": 3039863,
+  "bundleBytes": 2944391,
+  "framework": {
+    "bytes": 2914722,
+    "baselineBytes": 3039863,
+    "withinBudget": true
+  },
+  "microkernel": {
+    "bytes": 29669,
+    "accounting": "kernel-lab-separate-budget",
+    "rawBudgetBytes": 163840,
+    "gzipBudgetBytes": 32768
+  },
+  "appServices": {
+    "clientBytes": 0,
+    "clientBudgetBytes": null,
+    "clientWithinBudget": true,
+    "serverBytes": 0,
+    "serverBudgetBytes": null,
+    "serverWithinBudget": true,
+    "withinBudget": true
+  },
+  "css": {
+    "provider": "maraca-native",
+    "bytes": 2392,
+    "budgetBytes": null,
+    "withinBudget": true,
+    "requestFingerprint": "a31089ec90610cb8c21460323da464f9b34fd27e3cf3842a73b0e2cbe1563a47",
+    "configFingerprint": "25137a124732caebcb6be3e6956a24a58e8bc9592276cf38681f8a8b22646e42",
+    "evidenceFingerprint": "d4198a228fe3290b860c6143e1bbc08de4557a7238662a930b25481607b3da7a",
+    "outputFingerprint": "cc8da6df68b57de8f4f64e965f76de6368efae2bcbd6d1cacb0530dc8addd1ce",
+    "sourceFingerprints": [
+      {
+        "fingerprint": "707888ddc576024742b6eb2888c56e0df6f4e28b048a26df100b25d13e83e58c",
+        "path": "kernel-orchestration-app.rmt"
+      }
+    ]
+  },
+  "ratio": 0.9588333421604855,
+  "budgets": {
+    "modernEsmEntryMustBeSmallerThanBaseline": true,
+    "enforcement": "strict",
+    "frameworkBytes": 3039863,
+    "clientAppServiceBytes": null,
+    "serverAppServiceBytes": null
+  }
+}

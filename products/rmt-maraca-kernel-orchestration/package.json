@@ -1,0 +1,20 @@
+{
+  "name": "@xtend-demos/rmt-maraca-kernel-orchestration",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "xt maraca build kernel-orchestration-app.rmt --out site/build --orchestration strict --kernel strict --hydration strict --validation strict --transitions strict --json"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/konnilabs/xtend-demos.git",
+    "directory": "products/rmt-maraca-kernel-orchestration"
+  },
+  "dependencies": {
+    "@ccslabs/xtend": "0.9.0",
+    "@ccslabs/xtend-compiler": "0.9.0",
+    "@ccslabs/xtend-maraca": "0.9.0",
+    "@ccslabs/xtend-cli": "0.9.0"
+  }
+}

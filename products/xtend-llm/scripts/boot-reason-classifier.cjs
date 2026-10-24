@@ -1,0 +1,56 @@
+'use strict';
+function createReasonObserver(nativeDetail, send) {
+ const descriptor=Object.getOwnPropertyDescriptor, apply=Reflect.apply;
+ const starts=String.prototype.startsWith;
+ const rows=[["literal", "The Maraca View Projection Port does not implement the complete host projection contract.", "L001"], ["literal", "Maraca requires an injected Runtime Module Loader port or explicit ESM module APIs.", "L002"], ["literal", "Maraca requires an injected kernel scheduler authority.", "L003"], ["literal", "Disposed Maraca plan runtimes cannot be booted again.", "L004"], ["literal", "Strict Maraca requires an injected Maraca View Projection Port.", "L005"], ["literal", "Maraca compatibility mode could not construct the canonical View Projection Port.", "L006"], ["literal", "Strict Maraca requires batchUpdate() for atomic Model projection.", "L007"], ["literal", "Strict Maraca forbids a Surface-owned State projection; RMT Model is the sole application-state authority.", "L008"], ["literal", "The plan requires the official RMT state and DOM descriptor runtimes.", "L009"], ["literal", "Strict Maraca requires createRmtDomDescriptorRenderer().commit() and dispose().", "L010"], ["literal", "Strict Maraca requires the complete read-only Model and Model command ports.", "L011"], ["literal", "Strict Maraca validation requires separate evaluator and View projector ports.", "L012"], ["literal", "Strict Maraca validation requires the evaluator and View projector ports.", "L013"], ["literal", "Strict Maraca requires the Surface Controller lifecycle port.", "L014"], ["literal", "The injected PresentationEffectPort must expose invoke(effect, context).", "L015"], ["literal", "Strict Maraca plans with actions require the Action command port.", "L016"], ["literal", "Strict Maraca plans with actions require the Application Controller port.", "L017"], ["literal", "Strict Maraca plans with application events require the Event Router port.", "L018"], ["literal", "Strict Maraca plans with surfaces require the complete Surface Controller lifecycle port.", "L019"], ["literal", "Strict Maraca plans with surfaces require the Surface projection port.", "L020"], ["literal", "Strict Maraca transition plans require the Animation adapter port.", "L021"], ["literal", "Strict Maraca transition plans require the Transition Controller port.", "L022"], ["literal", "The Maraca composition root could not construct a PresentationEffectPort.", "L023"], ["literal", "DOM Descriptor muss strukturiert sein.", "V001"], ["literal", "DOM Descriptor ueberschreitet die maximal erlaubte Verschachtelung.", "V002"], ["literal", "Style darf nur als strukturiertes Objekt gesetzt werden.", "V003"], ["literal", "Trusted HTML benoetigt die explizite Trusted-DOM-Boundary.", "V004"], ["literal", "Trusted HTML benoetigt eine explizite policyRef.", "V005"], ["literal", "Trusted HTML benoetigt einen expliziten trustedDomRenderer ausserhalb des Standard-Renderers.", "V006"], ["literal", "trustedDomRenderer muss Node oder Node[] liefern.", "V007"], ["literal", "Slot-Inhalt darf nicht gleichzeitig markup und html deklarieren.", "V008"], ["literal", "Strukturierter Slot-Inhalt benoetigt descriptor, template oder einen expliziten DOM Descriptor.", "V009"], ["prefix", "Nicht unterstuetzter DOM Descriptor Type ", "V010"], ["prefix", "Unsicherer oder ungueltiger Tag ", "V011"], ["prefix", "Unsichere Property ", "V012"], ["prefix", "Nicht freigegebene Property ", "V013"], ["prefix", "Unsicheres Attribut ", "V014"], ["prefix", "Unsichere URL fuer Attribut ", "V015"], ["prefix", "Unsicherer Event-Name ", "V016"], ["prefix", "Doppelter DOM-Reconcile-Key ", "V017"], ["prefix", "trustedDomRenderer ist fehlgeschlagen: ", "V018"]];
+ const own=(object,key)=>{const d=descriptor(object,key);return d&&descriptor(d,'value')&&typeof d.value==='string'?d.value:null;};
+ return (topic,event)=>{let id='U000';try {
+  if(topic!=='boot-error'&&topic!=='orchestration-diagnostic')return;
+  if(typeof nativeDetail!=='function')throw 0;
+  const detail=apply(nativeDetail,event,[]);
+  const schema=own(detail,'schema'),code=own(detail,'code');
+  const allowed=topic==='boot-error'?schema==='xtend.maraca.diagnostic.v1'&&code==='xtend.maraca.auto_boot_error':schema==='xtend.maraca.plan-runtime-diagnostic.v1'&&(code==='maraca.plan-runtime.boot-failed'||code==='xtend.maraca.mvc.presentation-port-missing');
+  if(allowed){const message=own(detail,'message');if(message!==null)for(const row of rows){if(row[0]==='literal'?message===row[1]:apply(starts,message,[row[1]])){id=row[2];break;}}}
+ }catch{}try{send(id);}catch{}};
+}
+function createReasonObserverV2(nativeDetail, send) {
+ const descriptor=Object.getOwnPropertyDescriptor, apply=Reflect.apply;
+ const starts=String.prototype.startsWith, test=RegExp.prototype.test;
+ const rows=[["literal", "The Maraca View Projection Port does not implement the complete host projection contract.", "L001"], ["literal", "Maraca requires an injected Runtime Module Loader port or explicit ESM module APIs.", "L002"], ["literal", "Maraca requires an injected kernel scheduler authority.", "L003"], ["literal", "Disposed Maraca plan runtimes cannot be booted again.", "L004"], ["literal", "Strict Maraca requires an injected Maraca View Projection Port.", "L005"], ["literal", "Maraca compatibility mode could not construct the canonical View Projection Port.", "L006"], ["literal", "Strict Maraca requires batchUpdate() for atomic Model projection.", "L007"], ["literal", "Strict Maraca forbids a Surface-owned State projection; RMT Model is the sole application-state authority.", "L008"], ["literal", "The plan requires the official RMT state and DOM descriptor runtimes.", "L009"], ["literal", "Strict Maraca requires createRmtDomDescriptorRenderer().commit() and dispose().", "L010"], ["literal", "Strict Maraca requires the complete read-only Model and Model command ports.", "L011"], ["literal", "Strict Maraca validation requires separate evaluator and View projector ports.", "L012"], ["literal", "Strict Maraca validation requires the evaluator and View projector ports.", "L013"], ["literal", "Strict Maraca requires the Surface Controller lifecycle port.", "L014"], ["literal", "The injected PresentationEffectPort must expose invoke(effect, context).", "L015"], ["literal", "Strict Maraca plans with actions require the Action command port.", "L016"], ["literal", "Strict Maraca plans with actions require the Application Controller port.", "L017"], ["literal", "Strict Maraca plans with application events require the Event Router port.", "L018"], ["literal", "Strict Maraca plans with surfaces require the complete Surface Controller lifecycle port.", "L019"], ["literal", "Strict Maraca plans with surfaces require the Surface projection port.", "L020"], ["literal", "Strict Maraca transition plans require the Animation adapter port.", "L021"], ["literal", "Strict Maraca transition plans require the Transition Controller port.", "L022"], ["literal", "The Maraca composition root could not construct a PresentationEffectPort.", "L023"], ["literal", "DOM Descriptor muss strukturiert sein.", "V001"], ["literal", "DOM Descriptor ueberschreitet die maximal erlaubte Verschachtelung.", "V002"], ["literal", "Style darf nur als strukturiertes Objekt gesetzt werden.", "V003"], ["literal", "Trusted HTML benoetigt die explizite Trusted-DOM-Boundary.", "V004"], ["literal", "Trusted HTML benoetigt eine explizite policyRef.", "V005"], ["literal", "Trusted HTML benoetigt einen expliziten trustedDomRenderer ausserhalb des Standard-Renderers.", "V006"], ["literal", "trustedDomRenderer muss Node oder Node[] liefern.", "V007"], ["literal", "Slot-Inhalt darf nicht gleichzeitig markup und html deklarieren.", "V008"], ["literal", "Strukturierter Slot-Inhalt benoetigt descriptor, template oder einen expliziten DOM Descriptor.", "V009"], ["prefix", "Nicht unterstuetzter DOM Descriptor Type ", "V010"], ["prefix", "Unsicherer oder ungueltiger Tag ", "V011"], ["prefix", "Unsichere Property ", "V012"], ["prefix", "Nicht freigegebene Property ", "V013"], ["prefix", "Unsicheres Attribut ", "V014"], ["prefix", "Unsichere URL fuer Attribut ", "V015"], ["prefix", "Unsicherer Event-Name ", "V016"], ["prefix", "Doppelter DOM-Reconcile-Key ", "V017"], ["prefix", "trustedDomRenderer ist fehlgeschlagen: ", "V018"]];
+ const identifier=/^[A-Za-z_$][A-Za-z0-9_$]{0,63} is not defined(?![\s\S])/;
+ const nullish=/^Cannot (?:read properties of (?:undefined|null)(?: \(reading '[^'\x00-\x1f\x7f-\x9f\u2028\u2029]{1,128}'\))?|set properties of (?:undefined|null)(?: \(setting '[^'\x00-\x1f\x7f-\x9f\u2028\u2029]{1,128}'\))?)(?![\s\S])/;
+ const own=(object,key)=>{const d=descriptor(object,key);return d&&descriptor(d,'value')&&typeof d.value==='string'?d.value:null;};
+ return (topic,event)=>{
+  if(topic!=='boot-error'&&topic!=='orchestration-diagnostic')return;
+  let id='Q008',detail,schema,code,message;
+  try{
+   let read=false;
+   try{detail=apply(nativeDetail,event,[]);read=true;}catch{id='Q001';}
+   if(read){
+    if(detail===null||typeof detail!=='object')id='Q002';
+    else{
+     let identityRead=false;
+     try{schema=own(detail,'schema');code=own(detail,'code');identityRead=true;}catch{id='Q003';}
+     if(identityRead){
+      const allowed=topic==='boot-error'?schema==='xtend.maraca.diagnostic.v1'&&code==='xtend.maraca.auto_boot_error':schema==='xtend.maraca.plan-runtime-diagnostic.v1'&&(code==='maraca.plan-runtime.boot-failed'||code==='xtend.maraca.mvc.presentation-port-missing');
+      if(!allowed)id='Q004';
+      else{
+       let messageRead=false;
+       try{message=own(detail,'message');messageRead=true;}catch{id='Q005';}
+       if(messageRead){
+        if(message===null)id='Q006';
+        else{
+         id='Q007';
+         for(const row of rows){if(row[0]==='literal'?message===row[1]:apply(starts,message,[row[1]])){id=row[2];break;}}
+         if(id==='Q007'&&message.length<=256){if(apply(test,identifier,[message]))id='J001';else if(apply(test,nullish,[message]))id='J002';}
+        }
+       }
+      }
+     }
+    }
+   }
+  }catch{id='Q008';}
+  try{send(id);}catch{}
+ };
+}
+module.exports={createReasonObserver,createReasonObserverV2};
